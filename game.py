@@ -1,6 +1,6 @@
 import random
+from enum import Enum
 import numpy
-
 import pygame
 
 # Constants
@@ -11,6 +11,7 @@ NUMBER_OF_STARTING_POSITIONS_AGENTS = 10
 NUMBER_OF_STARTING_POSITIONS_MR_X = 5
 NUMBER_OF_AGENTS = 3
 
+
 # Colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -19,8 +20,16 @@ RED = (255, 0, 0)
 GREEN = (0, 200, 0)
 
 
+# Enumerations
+class Direction(Enum):
+    RIGHT = 1
+    LEFT = 2
+    UP = 3
+    DOWN = 4
+
+
 class Player:
-    def __init__(self):
+    def __init__(self, number: int, color: ()):
         self.position = None
         self.number = None
         self.color = None
@@ -41,6 +50,12 @@ class ScotlandYard:
         self.cell_size = WIDTH // GRID_SIZE
         self.number_of_starting_positions_agents = NUMBER_OF_STARTING_POSITIONS_AGENTS
         self.number_of_starting_positions_mr_x = NUMBER_OF_STARTING_POSITIONS_MR_X
+        self.players = []
+        self.number_of_agents = NUMBER_OF_AGENTS
+        # Create players
+        self.players.append(Player(0, RED))
+        for i in range(self.number_of_agents):
+            self.players.append(Player(i + 1, GREEN))
 
     # --GAME CONTROL FUNCTIONS-- #
 
@@ -122,17 +137,35 @@ class ScotlandYard:
         pygame.display.flip()
         return self
 
-    # --GAME MOVE FUNCTIONS-- #
-    def choose_start_position(self, player: Player, position: ()) -> bool:
-        if player.number == 0 and position in self.start_positions_mr_x:
+    # --GAMEPLAY FUNCTIONS-- #
+    def choose_start_position(self, player: Player, position: ()):
+        if self.is_valid_start_position(player, position):
             player.position = position
-            self.start_positions_agents.remove(position)
+            if player.number == 0:
+                self.start_positions_mr_x.remove(position)
+            else:
+                self.start_positions_agents.remove(position)
+        return self
+
+    def is_valid_start_position(self, player: Player, position: ()):
+        if player.number == 0 and position in self.start_positions_mr_x:
             return True
         elif player.number != 0 and position in self.start_positions_agents:
-            player.position = position
-            self.start_positions_agents.remove(position)
             return True
         return False
 
-    def move(self, player: Player, position: ()):
+    def move(self, player: Player, direction: Direction):
         return self
+
+    def is_valid_move(self, player: Player, position: ()) -> bool:
+        # Player can only move to position on grid
+        if position[0] < 0 or position[0] > self.grid_size or position[1] < 0 or position[1] > self.grid_size:
+            return False
+
+        # Agent can only move to empty position or mr x position
+        if player.number != 0:
+            for player in self.players[1:]:
+                if player.position == position:
+                    return False
+
+        return True
