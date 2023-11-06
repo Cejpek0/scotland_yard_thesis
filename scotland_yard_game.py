@@ -10,7 +10,8 @@ GRID_SIZE = 20
 NUMBER_OF_STARTING_POSITIONS_AGENTS = 10
 NUMBER_OF_STARTING_POSITIONS_MR_X = 5
 NUMBER_OF_AGENTS = 3
-
+MAX_NUMBER_OF_TURNS = 24
+REVEAL_POSITION_TURNS = [3, 8, 13, 18, 24]
 
 # Colors
 WHITE = (255, 255, 255)
@@ -28,16 +29,48 @@ class Direction(Enum):
     DOWN = 4
 
 
+class GameStatus(Enum):
+    AGENTS_WON = 1
+    MR_X_WON = 2
+    NOT_END = 3
+
+
 class Player:
     def __init__(self, number: int, color: ()):
+        self.last_known_position = None
         self.position = None
-        self.number = None
-        self.color = None
+        self.number = number
+        self.color = color
         self.start_position = None
+
+    def set_start_position(self, position: ()):
+        self.start_position = position
+        self.position = position
+        return self
+
+    def move(self, direction: Direction):
+        if direction == Direction.RIGHT:
+            self.position = (self.position[0] + 1, self.position[1])
+        elif direction == Direction.LEFT:
+            self.position = (self.position[0] - 1, self.position[1])
+        elif direction == Direction.UP:
+            self.position = (self.position[0], self.position[1] - 1)
+        elif direction == Direction.DOWN:
+            self.position = (self.position[0], self.position[1] + 1)
+        return self
+
+    def get_distance_to(self, player) -> int:
+        return abs(self.position[0] - player.position[0]) + abs(self.position[1] - player.position[1])
+
+    def mr_x_reveal_position(self):
+        if self.number == 0:
+            self.last_known_position = self.position
+        return self
 
 
 class ScotlandYard:
     def __init__(self):
+        self.turn_number = 1
         self.start_positions_mr_x = []
         self.start_positions_agents = []
         self.position_mr_x = None
@@ -86,6 +119,18 @@ class ScotlandYard:
 
     def reset(self):
         # init game state
+        self.turn_number = 1
+        self.start_positions_mr_x = []
+        self.start_positions_agents = []
+        self.position_mr_x = None
+        self.position_agents = []
+        self.players = []
+        self.number_of_agents = NUMBER_OF_AGENTS
+        # Create players
+        self.players.append(Player(0, RED))
+        for i in range(self.number_of_agents):
+            self.players.append(Player(i + 1, GREEN))
+
         self.draw_grid()
         pygame.display.flip()
         return self
@@ -137,14 +182,19 @@ class ScotlandYard:
         pygame.display.flip()
         return self
 
+    def get_mr_x(self):
+        return self.players[0]
+
+    def get_agents(self):
+        return self.players[1:]
+
     # --GAMEPLAY FUNCTIONS-- #
     def choose_start_position(self, player: Player, position: ()):
-        if self.is_valid_start_position(player, position):
-            player.position = position
-            if player.number == 0:
-                self.start_positions_mr_x.remove(position)
-            else:
-                self.start_positions_agents.remove(position)
+        player.set_start_position(position)
+        if player.number == 0:
+            self.start_positions_mr_x.remove(position)
+        else:
+            self.start_positions_agents.remove(position)
         return self
 
     def is_valid_start_position(self, player: Player, position: ()):
@@ -167,5 +217,19 @@ class ScotlandYard:
             for player in self.players[1:]:
                 if player.position == position:
                     return False
-
         return True
+
+    def play_turn(self):
+        return self
+
+    def is_game_over(self) -> GameStatus:
+        for agent in self.get_agents():
+            if agent.position == self.get_mr_x().position:
+                return GameStatus.AGENTS_WON
+        if self.turn_number == MAX_NUMBER_OF_TURNS:
+            return GameStatus.MR_X_WON
+        return GameStatus.NOT_END
+
+
+if __name__ == '__main__':
+    ScotlandYard().display().start_game().quit()
