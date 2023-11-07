@@ -7,9 +7,9 @@ import pygame
 WIDTH = 600
 HEIGHT = 600
 GRID_SIZE = 20
-NUMBER_OF_STARTING_POSITIONS_AGENTS = 10
+NUMBER_OF_STARTING_POSITIONS_COPS = 10
 NUMBER_OF_STARTING_POSITIONS_MR_X = 5
-NUMBER_OF_AGENTS = 3
+NUMBER_OF_COPS = 3
 MAX_NUMBER_OF_TURNS = 24
 REVEAL_POSITION_TURNS = [3, 8, 13, 18, 24]
 
@@ -30,7 +30,7 @@ class Direction(Enum):
 
 
 class GameStatus(Enum):
-    AGENTS_WON = 1
+    COPS_WON = 1
     MR_X_WON = 2
     NOT_END = 3
 
@@ -72,28 +72,26 @@ class ScotlandYard:
     def __init__(self):
         self.turn_number = 1
         self.start_positions_mr_x = []
-        self.start_positions_agents = []
-        self.position_mr_x = None
-        self.position_agents = []
+        self.start_positions_cops = []
         self.clock = None
         self.window = None
         self.width = WIDTH
         self.height = HEIGHT
         self.grid_size = GRID_SIZE
         self.cell_size = WIDTH // GRID_SIZE
-        self.number_of_starting_positions_agents = NUMBER_OF_STARTING_POSITIONS_AGENTS
+        self.number_of_starting_positions_cops = NUMBER_OF_STARTING_POSITIONS_COPS
         self.number_of_starting_positions_mr_x = NUMBER_OF_STARTING_POSITIONS_MR_X
         self.players = []
-        self.number_of_agents = NUMBER_OF_AGENTS
+        self.number_of_cops = NUMBER_OF_COPS
         # Create players
         self.players.append(Player(0, RED))
-        for i in range(self.number_of_agents):
+        for i in range(self.number_of_cops):
             self.players.append(Player(i + 1, GREEN))
 
     # --GAME CONTROL FUNCTIONS-- #
 
     def log_start_info(self):
-        print("Start positions agents: " + str(self.start_positions_agents))
+        print("Start positions cops: " + str(self.start_positions_cops))
         print("Start positions mr x: " + str(self.start_positions_mr_x))
         return self
 
@@ -121,14 +119,12 @@ class ScotlandYard:
         # init game state
         self.turn_number = 1
         self.start_positions_mr_x = []
-        self.start_positions_agents = []
-        self.position_mr_x = None
-        self.position_agents = []
+        self.start_positions_cops = []
         self.players = []
-        self.number_of_agents = NUMBER_OF_AGENTS
+        self.number_of_cops = NUMBER_OF_COPS
         # Create players
         self.players.append(Player(0, RED))
-        for i in range(self.number_of_agents):
+        for i in range(self.number_of_cops):
             self.players.append(Player(i + 1, GREEN))
 
         self.draw_grid()
@@ -137,8 +133,8 @@ class ScotlandYard:
 
     def start_game(self):
         running = True
-        self.start_positions_agents = self.generate_start_positions([], self.number_of_starting_positions_agents)
-        self.start_positions_mr_x = self.generate_start_positions(self.start_positions_agents,
+        self.start_positions_cops = self.generate_start_positions([], self.number_of_starting_positions_cops)
+        self.start_positions_mr_x = self.generate_start_positions(self.start_positions_cops,
                                                                   self.number_of_starting_positions_mr_x)
         self.log_start_info()
         self.highlight_start_positions()
@@ -175,7 +171,7 @@ class ScotlandYard:
         return self
 
     def highlight_start_positions(self):
-        for position in self.start_positions_agents:
+        for position in self.start_positions_cops:
             self.draw_rectangle_at_position(position, GREEN, 128)
         for position in self.start_positions_mr_x:
             self.draw_rectangle_at_position(position, RED, 128)
@@ -185,8 +181,17 @@ class ScotlandYard:
     def get_mr_x(self):
         return self.players[0]
 
-    def get_agents(self):
+    def get_cops(self):
         return self.players[1:]
+
+    def get_current_turn_number(self):
+            return self.turn_number
+
+    def get_max_turns(self):
+        return MAX_NUMBER_OF_TURNS
+    
+    def next_reveal_turn_number(self):
+        
 
     # --GAMEPLAY FUNCTIONS-- #
     def choose_start_position(self, player: Player, position: ()):
@@ -194,13 +199,13 @@ class ScotlandYard:
         if player.number == 0:
             self.start_positions_mr_x.remove(position)
         else:
-            self.start_positions_agents.remove(position)
+            self.start_positions_cops.remove(position)
         return self
 
     def is_valid_start_position(self, player: Player, position: ()):
         if player.number == 0 and position in self.start_positions_mr_x:
             return True
-        elif player.number != 0 and position in self.start_positions_agents:
+        elif player.number != 0 and position in self.start_positions_cops:
             return True
         return False
 
@@ -212,7 +217,7 @@ class ScotlandYard:
         if position[0] < 0 or position[0] > self.grid_size or position[1] < 0 or position[1] > self.grid_size:
             return False
 
-        # Agent can only move to empty position or mr x position
+        # Cop can only move to empty position or mr x position
         if player.number != 0:
             for player in self.players[1:]:
                 if player.position == position:
@@ -223,9 +228,9 @@ class ScotlandYard:
         return self
 
     def is_game_over(self) -> GameStatus:
-        for agent in self.get_agents():
-            if agent.position == self.get_mr_x().position:
-                return GameStatus.AGENTS_WON
+        for cop in self.get_cops():
+            if cop.position == self.get_mr_x().position:
+                return GameStatus.COPS_WON
         if self.turn_number == MAX_NUMBER_OF_TURNS:
             return GameStatus.MR_X_WON
         return GameStatus.NOT_END
