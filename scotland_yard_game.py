@@ -32,7 +32,7 @@ class Direction(Enum):
 class GameStatus(Enum):
     COPS_WON = 1
     MR_X_WON = 2
-    NOT_END = 3
+    ONGOING = 3
 
 
 class Player:
@@ -59,8 +59,11 @@ class Player:
             self.position = (self.position[0], self.position[1] + 1)
         return self
 
-    def get_distance_to(self, player) -> int:
-        return abs(self.position[0] - player.position[0]) + abs(self.position[1] - player.position[1])
+    def get_distance_to(self, *args) -> int:
+        if len(args) == 1 and isinstance(args[0], Player):
+            return self.get_distance_to(args[0].position)
+        else:
+            return abs(self.position[0] - args[0][0]) + abs(self.position[1] - args[0][1])
 
     def mr_x_reveal_position(self):
         if self.number == 0:
@@ -127,8 +130,9 @@ class ScotlandYard:
         for i in range(self.number_of_cops):
             self.players.append(Player(i + 1, GREEN))
 
-        self.draw_grid()
-        pygame.display.flip()
+        if self.window is not None:
+            self.draw_grid()
+            pygame.display.flip()
         return self
 
     def start_game(self):
@@ -184,14 +188,23 @@ class ScotlandYard:
     def get_cops(self):
         return self.players[1:]
 
+    def get_cop_by_number(self, number: int) -> Player | None:
+        for cop in self.get_cops():
+            if cop.number == number:
+                return cop
+        return None
+
     def get_current_turn_number(self):
-            return self.turn_number
+        return self.turn_number
 
     def get_max_turns(self):
         return MAX_NUMBER_OF_TURNS
-    
-    def next_reveal_turn_number(self):
-        
+
+    def get_next_reveal_turn_number(self):
+        for turn_number in REVEAL_POSITION_TURNS:
+            if turn_number > self.turn_number:
+                return turn_number
+        return MAX_NUMBER_OF_TURNS
 
     # --GAMEPLAY FUNCTIONS-- #
     def choose_start_position(self, player: Player, position: ()):
@@ -233,7 +246,7 @@ class ScotlandYard:
                 return GameStatus.COPS_WON
         if self.turn_number == MAX_NUMBER_OF_TURNS:
             return GameStatus.MR_X_WON
-        return GameStatus.NOT_END
+        return GameStatus.ONGOING
 
 
 if __name__ == '__main__':
