@@ -1,6 +1,7 @@
 import random
+import sys
 from enum import Enum
-import numpy
+import numpy as np
 import pygame
 
 # Constants
@@ -23,10 +24,10 @@ GREEN = (0, 200, 0)
 
 # Enumerations
 class Direction(Enum):
-    RIGHT = 1
-    LEFT = 2
-    UP = 3
-    DOWN = 4
+    RIGHT = 0
+    LEFT = 1
+    UP = 2
+    DOWN = 3
 
 
 class GameStatus(Enum):
@@ -46,17 +47,6 @@ class Player:
     def set_start_position(self, position: ()):
         self.start_position = position
         self.position = position
-        return self
-
-    def move(self, direction: Direction):
-        if direction == Direction.RIGHT:
-            self.position = (self.position[0] + 1, self.position[1])
-        elif direction == Direction.LEFT:
-            self.position = (self.position[0] - 1, self.position[1])
-        elif direction == Direction.UP:
-            self.position = (self.position[0], self.position[1] - 1)
-        elif direction == Direction.DOWN:
-            self.position = (self.position[0], self.position[1] + 1)
         return self
 
     def get_distance_to(self, *args) -> int:
@@ -98,6 +88,16 @@ class ScotlandYard:
         print("Start positions mr x: " + str(self.start_positions_mr_x))
         return self
 
+    def text_display(self):
+        grid = np.full((self.grid_size, self.grid_size), " ")
+        for player in self.players:
+            if player.position is not None:
+                if player.number == 0:
+                    grid[player.position[1]][player.position[0]] = "X"
+                else:
+                    grid[player.position[1]][player.position[0]] = str(player.number)
+        print(f"{grid}\n")
+
     def display(self):
         # Initialize Pygame
         pygame.init()
@@ -121,9 +121,9 @@ class ScotlandYard:
     def reset(self):
         # init game state
         self.turn_number = 1
-        self.start_positions_mr_x = []
-        self.start_positions_cops = []
-        self.players = []
+        self.start_positions_mr_x.clear()
+        self.start_positions_cops.clear()
+        self.players.clear()
         self.number_of_cops = NUMBER_OF_COPS
         # Create players
         self.players.append(Player(0, RED))
@@ -153,7 +153,7 @@ class ScotlandYard:
         pygame.quit()
         return self
 
-    def generate_start_positions(self, check_positions: [()], number_of_starting_positions: int) -> numpy.array:
+    def generate_start_positions(self, check_positions: [()], number_of_starting_positions: int) -> np.array:
         random_positions = []
         success = False
         # Generate random positions, cannot repeat
@@ -225,9 +225,22 @@ class ScotlandYard:
     def move(self, player: Player, direction: Direction):
         return self
 
-    def is_valid_move(self, player: Player, position: ()) -> bool:
+    def get_position_after_move(self, player: Player, direction: Direction) -> ():
+        if direction == Direction.RIGHT:
+            return player.position[0] + 1, player.position[1]
+        elif direction == Direction.LEFT:
+            return player.position[0] - 1, player.position[1]
+        elif direction == Direction.UP:
+            return player.position[0], player.position[1] - 1
+        elif direction == Direction.DOWN:
+            return player.position[0], player.position[1] + 1
+        sys.stderr.write(f"Direction {direction} is not valid\n")
+
+    def is_valid_move(self, player: Player, direction: Direction) -> bool:
         # Player can only move to position on grid
-        if position[0] < 0 or position[0] > self.grid_size or position[1] < 0 or position[1] > self.grid_size:
+        
+        position = self.get_position_after_move(player, direction)
+        if position[0] < 0 or position[0] >= self.grid_size or position[1] < 0 or position[1] >= self.grid_size:
             return False
 
         # Cop can only move to empty position or mr x position
@@ -236,15 +249,41 @@ class ScotlandYard:
                 if player.position == position:
                     return False
         return True
+    
+    def get_players_valid_moves(self, player: Player) -> [()]:
+        valid_moves = []
+        for direction in Direction:
+            if self.is_valid_move(player, direction):
+                valid_moves.append(direction)
+        return valid_moves
+    
+    def get_players_valid_moves_mask(self, player: Player) -> [int]:
+        valid_moves = []
+        for direction in Direction:
+            if self.is_valid_move(player, direction):
+                valid_moves.append(1)
+            else:
+                valid_moves.append(0)
+        return valid_moves
+
+    def move_player(self, player: Player, direction: Direction):
+        #print(f"Player {player.position} moves {direction}")
+        if self.is_valid_move(player, direction):
+            player.position = self.get_position_after_move(player, direction)
+        else:
+            sys.stderr.write(f"Move {direction} is not valid\n")
+            exit(1)
+        return self
 
     def play_turn(self):
         return self
 
     def is_game_over(self) -> GameStatus:
+        mr_x = self.get_mr_x()
         for cop in self.get_cops():
-            if cop.position == self.get_mr_x().position:
+            if cop.position == mr_x.position:
                 return GameStatus.COPS_WON
-        if self.turn_number == MAX_NUMBER_OF_TURNS:
+        if self.turn_number >= MAX_NUMBER_OF_TURNS:
             return GameStatus.MR_X_WON
         return GameStatus.ONGOING
 
