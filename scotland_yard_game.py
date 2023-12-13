@@ -158,7 +158,7 @@ class ScotlandYard:
         success = False
         # Generate random positions, cannot repeat
         while not success:
-            random_position = (random.randint(0, self.grid_size), random.randint(0, self.grid_size))
+            random_position = (random.randint(0, self.grid_size-1), random.randint(0, self.grid_size-1))
             # Check if random position is already in array
             if random_position not in random_positions and random_position not in check_positions:
                 random_positions.append(random_position)
@@ -239,8 +239,10 @@ class ScotlandYard:
     def is_valid_move(self, player: Player, direction: Direction) -> bool:
         # Player can only move to position on grid
         
+        
         position = self.get_position_after_move(player, direction)
-        if position[0] < 0 or position[0] >= self.grid_size or position[1] < 0 or position[1] >= self.grid_size:
+        result = position[0] < 0 or position[0] >= GRID_SIZE or position[1] < 0 or position[1] >= GRID_SIZE
+        if position[0] < 0 or position[0] >= GRID_SIZE or position[1] < 0 or position[1] >= GRID_SIZE:
             return False
 
         # Cop can only move to empty position or mr x position
@@ -264,6 +266,7 @@ class ScotlandYard:
                 valid_moves.append(1)
             else:
                 valid_moves.append(0)
+        print(valid_moves)
         return valid_moves
 
     def move_player(self, player: Player, direction: Direction):
@@ -271,6 +274,10 @@ class ScotlandYard:
         if self.is_valid_move(player, direction):
             player.position = self.get_position_after_move(player, direction)
         else:
+            print(f"P{player.number} tried to move {direction} from {player.position}")
+            print(f"Would result in {self.get_position_after_move(player, direction)}")
+            print(self.get_players_valid_moves_mask(player))
+            print(self.is_valid_move(player, direction))
             sys.stderr.write(f"Move {direction} is not valid\n")
             exit(1)
         return self

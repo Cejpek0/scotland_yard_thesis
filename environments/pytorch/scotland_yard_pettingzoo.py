@@ -14,30 +14,10 @@ from gymnasium import spaces
 from pettingzoo.utils import agent_selector, wrappers
 
 
-def ScotlandYardPettingzoo(render_mode=None):
-    """
-    The env function often wraps the environment in wrappers by default.
-    You can find full documentation for these methods
-    elsewhere in the developer documentation.
-    """
-    internal_render_mode = render_mode if render_mode != "ansi" else "human"
-    env = ScotlandYardPettingzoo_RAW(render_mode=internal_render_mode)
-    # This wrapper is only for environments which print results to the terminal
-    if render_mode == "ansi":
-        env = wrappers.CaptureStdoutWrapper(env)
-    # this wrapper helps error handling for discrete action spaces
-    env = wrappers.AssertOutOfBoundsWrapper(env)
-    # Provides a wide variety of helpful user errors
-    # Strongly recommended
-    env = wrappers.OrderEnforcingWrapper(env)
-    return env
-
-
 class ScotlandYardPettingzoo_RAW(AECEnv):
     metadata = {
         "render_modes": ["human", "ansi"],
         "name": "scotland_yard_pettingzoo",
-        "is_parallelizable": True,
     }
 
     def __init__(self, render_mode=None):
@@ -131,19 +111,19 @@ class ScotlandYardPettingzoo_RAW(AECEnv):
     def step(self, action):
         print("---Step---")
         print(f"Agent: {self.agent_selection}")
-        
+
         if (
                 self.terminations[self.agent_selection]
                 or self.truncations[self.agent_selection]
         ):
             return self._was_dead_step(action)
 
-        if action in range(0,4):
+        if action in range(0, 4):
             print(f"Action: {scotland_yard_game.Direction(action).name}")
         else:
             sys.stderr.write(f"Invalid action: {action}")
             exit(1)
-        
+
         if self.game.get_current_turn_number() in scotland_yard_game.REVEAL_POSITION_TURNS:
             self.game.get_mr_x().last_known_position = self.game.get_mr_x().position
 
@@ -158,8 +138,6 @@ class ScotlandYardPettingzoo_RAW(AECEnv):
         self._cumulative_rewards[self.agent_selection] = 0
 
         self.state[self.agent_selection] = action
-
-
 
         self.rewards = self.get_rewards()
         self.terminations = self.getTerminations()
@@ -322,6 +300,26 @@ class ScotlandYardPettingzoo_RAW(AECEnv):
             else:
                 returnDict[agent_id] = True
         return returnDict
-    
+
+
     def action_mask(self):
         return self.observations[self.agent_selection]["action_mask"]
+
+
+def ScotlandYardPettingzoo(render_mode=None) -> ScotlandYardPettingzoo_RAW:
+    """
+    The env function often wraps the environment in wrappers by default.
+    You can find full documentation for these methods
+    elsewhere in the developer documentation.
+    """
+    internal_render_mode = render_mode if render_mode != "ansi" else "human"
+    env = ScotlandYardPettingzoo_RAW(render_mode=internal_render_mode)
+    # This wrapper is only for environments which print results to the terminal
+    if render_mode == "ansi":
+        env = wrappers.CaptureStdoutWrapper(env)
+    # this wrapper helps error handling for discrete action spaces
+    env = wrappers.AssertOutOfBoundsWrapper(env)
+    # Provides a wide variety of helpful user errors
+    # Strongly recommended
+    env = wrappers.OrderEnforcingWrapper(env)
+    return env
