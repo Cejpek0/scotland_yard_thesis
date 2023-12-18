@@ -1,0 +1,1 @@
+{"type": "Algorithm", "checkpoint_version": "1.2", "format": "cloudpickle", "state_file": "scotland_yard_1v1save\\algorithm_state.pkl", "policy_ids": ["pol2", "pol1"], "ray_version": "2.8.0", "ray_commit": "105355bd253d6538ed34d331f6a4bdf0e38ace3a"}

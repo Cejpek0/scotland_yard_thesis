@@ -20,79 +20,87 @@ class ScotlandYardEnvironment1v1(MultiAgentEnv):
         super().__init__()
         self.config = config
         self.game = scotland_yard_game.ScotlandYard()
-        self.num_agents = len(self.game.players)
         self.observations = None
-        self._spaces_in_preferred_format = True
         self._agent_ids = ["mr_x", "cop_1"]
+        self.num_agents = len(self._agent_ids)
 
-        self.action_spaces = {"mr_x": spaces.Discrete(4), "cop_1": spaces.Discrete(4)}
+        self.action_space = {"mr_x": spaces.Discrete(4), "cop_1": spaces.Discrete(4)}
 
-        self.observation_spaces = {
+        self.observation_space = {
             "mr_x": spaces.Box(low=np.array([
-                    0,  # current turn
-                    0,  # max turns
-                    0,  # next reveal
-                    0,  # position x
-                    0,  # position y
-                    0,  # position x of cop
-                    0,  # position y or cop
-                    -1,  # last known position x
-                    -1,  # last known position y
-                    0  # distance to cop
-                ]), high=np.array([
-                    scotland_yard_game.MAX_NUMBER_OF_TURNS,  # current turn
-                    scotland_yard_game.MAX_NUMBER_OF_TURNS,  # max turns
-                    scotland_yard_game.MAX_NUMBER_OF_TURNS,  # next reveal
-                    scotland_yard_game.GRID_SIZE,  # position x
-                    scotland_yard_game.GRID_SIZE,  # position y
-                    scotland_yard_game.GRID_SIZE,  # position x of cop
-                    scotland_yard_game.GRID_SIZE,  # position y or cop
-                    scotland_yard_game.GRID_SIZE,  # last known position x
-                    scotland_yard_game.GRID_SIZE,  # last known position y
-                    scotland_yard_game.GRID_SIZE * 2  # distance to cop
-                ]), dtype=np.float32),
+                0,  # current turn
+                0,  # max turns
+                0,  # next reveal
+                0,  # position x
+                0,  # position y
+                0,  # position x of cop
+                0,  # position y or cop
+                -1,  # last known position x
+                -1,  # last known position y
+                0  # distance to cop
+            ]), high=np.array([
+                scotland_yard_game.MAX_NUMBER_OF_TURNS,  # current turn
+                scotland_yard_game.MAX_NUMBER_OF_TURNS,  # max turns
+                scotland_yard_game.MAX_NUMBER_OF_TURNS,  # next reveal
+                scotland_yard_game.GRID_SIZE,  # position x
+                scotland_yard_game.GRID_SIZE,  # position y
+                scotland_yard_game.GRID_SIZE,  # position x of cop
+                scotland_yard_game.GRID_SIZE,  # position y or cop
+                scotland_yard_game.GRID_SIZE,  # last known position x
+                scotland_yard_game.GRID_SIZE,  # last known position y
+                scotland_yard_game.GRID_SIZE * 2  # distance to cop
+            ]), dtype=np.float32),
             "cop_1": spaces.Box(low=np.array([
-                    0,  # current turn
-                    0,  # max turns
-                    0,  # next reveal
-                    0,  # position x
-                    0,  # position y
-                    -1,  # last known position x
-                    -1,  # last known position y
-                ]), high=np.array([
-                    scotland_yard_game.MAX_NUMBER_OF_TURNS,  # current turn
-                    scotland_yard_game.MAX_NUMBER_OF_TURNS,  # max turns
-                    scotland_yard_game.MAX_NUMBER_OF_TURNS,  # next reveal
-                    scotland_yard_game.GRID_SIZE,  # position x
-                    scotland_yard_game.GRID_SIZE,  # position y
-                    scotland_yard_game.GRID_SIZE,  # last known position x
-                    scotland_yard_game.GRID_SIZE,  # last known position y
-                ]), dtype=np.float32)
+                0,  # current turn
+                0,  # max turns
+                0,  # next reveal
+                0,  # position x
+                0,  # position y
+                -1,  # last known position x
+                -1,  # last known position y
+            ]), high=np.array([
+                scotland_yard_game.MAX_NUMBER_OF_TURNS,  # current turn
+                scotland_yard_game.MAX_NUMBER_OF_TURNS,  # max turns
+                scotland_yard_game.MAX_NUMBER_OF_TURNS,  # next reveal
+                scotland_yard_game.GRID_SIZE,  # position x
+                scotland_yard_game.GRID_SIZE,  # position y
+                scotland_yard_game.GRID_SIZE,  # last known position x
+                scotland_yard_game.GRID_SIZE,  # last known position y
+            ]), dtype=np.float32)
         }
 
     def step(self, action_dict: Dict[AgentID, int]) -> (
-    Dict[Any, Any], Dict[Any, Any], Dict[Any, Any], Dict[Any, Any], Dict[Any, Any]):
-        print("STEP")
-        
+            Dict[Any, Any], Dict[Any, Any], Dict[Any, Any], Dict[Any, Any], Dict[Any, Any]):
+
+        # check if actions of all agents are valid
+        invalid_actions_players = []
+        for agent_id, action in action_dict.items():
+            if agent_id == "mr_x":
+                if scotland_yard_game.Direction(action) not in self.game.get_players_valid_moves(
+                        self.game.get_mr_x()):
+                    invalid_actions_players.append(agent_id)
+            else:
+                if scotland_yard_game.Direction(action) not in self.game.get_players_valid_moves(
+                        self.game.get_cops()[0]):
+                    invalid_actions_players.append(agent_id)
+
+        # If any action is invalid, do not proceed with the step. Do not update the game, and heavily penalize agents
+        # that made invalid actions
+        if len(invalid_actions_players) > 0:
+            return self.get_observations(), self.get_rewards(invalid_actions_players), self.getTerminations(),{"__all__": False, "mr_x": False, "cop_1": False}, {"mr_x": {}, "cop_1": {}}
+
+        # Proceed with the step
+
+        # Reveal mr x position if current turn is in REVEAL_POSITION_TURNS
         if self.game.get_current_turn_number() in scotland_yard_game.REVEAL_POSITION_TURNS:
             self.game.get_mr_x().last_known_position = self.game.get_mr_x().position
 
-        # Execute actions
-        invalid_actions_players = []
+        # Move players
         for agent_id, action in action_dict.items():
-            if action not in range(0, 4) or (
-                    scotland_yard_game.Direction(action) not in self.game.get_players_valid_moves(
-                    self.game.get_mr_x())):
-                invalid_actions_players.append(agent_id)
-                continue
-            if len(invalid_actions_players) == 0:
-                if agent_id == "mr_x":
-                    self.game.move_player(self.game.get_mr_x(), scotland_yard_game.Direction(action))
-                else:
-                    self.game.move_player(self.game.get_cops()[0], scotland_yard_game.Direction(action))
-
-        if len(invalid_actions_players) > 0:
-            return self.get_observations(), self.get_rewards(invalid_actions_players), self.getTerminations(), {"mr_x": False, "cop_1": False}, {"mr_x": {}, "cop_1": {}}
+            if agent_id == "mr_x":
+                self.game.move_player(self.game.get_mr_x(), scotland_yard_game.Direction(action))
+            else:
+                self.game.move_player(self.game.get_cops()[0], scotland_yard_game.Direction(action))
 
         # Update game state
         self.game.turn_number += 1
@@ -107,10 +115,9 @@ class ScotlandYardEnvironment1v1(MultiAgentEnv):
         terminates = self.getTerminations()
 
         # Return observations, rewards, terminates,truncateds, info
-        return observations, rewards, terminates, {"mr_x": False, "cop_1": False}, {"mr_x": {}, "cop_1": {}}
+        return observations, rewards, terminates, {"__all__": False, "mr_x": False, "cop_1": False}, {"mr_x": {},"cop_1": {}}
 
     def reset(self, *, seed=None, options=None):
-        print("RESET")
         self.game.reset()
         self.game.start_positions_cops = self.game.generate_start_positions([],
                                                                             self.game.number_of_starting_positions_cops)
@@ -123,10 +130,9 @@ class ScotlandYardEnvironment1v1(MultiAgentEnv):
                 self.game.start_positions_cops[random.randint(0, len(self.game.start_positions_cops) - 1)])
         # Observations
         observations = self.get_empty_observation()
-        return observations
+        return observations, {"mr_x": 0, "cop_1": 0}
 
     def get_rewards(self, invalid_actions_players: List[str] = None):
-        print("GET REWARDS")
         if invalid_actions_players is None:
             invalid_actions_players = []
         distance_reward = 0
@@ -221,7 +227,7 @@ class ScotlandYardEnvironment1v1(MultiAgentEnv):
                 -1,
                 -1,
             ]).astype(np.float32)
-            
+
         observations = {
             "mr_x": obs_list_mrx,
             "cop_1": obs_list_cop
@@ -256,23 +262,3 @@ class ScotlandYardEnvironment1v1(MultiAgentEnv):
         else:
             returnDict["__all__"] = True
         return returnDict
-
-    def observation_space_sample(self, agent_ids: list = None) -> MultiEnvDict:
-        if agent_ids is None:
-            agent_ids = self._agent_ids
-        return {agent_id: self.observation_spaces[agent_id].sample() for agent_id in agent_ids}
-
-    def action_space_sample(self, agent_ids: list = None) -> MultiEnvDict:
-        if agent_ids is None:
-            agent_ids = self._agent_ids
-        return {agent_id: self.action_spaces[agent_id].sample() for agent_id in agent_ids}
-
-    def observation_space_contains(self, observation: MultiEnvDict, agent_ids: list = None) -> bool:
-        if agent_ids is None:
-            agent_ids = self._agent_ids
-        return all(self.observation_spaces[agent_id].contains(observation[agent_id]) for agent_id in agent_ids)
-
-    def action_space_contains(self, action: MultiEnvDict, agent_ids: list = None) -> bool:
-        if agent_ids is None:
-            agent_ids = self._agent_ids
-        return all(self.action_spaces[agent_id].contains(action[agent_id]) for agent_id in agent_ids)
