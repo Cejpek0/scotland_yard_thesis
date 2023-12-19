@@ -19,7 +19,7 @@ class ScotlandYardEnvironment1v1(MultiAgentEnv):
         scotland_yard_game.NUMBER_OF_COPS = 1
         super().__init__()
         self.config = config
-        self.game = scotland_yard_game.ScotlandYard()
+        self.game = scotland_yard_game.ScotlandYard(training=True)
         self.observations = None
         self._agent_ids = ["mr_x", "cop_1"]
         self.num_agents = len(self._agent_ids)
@@ -71,7 +71,6 @@ class ScotlandYardEnvironment1v1(MultiAgentEnv):
 
     def step(self, action_dict: Dict[AgentID, int]) -> (
             Dict[Any, Any], Dict[Any, Any], Dict[Any, Any], Dict[Any, Any], Dict[Any, Any]):
-
         # check if actions of all agents are valid
         invalid_actions_players = []
         for agent_id, action in action_dict.items():
@@ -250,7 +249,7 @@ class ScotlandYardEnvironment1v1(MultiAgentEnv):
         }
 
     def getTerminations(self):
-        game_over = self.game.is_game_over()
+        game_over = self.game.get_game_status()
         returnDict = {}
         for agent_id in self._agent_ids:
             if game_over == scotland_yard_game.GameStatus.ONGOING:
