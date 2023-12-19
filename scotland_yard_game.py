@@ -3,6 +3,7 @@ import sys
 from enum import Enum
 import numpy as np
 import pygame
+from ray.rllib import Policy
 
 # Constants
 WIDTH = 600
@@ -13,6 +14,9 @@ NUMBER_OF_STARTING_POSITIONS_MR_X = 5
 NUMBER_OF_COPS = 3
 MAX_NUMBER_OF_TURNS = 24
 REVEAL_POSITION_TURNS = [3, 8, 13, 18, 24]
+
+SAVED_POLICY_DIR_MR_X = "trained_policies/policies/mr_x_policy"
+SAVED_POLICY_DIR_COP = "trained_policies/policies/cop_policy"
 
 # Colors
 WHITE = (255, 255, 255)
@@ -37,12 +41,13 @@ class GameStatus(Enum):
 
 
 class Player:
-    def __init__(self, number: int, color: ()):
+    def __init__(self, number: int, color: (), policy: Policy = None):
         self.last_known_position = None
         self.position = None
         self.number = number
         self.color = color
         self.start_position = None
+        self.policy = policy
 
     def set_start_position(self, position: ()):
         self.start_position = position
@@ -76,10 +81,23 @@ class ScotlandYard:
         self.number_of_starting_positions_mr_x = NUMBER_OF_STARTING_POSITIONS_MR_X
         self.players = []
         self.number_of_cops = NUMBER_OF_COPS
+        
+        self.mr_x_policy = None
+        self.cop_policy = None
+
+        self.mr_x_policy = PPOTrainer(config=your_mr_x_config)
+        self.cop_policy = PPOTrainer(config=your_cop_config)
+
+        self.mr_x_policy = ppo.PPOTrainer(config=your_mr_x_config, env="scotland_env")
+        self.cop_policy = ppo.PPOTrainer(config=your_cop_config, env="scotland_env")
+
+        self.mr_x_policy.restore(SAVED_POLICY_DIR_MR_X)
+        self.cop_policy.restore(SAVED_POLICY_DIR_COP)
+        
         # Create players
-        self.players.append(Player(0, RED))
+        self.players.append(Player(0, RED, mr_x_policy))
         for i in range(self.number_of_cops):
-            self.players.append(Player(i + 1, GREEN))
+            self.players.append(Player(i + 1, GREEN, cop_policy))
 
     # --GAME CONTROL FUNCTIONS-- #
 

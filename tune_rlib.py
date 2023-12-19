@@ -10,8 +10,14 @@ from environments.rlib.scotland_yard_environment_1v1 import ScotlandYardEnvironm
 
 if __name__ == "__main__":
     ray.init(num_gpus=1)
-    
 
+    @ray.remote(num_gpus=1)
+    def use_gpu():
+        import tensorflow as tf
+
+        # Create a TensorFlow session. TensorFlow will restrict itself to use the
+        # GPUs specified by the CUDA_VISIBLE_DEVICES environment variable.
+        tf.Session()
 
     def env_creator(env_config):
         return ScotlandYardEnvironment1v1({})  # return an env instance
@@ -23,9 +29,9 @@ if __name__ == "__main__":
 
     tune_config = {
         "env": "scotland_env",
-        "framework": "torch",
-        "num_workers": 1,
+        "num_workers": 0,
         "num_gpus": 1,
+        "num_gpus_per_worker": 1,
         "num_envs_per_worker": 1,
         "model": {
             "fcnet_hiddens": [512, 512, 256],

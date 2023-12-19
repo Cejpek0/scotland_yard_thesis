@@ -10,9 +10,13 @@ import scotland_yard_game
 from environments.rlib.scotland_yard_environment_1v1 import ScotlandYardEnvironment1v1
 
 if __name__ == "__main__":
+    import GPUtil
+
+    gpus = GPUtil.getGPUs()
+    print("Num GPUs Available:", len(gpus))
+    print(gpus[0].name)
+
     ray.init(num_gpus=1)
-
-
     def env_creator(env_config):
         return ScotlandYardEnvironment1v1({})  # return an env instance
 
@@ -80,8 +84,9 @@ if __name__ == "__main__":
         lambda agent_id, episode, worker, *kw: "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
 
     my_config["num_iterations"] = 10
-    my_config["reuse_actors"] = True
-    my_config["num_gpus"] = 1
+    my_config["num_rollout_workers"] = 0
+    my_config.resources(num_gpus=1, num_gpus_per_worker=0.5)
+
 
     # Set the config object's env.
     algo = PPO(env="scotland_env", config=my_config)
@@ -95,6 +100,8 @@ if __name__ == "__main__":
     for i in range(repeat):
         print("Training iteration {} of {}".format(i + 1, repeat))
         print(algo.train())
+        if i % 5 == 0:
+            algo.save(directory)            
     algo.save(directory)
 
     ray.shutdown()
