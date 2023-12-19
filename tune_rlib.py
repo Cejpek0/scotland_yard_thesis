@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 from gymnasium import spaces
 from ray import tune
@@ -11,13 +13,6 @@ from environments.rlib.scotland_yard_environment_1v1 import ScotlandYardEnvironm
 if __name__ == "__main__":
     ray.init(num_gpus=1)
 
-    @ray.remote(num_gpus=1)
-    def use_gpu():
-        import tensorflow as tf
-
-        # Create a TensorFlow session. TensorFlow will restrict itself to use the
-        # GPUs specified by the CUDA_VISIBLE_DEVICES environment variable.
-        tf.Session()
 
     def env_creator(env_config):
         return ScotlandYardEnvironment1v1({})  # return an env instance
@@ -26,12 +21,12 @@ if __name__ == "__main__":
     register_env("scotland_env", env_creator)
 
     repeat = 10
-
+    directory = "trained_policiessss"
     tune_config = {
         "env": "scotland_env",
-        "num_workers": 0,
+        "num_workers": 1,
         "num_gpus": 1,
-        "num_gpus_per_worker": 1,
+        "num_gpus_per_worker": 0.5,
         "num_envs_per_worker": 1,
         "model": {
             "fcnet_hiddens": [512, 512, 256],
@@ -45,15 +40,15 @@ if __name__ == "__main__":
             "adam_beta2": 0.999,
         },
         "gamma": 0.99,
-        "num_sgd_iter": 10,
-        "sgd_minibatch_size": 500,
-        "rollout_fragment_length": 500,
-        "train_batch_size": 4000,
+        "num_sgd_iter": 1,
+        "sgd_minibatch_size": 1,
+        "rollout_fragment_length": 5,
+        "train_batch_size": 10,
         "prioritized_replay": True,
         "prioritized_replay_alpha": 0.6,
         "prioritized_replay_beta": 0.4,
         "buffer_size": 500000,
-        "stop": {"episodes_total": 100},
+        "stop": {"episodes_total": 1},
         "exploration_config": {},
         "multiagent": {
             "policies": {
@@ -112,18 +107,19 @@ if __name__ == "__main__":
                     action_space=spaces.Discrete(4),
                 ),
             },
-            "policy_mapping_fn": lambda agent_id, episode, worker, *kw: "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
-        }
+            "policy_mapping_fn": lambda agent_id, episode, worker,
+                                        *kw: "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
+        },
+        "checkpoint_freq": 1,
+        "checkpoint_score_attr": "episode_reward_mean",
+        "name": "PPO",
+        "local_dir": directory,
+        "checkpoint_at_end": True,
     }
 
     result = tune.run(
         run_or_experiment=PPO,
         config=tune_config,
-        stop={"training_iteration": repeat},
-        checkpoint_at_end=True,
-        checkpoint_freq=1,
-        checkpoint_score_attr="episode_reward_mean",
-        name="PPO",
     )
     print(result)
     ray.shutdown()

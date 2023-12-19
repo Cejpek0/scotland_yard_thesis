@@ -15,7 +15,6 @@ from ray.rllib.algorithms.algorithm import Algorithm
 from ray.tune import register_env
 
 from environments.rlib.FakeEnv import FakeEnv
-from environments.rlib.scotland_yard_environment_1v1 import ScotlandYardEnvironment1v1
 
 # Constants
 WIDTH = 600
@@ -161,11 +160,6 @@ class ScotlandYard:
 
         if not training:
             ray.init()
-
-            def env_creator(env_config):
-                return ScotlandYardEnvironment1v1({})  # return an env instance
-
-            register_env("scotland_env", env_creator)
 
             my_config = PPOConfig()
             my_config["policies"] = {
@@ -490,7 +484,6 @@ class ScotlandYard:
         return valid_moves
 
     def move_player(self, player: Player, direction: Direction):
-        print(f"Turn: {self.turn_number}")
         # print(f"Player {player.position} moves {direction}")
         if self.is_valid_move(player, direction):
             player.position = self.get_position_after_move(player, direction)
@@ -502,6 +495,7 @@ class ScotlandYard:
         return self
 
     def play_turn(self):
+        print(f"Turn: {self.turn_number}")
         if self.turn_number in REVEAL_POSITION_TURNS:
             self.get_mr_x().mr_x_reveal_position()
 
