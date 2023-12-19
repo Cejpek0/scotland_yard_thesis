@@ -1,16 +1,16 @@
+import os
 
-from gymnasium import spaces
-from ray.rllib.policy.policy import PolicySpec
-from ray.rllib.algorithms.ppo import PPOConfig, PPO
-from ray.util.client import ray
 import numpy as np
-
+from gymnasium import spaces
+from ray.rllib.algorithms.ppo import PPOConfig, PPO
+from ray.rllib.policy.policy import PolicySpec
+from ray.util.client import ray
+from ray.tune.registry import register_env
 import scotland_yard_game
 from environments.rlib.scotland_yard_environment_1v1 import ScotlandYardEnvironment1v1
 
 if __name__ == "__main__":
-    ray.init()
-    from ray.tune.registry import register_env
+    ray.init(num_gpus=1)
 
 
     def env_creator(env_config):
@@ -21,7 +21,7 @@ if __name__ == "__main__":
 
     my_config = PPOConfig()
     my_config["policies"] = {
-        "pol1": PolicySpec(
+        "mr_x_policy": PolicySpec(
             observation_space=spaces.Box(
                 low=np.array([
                     0,  # current turn
@@ -51,7 +51,7 @@ if __name__ == "__main__":
             ),
             action_space=spaces.Discrete(4),
         ),
-        "pol2": PolicySpec(
+        "cop_policy": PolicySpec(
             observation_space=spaces.Box(
                 low=np.array([
                     0,  # current turn
@@ -76,17 +76,25 @@ if __name__ == "__main__":
             action_space=spaces.Discrete(4),
         ),
     }
-    my_config["policy_mapping_fn"] = lambda agent_id, episode, worker, *kw: "pol1" if agent_id == "mr_x" else "pol2"
+    my_config["policy_mapping_fn"] = \
+        lambda agent_id, episode, worker, *kw: "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
+
     my_config["num_iterations"] = 10
     my_config["reuse_actors"] = True
-
+    my_config["num_gpus"] = 1
 
     # Set the config object's env.
     algo = PPO(env="scotland_env", config=my_config)
 
     repeat = 10
+    # check if trained policies exist
+    directory = "trained_policies"
+
+    if os.path.exists(directory):
+        algo.restore(directory)
     for i in range(repeat):
         print("Training iteration {} of {}".format(i + 1, repeat))
         print(algo.train())
-    algo.save("scotland_yard_1v1save")
+    algo.save(directory)
+
     ray.shutdown()
