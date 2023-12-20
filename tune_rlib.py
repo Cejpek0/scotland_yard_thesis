@@ -5,6 +5,7 @@ from gymnasium import spaces
 from ray import tune
 from ray.rllib.algorithms.ppo import PPO
 from ray.rllib.policy.policy import PolicySpec
+from ray.tune.experiment.trial import ExportFormat
 from ray.util.client import ray
 from ray.tune.registry import register_env
 import scotland_yard_game
@@ -21,7 +22,7 @@ if __name__ == "__main__":
     register_env("scotland_env", env_creator)
 
     repeat = 10
-    directory = "trained_policiessss"
+    directory = "C:/Users/cmich/Documents/Projects/school/scotland_yard_thesis/tuned_results"
     tune_config = {
         "env": "scotland_env",
         "num_workers": 1,
@@ -40,15 +41,11 @@ if __name__ == "__main__":
             "adam_beta2": 0.999,
         },
         "gamma": 0.99,
-        "num_sgd_iter": 1,
-        "sgd_minibatch_size": 1,
-        "rollout_fragment_length": 5,
-        "train_batch_size": 10,
-        "prioritized_replay": True,
-        "prioritized_replay_alpha": 0.6,
-        "prioritized_replay_beta": 0.4,
-        "buffer_size": 500000,
-        "stop": {"episodes_total": 1},
+        "num_sgd_iter": 10,
+        "sgd_minibatch_size": 500,
+        "rollout_fragment_length": 500,
+        "train_batch_size": 4000,
+        "stop": {"episodes_total": 1000},
         "exploration_config": {},
         "multiagent": {
             "policies": {
@@ -110,8 +107,7 @@ if __name__ == "__main__":
             "policy_mapping_fn": lambda agent_id, episode, worker,
                                         *kw: "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
         },
-        "checkpoint_freq": 1,
-        "checkpoint_score_attr": "episode_reward_mean",
+        "checkpoint_freq": 10,
         "name": "PPO",
         "local_dir": directory,
         "checkpoint_at_end": True,
@@ -120,6 +116,11 @@ if __name__ == "__main__":
     result = tune.run(
         run_or_experiment=PPO,
         config=tune_config,
+        local_dir=directory,
+        checkpoint_freq=10,
+        checkpoint_at_end=True,
+        stop={"episodes_total": 1000},
+        export_formats=[ExportFormat.H5]
     )
     print(result)
     ray.shutdown()

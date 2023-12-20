@@ -1,3 +1,4 @@
+import math
 import random
 import sys
 import time
@@ -25,8 +26,9 @@ NUMBER_OF_STARTING_POSITIONS_MR_X = 5
 NUMBER_OF_COPS = 1
 MAX_NUMBER_OF_TURNS = 24
 REVEAL_POSITION_TURNS = [3, 8, 13, 18, 24]
+NAX_DISTANCE = math.ceil(math.sqrt(GRID_SIZE ** 2 + GRID_SIZE ** 2))
 
-ALGORITHM_CHECKPOINT_DIR = "trained_policies/"
+ALGORITHM_CHECKPOINT_DIR = "tuned_results/"
 
 # Colors
 WHITE = (255, 255, 255)
@@ -174,7 +176,8 @@ class ScotlandYard:
 
             register_env("scotland_env", env_creator)
 
-            self.algorithm = Algorithm.from_checkpoint(ALGORITHM_CHECKPOINT_DIR)
+            self.algorithm = Algorithm.from_checkpoint(
+                "tuned_results/PPO_2023-12-20_11-03-07/PPO_scotland_env_f97d2_00000_0_2023-12-20_11-03-07/checkpoint_000006")
 
         # Create players
         self.create_players()
@@ -307,7 +310,7 @@ class ScotlandYard:
     def to_draw_players(self):
         for player in self.players:
             if player.position is not None:
-                self.set_draw_rectangle_at_position(player.position, player.color)
+                self.set_draw_rectangle_at_position(player.position, player.color, small=True)
         return self
 
     def to_clear_grid(self):
@@ -319,11 +322,24 @@ class ScotlandYard:
     def to_draw_last_known_positions(self):
         if self.get_mr_x().last_known_position is not None:
             self.set_draw_rectangle_at_position(self.get_mr_x().last_known_position, GRAY)
+        return self
+
+    def to_draw_text(self, text: str = "", color: () = WHITE, position: () = (0, 0)):
+        font = pygame.font.SysFont("Arial", 20)
+        text_surface = font.render(text, True, color)
+        self.window.blit(text_surface, position)
+
+        return self
 
     def redraw(self):
-        self.to_clear_grid()
-        self.to_draw_last_known_positions()
-        self.to_draw_players()
+        self.to_clear_grid().to_draw_last_known_positions().to_draw_players().to_draw_text(
+            text=f"Turn: {self.turn_number}", position=(10, 10))
+        # set game status to display if game is over
+        game_status = self.get_game_status()
+        if game_status == GameStatus.COPS_WON:
+            self.to_draw_text(text="Cops won!", position=(10, 30))
+        elif game_status == GameStatus.MR_X_WON:
+            self.to_draw_text(text="Mr X won!", position=(10, 30))
         pygame.display.flip()
         return self
 
@@ -371,7 +387,7 @@ class ScotlandYard:
             time.sleep(0.5)
             if self.get_game_status() != GameStatus.ONGOING:
                 running = False
-                self.quit()
+                time.sleep(3)
         return self
 
     def quit(self):
@@ -392,11 +408,23 @@ class ScotlandYard:
                 success = True
         return random_positions
 
-    def set_draw_rectangle_at_position(self, position: (), color: (), alpha=255):
-        rect_surface = pygame.Surface((self.cell_size - 1, self.cell_size - 1),
-                                      pygame.SRCALPHA)  # Create a surface with per-pixel alpha
+    def set_draw_rectangle_at_position(self, position: (), color: (), alpha=255, small: bool = False):
+        if small:
+            rect_width = self.cell_size // 2 - 1
+            rect_height = self.cell_size // 2 - 1
+        else:
+            rect_width = self.cell_size - 2
+            rect_height = self.cell_size - 2
+
+        rect_surface = pygame.Surface((rect_width, rect_height), pygame.SRCALPHA)
         rect_surface.fill((color[0], color[1], color[2], alpha))
-        self.window.blit(rect_surface, (position[0] * self.cell_size + 1, position[1] * self.cell_size + 1))
+
+        x_position = position[0] * self.cell_size + (self.cell_size - rect_width) // 2 if small else position[
+                                                                                                         0] * self.cell_size + 1
+        y_position = position[1] * self.cell_size + (self.cell_size - rect_height) // 2 if small else position[
+                                                                                                          1] * self.cell_size + 1
+
+        self.window.blit(rect_surface, (x_position, y_position))
         return self
 
     def to_highlight_start_positions(self):

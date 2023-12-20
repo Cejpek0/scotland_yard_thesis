@@ -24,9 +24,9 @@ class ScotlandYardEnvironment1v1(MultiAgentEnv):
         self._agent_ids = ["mr_x", "cop_1"]
         self.num_agents = len(self._agent_ids)
 
-        self.action_space = {"mr_x": spaces.Discrete(4), "cop_1": spaces.Discrete(4)}
+        self.action_space = spaces.dict.Dict({"mr_x": spaces.Discrete(4), "cop_1": spaces.Discrete(4)})
 
-        self.observation_space = {
+        self.observation_space = spaces.dict.Dict({
             "mr_x": spaces.Box(low=np.array([
                 0,  # current turn
                 0,  # max turns
@@ -67,7 +67,7 @@ class ScotlandYardEnvironment1v1(MultiAgentEnv):
                 scotland_yard_game.GRID_SIZE,  # last known position x
                 scotland_yard_game.GRID_SIZE,  # last known position y
             ]), dtype=np.float32)
-        }
+        })
 
     def step(self, action_dict: Dict[AgentID, int]) -> (
             Dict[Any, Any], Dict[Any, Any], Dict[Any, Any], Dict[Any, Any], Dict[Any, Any]):
@@ -145,7 +145,7 @@ class ScotlandYardEnvironment1v1(MultiAgentEnv):
             for cop in self.game.get_cops():
                 distance = self.game.get_mr_x().get_distance_to(cop)
                 if distance == 0:
-                    distance_reward -= 30
+                    distance_reward -= 100
                 else:
                     distance_reward += round((distance - minimum_distance) * (1 / 3), 10)
             # Distance to last known position
@@ -167,8 +167,9 @@ class ScotlandYardEnvironment1v1(MultiAgentEnv):
             else:
                 distance = self.game.get_mr_x().get_distance_to(cop)
                 if distance == 0:
-                    distance_reward += 30
-                distance_reward += round((distance - minimum_distance) * 0.1, 10)
+                    distance_reward += 100
+                else:
+                    distance_reward += round((scotland_yard_game.NAX_DISTANCE / distance) * 0.5, 10)
             rewards["cop_" + str(cop.number)] = distance_reward
 
         return rewards

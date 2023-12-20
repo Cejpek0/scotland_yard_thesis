@@ -5,8 +5,6 @@ from gymnasium import spaces
 from ray.rllib import MultiAgentEnv
 from ray.rllib.utils.typing import AgentID
 
-import scotland_yard_game
-
 _agent_ids = ["mr_x", "cop"]
 
 
@@ -35,16 +33,16 @@ class FakeEnv(MultiAgentEnv):
                 -1,  # last known position y
                 0  # distance to cop
             ]), high=np.array([
-                scotland_yard_game.MAX_NUMBER_OF_TURNS,  # current turn
-                scotland_yard_game.MAX_NUMBER_OF_TURNS,  # max turns
-                scotland_yard_game.MAX_NUMBER_OF_TURNS,  # next reveal
-                scotland_yard_game.GRID_SIZE,  # position x
-                scotland_yard_game.GRID_SIZE,  # position y
-                scotland_yard_game.GRID_SIZE,  # position x of cop
-                scotland_yard_game.GRID_SIZE,  # position y or cop
-                scotland_yard_game.GRID_SIZE,  # last known position x
-                scotland_yard_game.GRID_SIZE,  # last known position y
-                scotland_yard_game.GRID_SIZE * 2  # distance to cop
+                1000,  # current turn
+                1000,  # max turns
+                1000,  # next reveal
+                1000,  # position x
+                1000,  # position y
+                1000,  # position x of cop
+                1000,  # position y or cop
+                1000,  # last known position x
+                1000,  # last known position y
+                1000 * 2  # distance to cop
             ]), dtype=np.float32),
             "cop_1": spaces.Box(low=np.array([
                 0,  # current turn
@@ -55,13 +53,13 @@ class FakeEnv(MultiAgentEnv):
                 -1,  # last known position x
                 -1,  # last known position y
             ]), high=np.array([
-                scotland_yard_game.MAX_NUMBER_OF_TURNS,  # current turn
-                scotland_yard_game.MAX_NUMBER_OF_TURNS,  # max turns
-                scotland_yard_game.MAX_NUMBER_OF_TURNS,  # next reveal
-                scotland_yard_game.GRID_SIZE,  # position x
-                scotland_yard_game.GRID_SIZE,  # position y
-                scotland_yard_game.GRID_SIZE,  # last known position x
-                scotland_yard_game.GRID_SIZE,  # last known position y
+                1000,  # current turn
+                1000,  # max turns
+                1000,  # next reveal
+                1000,  # position x
+                1000,  # position y
+                1000,  # last known position x
+                1000,  # last known position y
             ]), dtype=np.float32)
         }
 

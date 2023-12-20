@@ -87,26 +87,27 @@ if __name__ == "__main__":
         lambda agent_id, episode, worker, *kw: "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
 
     my_config["num_iterations"] = 10
-    my_config["num_rollout_workers"] = 1
+    my_config["num_rollout_workers"] = 3
     my_config["reuse_actors"] = True
-    my_config.resources(num_gpus=1, num_gpus_per_worker=0.5)
+    my_config.resources(num_gpus=1, num_gpus_per_worker=0.20)
     my_config.framework("torch")
 
 
     # Set the config object's env.
     algo = PPO(env="scotland_env", config=my_config)
 
-    repeat = 10
+    repeat = 1000
     # check if trained policies exist
     directory = "trained_policies"
 
 
     if os.path.exists(directory):
+        print("Loading policies")
         algo.restore(directory)
     for i in range(repeat):
         print("Training iteration {} of {}".format(i + 1, repeat))
         print(algo.train())
-        if i % 5 == 0:
+        if i % 4 == 0:
             print("Saving policies")
             algo.save(directory)            
     algo.save(directory)
