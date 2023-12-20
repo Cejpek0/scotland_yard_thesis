@@ -16,6 +16,8 @@ from ray.rllib.algorithms.algorithm import Algorithm
 from ray.tune import register_env
 
 from environments.rlib.FakeEnv import FakeEnv
+from src.Player import Player
+from src.colors import *
 
 # Constants
 WIDTH = 600
@@ -29,13 +31,6 @@ REVEAL_POSITION_TURNS = [3, 8, 13, 18, 24]
 NAX_DISTANCE = math.ceil(math.sqrt(GRID_SIZE ** 2 + GRID_SIZE ** 2))
 
 ALGORITHM_CHECKPOINT_DIR = "tuned_results/"
-
-# Colors
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-GRAY = (100, 100, 100)
-RED = (255, 0, 0)
-GREEN = (0, 200, 0)
 
 MR_X_POLICY_SPEC = PolicySpec(
     observation_space=spaces.Box(
@@ -107,41 +102,9 @@ class GameStatus(Enum):
     ONGOING = 3
 
 
-class Player:
-    def __init__(self, number: int, name: str = "", color: () = WHITE):
-        self.last_known_position = None
-        self.position = None
-        self.number = number
-        self.color = color
-        self.start_position = None
-        self.name = name
-        if self.name == "":
-            print(f"WARN: Player {self.number} has no name")
-
-    def __hash__(self):
-        return hash(str(self))
-
-    def __str__(self):
-        return f"Player {self.number} ({self.name})"
-
-    def set_start_position(self, position: ()):
-        self.start_position = position
-        self.position = position
-        return self
-
-    def get_distance_to(self, *args) -> int:
-        if len(args) == 1 and isinstance(args[0], Player):
-            return self.get_distance_to(args[0].position)
-        else:
-            return abs(self.position[0] - args[0][0]) + abs(self.position[1] - args[0][1])
-
-    def mr_x_reveal_position(self):
-        if self.number == 0:
-            self.last_known_position = self.position
-        return self
-
-
 class ScotlandYard:
+
+    # -- BEGIN: CORE FUNCTIONS -- #
     def __init__(self, training: bool = False):
 
         self.turn_number = 1
@@ -182,7 +145,66 @@ class ScotlandYard:
         # Create players
         self.create_players()
 
-    # -- GET OBSERVATIONS -- #
+    def create_players(self):
+        self.players.clear()
+        self.players.append(Player(0, color=RED, name="mr_x"))
+        for i in range(self.number_of_cops):
+            self.players.append(Player(i + 1, color=GREEN, name=f"cop_{i + 1}"))
+        return self
+
+    def reset(self):
+        # init game state
+        self.turn_number = 1
+        self.start_positions_mr_x.clear()
+        self.start_positions_cops.clear()
+        self.players.clear()
+        self.number_of_cops = NUMBER_OF_COPS
+        # Create players
+        self.create_players()
+
+        self.start_positions_cops = self.generate_start_positions([], self.number_of_starting_positions_cops)
+        self.start_positions_mr_x = self.generate_start_positions(self.start_positions_cops,
+                                                                  self.number_of_starting_positions_mr_x)
+
+        for player in self.players:
+            if player.number == 0:
+                self.choose_start_position(player, random.choice(self.start_positions_mr_x))
+            else:
+                self.choose_start_position(player, random.choice(self.start_positions_cops))
+
+        if self.window is not None:
+            self.to_draw_grid()
+            self.redraw()
+        return self
+
+    def start_game(self):
+        running = True
+        started = False
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    self.quit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        started = True
+            if started:
+                self.play_turn()
+                self.redraw()
+                time.sleep(0.5)
+                if self.get_game_status() != GameStatus.ONGOING:
+                    running = False
+                    time.sleep(3)
+        return self
+
+    def quit(self):
+        ray.shutdown()
+        pygame.quit()
+        return self
+
+    # -- END: CORE FUNCTIONS -- #
+
+    # -- BEGIN: RL FUNCTIONS -- #
     def get_observations(self):
         # mr_x
         mr_x = self.get_mr_x()
@@ -244,7 +266,6 @@ class ScotlandYard:
 
         return observations
 
-    # -- GET ACTIONS -- #
     def get_actions_for_players(self) -> dict:
         # Use the policy to obtain an action for the given player and observation
         observations = self.get_observations()
@@ -270,11 +291,37 @@ class ScotlandYard:
         cop_1_direction = direction.value
         return {mr_x: mr_x_direction, cop: cop_1_direction}
 
+    # -- END: RL FUNCTIONS -- #
+
     # --GAME CONTROL FUNCTIONS-- #
 
-    def log_start_info(self):
-        print("Start positions cops: " + str(self.start_positions_cops))
-        print("Start positions mr x: " + str(self.start_positions_mr_x))
+    # -- BEGIN: DRAW FUNCTIONS -- #
+    def display(self):
+        # Initialize Pygame
+        pygame.init()
+        self.window = pygame.display.set_mode((self.width, self.height), pygame.SRCALPHA)
+        pygame.display.set_caption("Scotland yard AI")
+        self.clock = pygame.time.Clock()
+        self.reset()
+        return self
+
+    def set_draw_rectangle_at_position(self, position: (), color: (), alpha=255, small: bool = False):
+        if small:
+            rect_width = self.cell_size // 2 - 1
+            rect_height = self.cell_size // 2 - 1
+        else:
+            rect_width = self.cell_size - 2
+            rect_height = self.cell_size - 2
+
+        rect_surface = pygame.Surface((rect_width, rect_height), pygame.SRCALPHA)
+        rect_surface.fill((color[0], color[1], color[2], alpha))
+
+        x_position = position[0] * self.cell_size + (self.cell_size - rect_width) // 2 if small else position[
+                                                                                                         0] * self.cell_size + 1
+        y_position = position[1] * self.cell_size + (self.cell_size - rect_height) // 2 if small else position[
+                                                                                                          1] * self.cell_size + 1
+
+        self.window.blit(rect_surface, (x_position, y_position))
         return self
 
     def text_display(self):
@@ -287,16 +334,7 @@ class ScotlandYard:
                     grid[player.position[1]][player.position[0]] = str(player.number)
         print(f"{grid}\n")
 
-    def display(self):
-        # Initialize Pygame
-        pygame.init()
-        self.window = pygame.display.set_mode((self.width, self.height), pygame.SRCALPHA)
-        pygame.display.set_caption("Scotland yard AI")
-        self.clock = pygame.time.Clock()
-        self.reset()
-        return self
-
-    def draw_grid(self):
+    def to_draw_grid(self):
         self.window.fill(BLACK)
 
         # Draw horizontal lines
@@ -331,6 +369,13 @@ class ScotlandYard:
 
         return self
 
+    def to_highlight_start_positions(self):
+        for position in self.start_positions_cops:
+            self.set_draw_rectangle_at_position(position, GREEN, 128)
+        for position in self.start_positions_mr_x:
+            self.set_draw_rectangle_at_position(position, RED, 128)
+        return self
+
     def redraw(self):
         self.to_clear_grid().to_draw_last_known_positions().to_draw_players().to_draw_text(
             text=f"Turn: {self.turn_number}", position=(10, 10))
@@ -343,57 +388,54 @@ class ScotlandYard:
         pygame.display.flip()
         return self
 
-    def create_players(self):
-        self.players.clear()
-        self.players.append(Player(0, color=RED, name="mr_x"))
-        for i in range(self.number_of_cops):
-            self.players.append(Player(i + 1, color=GREEN, name=f"cop_{i + 1}"))
+    # -- END: DRAW FUNCTIONS -- #
+
+    # --GAMEPLAY FUNCTIONS-- #
+
+    def choose_start_position(self, player: Player, position: ()):
+        player.set_start_position(position)
         return self
 
-    def reset(self):
-        # init game state
-        self.turn_number = 1
-        self.start_positions_mr_x.clear()
-        self.start_positions_cops.clear()
-        self.players.clear()
-        self.number_of_cops = NUMBER_OF_COPS
-        # Create players
-        self.create_players()
-
-        self.start_positions_cops = self.generate_start_positions([], self.number_of_starting_positions_cops)
-        self.start_positions_mr_x = self.generate_start_positions(self.start_positions_cops,
-                                                                  self.number_of_starting_positions_mr_x)
-
-        for player in self.players:
-            if player.number == 0:
-                self.choose_start_position(player, random.choice(self.start_positions_mr_x))
-            else:
-                self.choose_start_position(player, random.choice(self.start_positions_cops))
-
-        if self.window is not None:
-            self.draw_grid()
-            self.redraw()
+    def move_player(self, player: Player, direction: Direction):
+        # print(f"Player {player.position} moves {direction}")
+        if self.is_valid_move(player, direction):
+            player.position = self.get_position_after_move(player, direction)
+        else:
+            print(f"P{player.number} tried to move {direction} from {player.position}")
+            print(f"Would result in {self.get_position_after_move(player, direction)}")
+            sys.stderr.write(f"Move {direction} is not valid\n")
+            exit(1)
         return self
 
-    def start_game(self):
-        running = True
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                    self.quit()
-            self.play_turn()
-            self.redraw()
-            time.sleep(0.5)
-            if self.get_game_status() != GameStatus.ONGOING:
-                running = False
-                time.sleep(3)
+    def play_turn(self):
+        print(f"Turn: {self.turn_number}")
+        if self.turn_number in REVEAL_POSITION_TURNS:
+            self.get_mr_x().mr_x_reveal_position()
+
+        actions = {}
+        all_actions_are_valid = False
+        while not all_actions_are_valid:
+            actions = self.get_actions_for_players()
+
+            all_actions_are_valid = True
+            for (player, action) in actions.items():
+                direction = Direction(action)
+                if not self.is_valid_move(player, direction):
+                    all_actions_are_valid = False
+                    break
+
+        for (player, action) in actions.items():
+            direction = Direction(action)
+            self.move_player(player, direction)
+
+        self.turn_number += 1
+        self.redraw()
+
         return self
 
-    def quit(self):
-        ray.shutdown()
-        pygame.quit()
-        return self
+    # -- END: GAMEPLAY FUNCTIONS -- #
+
+    # -- BEGIN: HELPER FUNCTIONS -- #
 
     def generate_start_positions(self, check_positions: [()], number_of_starting_positions: int) -> np.array:
         random_positions = []
@@ -407,32 +449,6 @@ class ScotlandYard:
             if len(random_positions) == number_of_starting_positions:
                 success = True
         return random_positions
-
-    def set_draw_rectangle_at_position(self, position: (), color: (), alpha=255, small: bool = False):
-        if small:
-            rect_width = self.cell_size // 2 - 1
-            rect_height = self.cell_size // 2 - 1
-        else:
-            rect_width = self.cell_size - 2
-            rect_height = self.cell_size - 2
-
-        rect_surface = pygame.Surface((rect_width, rect_height), pygame.SRCALPHA)
-        rect_surface.fill((color[0], color[1], color[2], alpha))
-
-        x_position = position[0] * self.cell_size + (self.cell_size - rect_width) // 2 if small else position[
-                                                                                                         0] * self.cell_size + 1
-        y_position = position[1] * self.cell_size + (self.cell_size - rect_height) // 2 if small else position[
-                                                                                                          1] * self.cell_size + 1
-
-        self.window.blit(rect_surface, (x_position, y_position))
-        return self
-
-    def to_highlight_start_positions(self):
-        for position in self.start_positions_cops:
-            self.set_draw_rectangle_at_position(position, GREEN, 128)
-        for position in self.start_positions_mr_x:
-            self.set_draw_rectangle_at_position(position, RED, 128)
-        return self
 
     def get_mr_x(self):
         return self.players[0]
@@ -457,11 +473,6 @@ class ScotlandYard:
             if turn_number > self.turn_number:
                 return turn_number
         return MAX_NUMBER_OF_TURNS
-
-    # --GAMEPLAY FUNCTIONS-- #
-    def choose_start_position(self, player: Player, position: ()):
-        player.set_start_position(position)
-        return self
 
     def is_valid_start_position(self, player: Player, position: ()):
         if player.number == 0 and position in self.start_positions_mr_x:
@@ -502,52 +513,6 @@ class ScotlandYard:
                 valid_moves.append(direction)
         return valid_moves
 
-    def get_players_valid_moves_mask(self, player: Player) -> [int]:
-        valid_moves = []
-        for direction in Direction:
-            if self.is_valid_move(player, direction):
-                valid_moves.append(1)
-            else:
-                valid_moves.append(0)
-        return valid_moves
-
-    def move_player(self, player: Player, direction: Direction):
-        # print(f"Player {player.position} moves {direction}")
-        if self.is_valid_move(player, direction):
-            player.position = self.get_position_after_move(player, direction)
-        else:
-            print(f"P{player.number} tried to move {direction} from {player.position}")
-            print(f"Would result in {self.get_position_after_move(player, direction)}")
-            sys.stderr.write(f"Move {direction} is not valid\n")
-            exit(1)
-        return self
-
-    def play_turn(self):
-        print(f"Turn: {self.turn_number}")
-        if self.turn_number in REVEAL_POSITION_TURNS:
-            self.get_mr_x().mr_x_reveal_position()
-
-        actions = {}
-        all_actions_are_valid = False
-        while not all_actions_are_valid:
-            actions = self.get_actions_for_players()
-
-            all_actions_are_valid = True
-            for (player, action) in actions.items():
-                direction = Direction(action)
-                if not self.is_valid_move(player, direction):
-                    all_actions_are_valid = False
-                    break
-
-        for (player, action) in actions.items():
-            direction = Direction(action)
-            self.move_player(player, direction)
-
-        self.turn_number += 1
-        self.redraw()
-
-        return self
-
     def get_game_status(self) -> GameStatus:
         mr_x = self.get_mr_x()
         for cop in self.get_cops():
@@ -562,6 +527,13 @@ class ScotlandYard:
             if player.name == name:
                 return player
         return None
+
+    def log_start_info(self):
+        print("Start positions cops: " + str(self.start_positions_cops))
+        print("Start positions mr x: " + str(self.start_positions_mr_x))
+        return self
+
+    # -- END: HELPER FUNCTIONS -- #
 
 
 if __name__ == '__main__':
