@@ -10,6 +10,7 @@ import pygame
 import ray
 from gymnasium import spaces
 from ray.rllib import Policy
+from ray.rllib.models import ModelCatalog
 from ray.rllib.policy.policy import PolicySpec
 from ray.rllib.algorithms.ppo import PPO, PPOConfig
 from ray.rllib.algorithms.algorithm import Algorithm
@@ -19,71 +20,94 @@ from environments.rlib.FakeEnv import FakeEnv
 from src.Player import Player
 from src.colors import *
 
+from ray.rllib.examples.models.centralized_critic_models import (
+    TorchCentralizedCriticModel,
+)
+
 # Constants
 WIDTH = 600
 HEIGHT = 600
 GRID_SIZE = 10
 NUMBER_OF_STARTING_POSITIONS_COPS = 10
 NUMBER_OF_STARTING_POSITIONS_MR_X = 5
-NUMBER_OF_COPS = 1
 MAX_NUMBER_OF_TURNS = 24
 REVEAL_POSITION_TURNS = [3, 8, 13, 18, 24]
 NAX_DISTANCE = math.ceil(math.sqrt(GRID_SIZE ** 2 + GRID_SIZE ** 2))
 
-ALGORITHM_CHECKPOINT_DIR = "tuned_results/"
+ALGORITHM_CHECKPOINT_DIR = "../tuned_results/"
 
 MR_X_POLICY_SPEC = PolicySpec(
-    observation_space=spaces.Box(
-        low=np.array([
-            0,  # current turn
-            0,  # max turns
-            0,  # next reveal
-            0,  # position x
-            0,  # position y
-            0,  # position x of cop
-            0,  # position y or cop
-            -1,  # last known position x
-            -1,  # last known position y
-            0  # distance to cop
-        ]),
-        high=np.array([
-            MAX_NUMBER_OF_TURNS,  # current turn
-            MAX_NUMBER_OF_TURNS,  # max turns
-            MAX_NUMBER_OF_TURNS,  # next reveal
-            GRID_SIZE,  # position x
-            GRID_SIZE,  # position y
-            GRID_SIZE,  # position x of cop
-            GRID_SIZE,  # position y or cop
-            GRID_SIZE,  # last known position x
-            GRID_SIZE,  # last known position y
-            GRID_SIZE * 2  # distance to cop
-        ]),
-        dtype=np.float32
-    ),
+    observation_space=spaces.Box(low=np.array([
+        0,  # current turn
+        0,  # max turns
+        0,  # next reveal
+        0,  # position x
+        0,  # position y
+        -1,  # last known position x
+        -1,  # last known position y
+        -1,  # distance to last known position
+        0,  # position x of cop_1
+        0,  # position y or cop_1
+        0,  # distance to cop_1
+        0,  # position x of cop_2
+        0,  # position y or cop_2
+        0,  # distance to cop_2
+        0,  # position x of cop_3
+        0,  # position y or cop_3
+        0,  # distance to cop_3
+    ]), high=np.array([
+        MAX_NUMBER_OF_TURNS,  # current turn
+        MAX_NUMBER_OF_TURNS,  # max turns
+        MAX_NUMBER_OF_TURNS,  # next reveal
+        GRID_SIZE,  # position x
+        GRID_SIZE,  # position y
+        GRID_SIZE,  # last known position x
+        GRID_SIZE,  # last known position y
+        GRID_SIZE * 2,  # distance to last known position
+        GRID_SIZE,  # position x of cop_1
+        GRID_SIZE,  # position y or cop_1
+        GRID_SIZE * 2,  # distance to cop_1
+        GRID_SIZE,  # position x of cop_2
+        GRID_SIZE,  # position y or cop_2
+        GRID_SIZE * 2,  # distance to cop_2
+        GRID_SIZE,  # position x of cop_3
+        GRID_SIZE,  # position y or cop_3
+        GRID_SIZE * 2,  # distance to cop_3
+    ]), dtype=np.float32),
     action_space=spaces.Discrete(4),
 )
 COP_POLICY_SPEC = PolicySpec(
-    observation_space=spaces.Box(
-        low=np.array([
-            0,  # current turn
-            0,  # max turns
-            0,  # next reveal
-            0,  # position x
-            0,  # position y
-            -1,  # last known position x
-            -1,  # last known position y
-        ]),
-        high=np.array([
-            MAX_NUMBER_OF_TURNS,  # current turn
-            MAX_NUMBER_OF_TURNS,  # max turns
-            MAX_NUMBER_OF_TURNS,  # next reveal
-            GRID_SIZE,  # position x
-            GRID_SIZE,  # position y
-            GRID_SIZE,  # last known position x
-            GRID_SIZE,  # last known position y
-        ]),
-        dtype=np.float32
-    ),
+    observation_space=spaces.Box(low=np.array([
+        0,  # current turn
+        0,  # max turns
+        0,  # next reveal
+        0,  # position x
+        0,  # position y
+        -1,  # last known position x of mr x
+        -1,  # last known position y of mr x
+        -1,  # distance to last known position
+        0,  # position x of other cop_1
+        0,  # position y or other cop_1
+        0,  # distance to other cop_1
+        0,  # position x of other cop_2
+        0,  # position y or other cop_2
+        0,  # distance to other cop_2
+    ]), high=np.array([
+        MAX_NUMBER_OF_TURNS,  # current turn
+        MAX_NUMBER_OF_TURNS,  # max turns
+        MAX_NUMBER_OF_TURNS,  # next reveal
+        GRID_SIZE,  # position x
+        GRID_SIZE,  # position y
+        GRID_SIZE,  # last known position x of mr x
+        GRID_SIZE,  # last known position y of mr x
+        GRID_SIZE * 2,  # distance to last known position
+        GRID_SIZE,  # position x of other cop_1
+        GRID_SIZE,  # position y or other cop_1
+        GRID_SIZE * 2,  # distance to other cop_1
+        GRID_SIZE,  # position x of other cop_2
+        GRID_SIZE,  # position y or other cop_2
+        GRID_SIZE * 2,  # distance to other cop_2
+    ]), dtype=np.float32),
     action_space=spaces.Discrete(4),
 )
 
@@ -105,8 +129,8 @@ class GameStatus(Enum):
 class ScotlandYard:
 
     # -- BEGIN: CORE FUNCTIONS -- #
-    def __init__(self, training: bool = False):
-
+    def __init__(self, training: bool = False, number_of_cops: int = 3):
+        self.number_of_cops = number_of_cops
         self.turn_number = 1
         self.start_positions_mr_x = []
         self.start_positions_cops = []
@@ -119,18 +143,24 @@ class ScotlandYard:
         self.number_of_starting_positions_cops = NUMBER_OF_STARTING_POSITIONS_COPS
         self.number_of_starting_positions_mr_x = NUMBER_OF_STARTING_POSITIONS_MR_X
         self.players = []
-        self.number_of_cops = NUMBER_OF_COPS
 
         self.algorithm = None
 
         if not training:
             ray.init()
 
-            my_config = PPOConfig()
+            ModelCatalog.register_custom_model(
+                "cc_model",
+                TorchCentralizedCriticModel
+            )
+
+            my_config = PPOConfig().training(model={"custom_model": "cc_model"}).rl_module(
+                _enable_rl_module_api=False).training(_enable_learner_api=False)
             my_config["policies"] = {
                 "mr_x_policy": MR_X_POLICY_SPEC,
                 "cop_policy": COP_POLICY_SPEC,
             }
+            my_config.framework("torch")
             my_config["policy_mapping_fn"] = \
                 lambda agent_id, episode, worker, *kw: "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
 
@@ -139,9 +169,14 @@ class ScotlandYard:
 
             register_env("scotland_env", env_creator)
 
-            self.algorithm = Algorithm.from_checkpoint(
-                "tuned_results/PPO_2023-12-20_11-03-07/PPO_scotland_env_f97d2_00000_0_2023-12-20_11-03-07/checkpoint_000006")
-
+            if True:
+                self.algorithm = Algorithm.from_checkpoint(
+                    "tuned_results/PPO_2024-01-13_10-56-58/PPO_scotland_env_1772b_00000_0_2024-01-13_10-56-58/checkpoint_000016")
+            else:
+                algo = PPO(env="scotland_env", config=my_config)
+                algo.restore(
+                    "trained_policies")
+                self.algorithm = algo
         # Create players
         self.create_players()
 
@@ -158,7 +193,6 @@ class ScotlandYard:
         self.start_positions_mr_x.clear()
         self.start_positions_cops.clear()
         self.players.clear()
-        self.number_of_cops = NUMBER_OF_COPS
         # Create players
         self.create_players()
 
@@ -206,8 +240,12 @@ class ScotlandYard:
 
     # -- BEGIN: RL FUNCTIONS -- #
     def get_observations(self):
-        # mr_x
+        cop_1 = self.get_cop_by_number(1)
+        cop_2 = self.get_cop_by_number(2)
+        cop_3 = self.get_cop_by_number(3)
         mr_x = self.get_mr_x()
+
+        # mr_x
         if mr_x.last_known_position is not None:
             obs_list_mrx = np.array([
                 self.get_current_turn_number(),
@@ -215,11 +253,18 @@ class ScotlandYard:
                 self.get_next_reveal_turn_number(),
                 mr_x.position[0],
                 mr_x.position[1],
-                self.get_cops()[0].position[0],
-                self.get_cops()[0].position[1],
                 mr_x.last_known_position[0],
                 mr_x.last_known_position[1],
-                mr_x.get_distance_to(self.get_cops()[0])
+                mr_x.get_distance_to(mr_x.last_known_position),
+                cop_1.position[0],
+                cop_1.position[1],
+                mr_x.get_distance_to(cop_1),
+                cop_2.position[0],
+                cop_2.position[1],
+                mr_x.get_distance_to(cop_2),
+                cop_3.position[0],
+                cop_3.position[1],
+                mr_x.get_distance_to(cop_3)
             ]).astype(np.float32)
         else:
             obs_list_mrx = np.array([
@@ -228,68 +273,82 @@ class ScotlandYard:
                 self.get_next_reveal_turn_number(),
                 mr_x.position[0],
                 mr_x.position[1],
-                self.get_cops()[0].position[0],
-                self.get_cops()[0].position[1],
                 -1,
                 -1,
-                mr_x.get_distance_to(self.get_cops()[0])
+                -1,
+                cop_1.position[0],
+                cop_1.position[1],
+                mr_x.get_distance_to(cop_1),
+                cop_2.position[0],
+                cop_2.position[1],
+                mr_x.get_distance_to(cop_2),
+                cop_3.position[0],
+                cop_3.position[1],
+                mr_x.get_distance_to(cop_3)
             ]).astype(np.float32)
 
         # cops
-        cop = self.get_cops()[0]
-
-        if mr_x.last_known_position is not None:
-            obs_list_cop = np.array([
-                self.get_current_turn_number(),
-                self.get_max_turns(),
-                self.get_next_reveal_turn_number(),
-                cop.position[0],
-                cop.position[1],
-                mr_x.last_known_position[0],
-                mr_x.last_known_position[1],
-            ]).astype(np.float32)
-        else:
-            obs_list_cop = np.array([
-                self.get_current_turn_number(),
-                self.get_max_turns(),
-                self.get_next_reveal_turn_number(),
-                cop.position[0],
-                cop.position[1],
-                -1,
-                -1,
-            ]).astype(np.float32)
+        cops_observations = []
+        for cop_number in range(1, self.number_of_cops + 1):
+            cop = self.get_cop_by_number(cop_number)
+            if mr_x.last_known_position is not None:
+                obs_list_cop = np.array([
+                    self.get_current_turn_number(),
+                    self.get_max_turns(),
+                    self.get_next_reveal_turn_number(),
+                    cop.position[0],
+                    cop.position[1],
+                    mr_x.last_known_position[0],
+                    mr_x.last_known_position[1],
+                    cop.get_distance_to(mr_x.last_known_position),
+                ]).astype(np.float32)
+            else:
+                obs_list_cop = np.array([
+                    self.get_current_turn_number(),
+                    self.get_max_turns(),
+                    self.get_next_reveal_turn_number(),
+                    cop.position[0],
+                    cop.position[1],
+                    -1,
+                    -1,
+                    -1,
+                ]).astype(np.float32)
+            for other_cop in self.get_cops():
+                if other_cop.number == cop_number:
+                    continue
+                obs_list_cop = np.append(obs_list_cop, np.array([
+                    other_cop.position[0],
+                    other_cop.position[1],
+                    cop.get_distance_to(other_cop)
+                ]).astype(np.float32))
+            cops_observations.append(obs_list_cop)
 
         observations = {
-            "mr_x": obs_list_mrx,
-            "cop_1": obs_list_cop,
+            "mr_x": obs_list_mrx
         }
+        for i in range(len(cops_observations)):
+            observations[f"cop_{i + 1}"] = cops_observations[i]
 
         return observations
 
-    def get_actions_for_players(self) -> dict:
+    def get_action_for_player(self, player: Player) -> Direction:
         # Use the policy to obtain an action for the given player and observation
         observations = self.get_observations()
+        player_observation = observations[player.name]
 
-        action_is_valid = False
+        count = 0
         direction = None
-        mr_x = self.get_mr_x()
-        cop = self.get_cops()[0]
-        while not action_is_valid:
-            generated_action = self.algorithm.compute_single_action(observations["mr_x"], policy_id="mr_x_policy")
-            direction = Direction(generated_action)
-            if self.is_valid_move(mr_x, direction):
-                action_is_valid = True
-        mr_x_direction = direction.value
-
         action_is_valid = False
-        direction = None
+        player = self.get_player_by_name(player.name)
         while not action_is_valid:
-            generated_action = self.algorithm.compute_single_action(observations["cop_1"], policy_id="cop_policy")
+            generated_action = self.algorithm.compute_single_action(observations[player.name],
+                                                                    policy_id="mr_x_policy" if player.number == 0 else "cop_policy")
             direction = Direction(generated_action)
-            if self.is_valid_move(cop, direction):
+            if self.is_valid_move(player, direction):
                 action_is_valid = True
-        cop_1_direction = direction.value
-        return {mr_x: mr_x_direction, cop: cop_1_direction}
+            count += 1
+        print(f"Generated action after {count} tries")
+        return direction
 
     # -- END: RL FUNCTIONS -- #
 
@@ -401,7 +460,7 @@ class ScotlandYard:
         if self.is_valid_move(player, direction):
             player.position = self.get_position_after_move(player, direction)
         else:
-            print(f"P{player.number} tried to move {direction} from {player.position}")
+            print(f"{player.name} tried to move {direction} from {player.position}")
             print(f"Would result in {self.get_position_after_move(player, direction)}")
             sys.stderr.write(f"Move {direction} is not valid\n")
             exit(1)
@@ -412,21 +471,9 @@ class ScotlandYard:
         if self.turn_number in REVEAL_POSITION_TURNS:
             self.get_mr_x().mr_x_reveal_position()
 
-        actions = {}
-        all_actions_are_valid = False
-        while not all_actions_are_valid:
-            actions = self.get_actions_for_players()
-
-            all_actions_are_valid = True
-            for (player, action) in actions.items():
-                direction = Direction(action)
-                if not self.is_valid_move(player, direction):
-                    all_actions_are_valid = False
-                    break
-
-        for (player, action) in actions.items():
-            direction = Direction(action)
-            self.move_player(player, direction)
+        for player in self.players:
+            action = self.get_action_for_player(player)
+            self.move_player(player, action)
 
         self.turn_number += 1
         self.redraw()
@@ -495,14 +542,15 @@ class ScotlandYard:
     def is_valid_move(self, player: Player, direction: Direction) -> bool:
         # Player can only move to position on grid
         position = self.get_position_after_move(player, direction)
-        result = position[0] < 0 or position[0] >= GRID_SIZE or position[1] < 0 or position[1] >= GRID_SIZE
         if position[0] < 0 or position[0] >= GRID_SIZE or position[1] < 0 or position[1] >= GRID_SIZE:
             return False
 
         # Cop can only move to empty position or mr x position
         if player.number != 0:
-            for player in self.players[1:]:
-                if player.position == position:
+            for cop in self.get_cops():
+                if cop == player:
+                    continue
+                if cop.position == position:
                     return False
         return True
 

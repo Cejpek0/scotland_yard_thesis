@@ -1,10 +1,9 @@
-import string
 from typing import Dict, List, Any
 
 import numpy as np
 from gymnasium import spaces
 from ray.rllib import MultiAgentEnv
-from ray.rllib.utils.typing import AgentID, MultiAgentDict, MultiEnvDict
+from ray.rllib.utils.typing import AgentID
 import random
 
 import scotland_yard_game
@@ -19,7 +18,7 @@ class ScotlandYardEnvironment1v1(MultiAgentEnv):
         scotland_yard_game.NUMBER_OF_COPS = 1
         super().__init__()
         self.config = config
-        self.game = scotland_yard_game.ScotlandYard(training=True)
+        self.game = scotland_yard_game.ScotlandYard(training=True, number_of_cops=1)
         self.observations = None
         self._agent_ids = ["mr_x", "cop_1"]
         self.num_agents = len(self._agent_ids)
@@ -135,7 +134,7 @@ class ScotlandYardEnvironment1v1(MultiAgentEnv):
         if invalid_actions_players is None:
             invalid_actions_players = []
         distance_reward = 0
-        minimum_distance = 2
+        minimum_distance = 5
         rewards = {}
         # __ MR X __ #
         if "mr_x" in invalid_actions_players:
@@ -169,7 +168,8 @@ class ScotlandYardEnvironment1v1(MultiAgentEnv):
                 if distance == 0:
                     distance_reward += 100
                 else:
-                    distance_reward += round((scotland_yard_game.NAX_DISTANCE / distance) * 0.5, 10)
+                    distance_to_last_known_position = cop.get_distance_to(self.game.get_mr_x().last_known_position)
+                    distance_reward += round((distance_to_last_known_position) * (1 / 3), 10)
             rewards["cop_" + str(cop.number)] = distance_reward
 
         return rewards
