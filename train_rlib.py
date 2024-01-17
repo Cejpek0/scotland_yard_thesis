@@ -12,6 +12,7 @@ from environments.rlib.scotland_yard_environment import ScotlandYardEnvironment
 from ray.rllib.examples.models.centralized_critic_models import (
     TorchCentralizedCriticModel,
 )
+
 if __name__ == "__main__":
     ray.init(num_gpus=1)
 
@@ -27,21 +28,27 @@ if __name__ == "__main__":
         TorchCentralizedCriticModel
     )
 
-    my_config = PPOConfig().training(model={"custom_model": "cc_model"}).rl_module( _enable_rl_module_api=False).training(_enable_learner_api=False)
+    my_config = (PPOConfig()
+                 .training(model={"custom_model": "cc_model"})
+                 .rl_module(_enable_rl_module_api=False)
+                 .training(_enable_learner_api=False))
+
     my_config["policies"] = {
         "mr_x_policy": scotland_yard_game.MR_X_POLICY_SPEC,
         "cop_policy": scotland_yard_game.COP_POLICY_SPEC,
     }
 
+
     def policy_mapping_fn(agent_id, episode, worker):
         return "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
 
+
     my_config["policy_mapping_fn"] = policy_mapping_fn
 
-    my_config["num_iterations"] = 10
+    my_config["num_iterations"] = 20
     my_config["num_rollout_workers"] = 3
     my_config["reuse_actors"] = True
-    my_config.resources(num_gpus=1, num_gpus_per_worker=0.20)
+    my_config.resources(num_gpus=1, num_gpus_per_worker=0.2)
     my_config.framework("torch")
 
     # Set the config object's env.

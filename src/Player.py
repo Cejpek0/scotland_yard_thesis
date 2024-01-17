@@ -1,3 +1,5 @@
+import math
+
 from src.colors import *
 
 
@@ -23,11 +25,8 @@ class Player:
         self.position = position
         return self
 
-    def get_distance_to(self, *args) -> int:
-        if len(args) == 1 and isinstance(args[0], Player):
-            return self.get_distance_to(args[0].position)
-        else:
-            return abs(self.position[0] - args[0][0]) + abs(self.position[1] - args[0][1])
+    def get_distance_to(self, position: (int, int)) -> float:
+        return math.sqrt((self.position[0] - position[0]) ** 2 + (self.position[1] - position[1]) ** 2)
 
     def mr_x_reveal_position(self):
         if self.number == 0:

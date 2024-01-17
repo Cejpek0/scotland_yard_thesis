@@ -3,6 +3,7 @@ import random
 import sys
 import time
 from enum import Enum
+from typing import List
 
 import gymnasium
 import numpy as np
@@ -27,7 +28,8 @@ from ray.rllib.examples.models.centralized_critic_models import (
 # Constants
 WIDTH = 600
 HEIGHT = 600
-GRID_SIZE = 10
+GRID_SIZE = 15
+MAX_DISTANCE = math.ceil(math.sqrt(GRID_SIZE ** 2 + GRID_SIZE ** 2))
 NUMBER_OF_STARTING_POSITIONS_COPS = 10
 NUMBER_OF_STARTING_POSITIONS_MR_X = 5
 MAX_NUMBER_OF_TURNS = 24
@@ -92,6 +94,10 @@ COP_POLICY_SPEC = PolicySpec(
         0,  # position x of other cop_2
         0,  # position y or other cop_2
         0,  # distance to other cop_2
+        0,  # position x of closest point of interest
+        0,  # position y of closest point of interest
+        0,  # distance to the closest point of interest
+        0,  # inside or outside area of interest
     ]), high=np.array([
         MAX_NUMBER_OF_TURNS,  # current turn
         MAX_NUMBER_OF_TURNS,  # max turns
@@ -100,13 +106,17 @@ COP_POLICY_SPEC = PolicySpec(
         GRID_SIZE,  # position y
         GRID_SIZE,  # last known position x of mr x
         GRID_SIZE,  # last known position y of mr x
-        GRID_SIZE * 2,  # distance to last known position
+        MAX_DISTANCE,  # distance to last known position
         GRID_SIZE,  # position x of other cop_1
         GRID_SIZE,  # position y or other cop_1
-        GRID_SIZE * 2,  # distance to other cop_1
+        MAX_DISTANCE,  # distance to other cop_1
         GRID_SIZE,  # position x of other cop_2
         GRID_SIZE,  # position y or other cop_2
-        GRID_SIZE * 2,  # distance to other cop_2
+        MAX_DISTANCE,  # distance to other cop_2,
+        GRID_SIZE,  # position x of closest point of interest
+        GRID_SIZE,  # position y of closest point of interest
+        MAX_DISTANCE,  # distance to the closest point of interest
+        1,  # inside or outside area of interest
     ]), dtype=np.float32),
     action_space=spaces.Discrete(4),
 )
@@ -169,7 +179,7 @@ class ScotlandYard:
 
             register_env("scotland_env", env_creator)
 
-            if True:
+            if False:
                 self.algorithm = Algorithm.from_checkpoint(
                     "tuned_results/PPO_2024-01-13_10-56-58/PPO_scotland_env_1772b_00000_0_2024-01-13_10-56-58/checkpoint_000016")
             else:
@@ -199,12 +209,14 @@ class ScotlandYard:
         self.start_positions_cops = self.generate_start_positions([], self.number_of_starting_positions_cops)
         self.start_positions_mr_x = self.generate_start_positions(self.start_positions_cops,
                                                                   self.number_of_starting_positions_mr_x)
-
+        _start_positions_cops_temp = self.start_positions_cops.copy()
         for player in self.players:
             if player.number == 0:
                 self.choose_start_position(player, random.choice(self.start_positions_mr_x))
             else:
-                self.choose_start_position(player, random.choice(self.start_positions_cops))
+                chosen_start_position = random.choice(_start_positions_cops_temp)
+                self.choose_start_position(player, chosen_start_position)
+                _start_positions_cops_temp.remove(chosen_start_position)
 
         if self.window is not None:
             self.to_draw_grid()
@@ -224,6 +236,7 @@ class ScotlandYard:
                         started = True
             if started:
                 self.play_turn()
+                self.get_rewards()
                 self.redraw()
                 time.sleep(0.5)
                 if self.get_game_status() != GameStatus.ONGOING:
@@ -239,6 +252,26 @@ class ScotlandYard:
     # -- END: CORE FUNCTIONS -- #
 
     # -- BEGIN: RL FUNCTIONS -- #
+
+    def get_circular_radius(self, position: (int, int), r: int):
+        positions = []
+        for i in range(-r, r + 1):
+            for j in range(-r, r + 1):
+                if i ** 2 + j ** 2 <= r ** 2:
+                    if self.is_position_inside_grid((position[0] + i, position[1] + j)):
+                        positions.append((position[0] + i, position[1] + j))
+        return positions
+
+    def get_closest_position(self, position: (int, int), positions: [(int, int)]):
+        closest_position = None
+        min_distance = MAX_DISTANCE
+        for pos in positions:
+            distance = self.get_distance_between_positions(position, pos)
+            if distance < min_distance:
+                min_distance = distance
+                closest_position = pos
+        return closest_position
+
     def get_observations(self):
         cop_1 = self.get_cop_by_number(1)
         cop_2 = self.get_cop_by_number(2)
@@ -258,13 +291,13 @@ class ScotlandYard:
                 mr_x.get_distance_to(mr_x.last_known_position),
                 cop_1.position[0],
                 cop_1.position[1],
-                mr_x.get_distance_to(cop_1),
+                mr_x.get_distance_to(cop_1.position),
                 cop_2.position[0],
                 cop_2.position[1],
-                mr_x.get_distance_to(cop_2),
+                mr_x.get_distance_to(cop_2.position),
                 cop_3.position[0],
                 cop_3.position[1],
-                mr_x.get_distance_to(cop_3)
+                mr_x.get_distance_to(cop_3.position)
             ]).astype(np.float32)
         else:
             obs_list_mrx = np.array([
@@ -278,17 +311,32 @@ class ScotlandYard:
                 -1,
                 cop_1.position[0],
                 cop_1.position[1],
-                mr_x.get_distance_to(cop_1),
+                mr_x.get_distance_to(cop_1.position),
                 cop_2.position[0],
                 cop_2.position[1],
-                mr_x.get_distance_to(cop_2),
+                mr_x.get_distance_to(cop_2.position),
                 cop_3.position[0],
                 cop_3.position[1],
-                mr_x.get_distance_to(cop_3)
+                mr_x.get_distance_to(cop_3.position)
             ]).astype(np.float32)
 
         # cops
         cops_observations = []
+
+        if self.get_mr_x().last_known_position is not None:
+            # Create radius around last known position of mr x
+            possible_mr_x_positions = self.get_circular_radius(
+                self.get_mr_x().last_known_position, self.get_number_of_turns_since_last_reveal()
+            )
+        else:
+            # Create radius around all possible start positions of mr x
+            possible_mr_x_positions = []
+            for starting_position in self.start_positions_mr_x:
+                _possible_mr_x_positions = self.get_circular_radius(starting_position, 3)
+                for position in _possible_mr_x_positions:
+                    if position not in possible_mr_x_positions:
+                        possible_mr_x_positions.append(position)
+
         for cop_number in range(1, self.number_of_cops + 1):
             cop = self.get_cop_by_number(cop_number)
             if mr_x.last_known_position is not None:
@@ -319,8 +367,21 @@ class ScotlandYard:
                 obs_list_cop = np.append(obs_list_cop, np.array([
                     other_cop.position[0],
                     other_cop.position[1],
-                    cop.get_distance_to(other_cop)
+                    cop.get_distance_to(other_cop.position)
                 ]).astype(np.float32))
+
+            closest_position = self.get_closest_position(
+                cop.position,
+                possible_mr_x_positions
+            )
+            distance_to_closest_position = cop.get_distance_to(closest_position)
+            obs_list_cop = np.append(obs_list_cop, np.array([
+                closest_position[0],
+                closest_position[1],
+                distance_to_closest_position,
+                1 if cop.position in possible_mr_x_positions else 0
+            ]).astype(np.float32))
+
             cops_observations.append(obs_list_cop)
 
         observations = {
@@ -341,8 +402,11 @@ class ScotlandYard:
         action_is_valid = False
         player = self.get_player_by_name(player.name)
         while not action_is_valid:
-            generated_action = self.algorithm.compute_single_action(observations[player.name],
-                                                                    policy_id="mr_x_policy" if player.number == 0 else "cop_policy")
+            if count < 100:
+                generated_action = self.algorithm.compute_single_action(observations[player.name],
+                                                                        policy_id="mr_x_policy" if player.number == 0 else "cop_policy")
+            else:
+                generated_action = random.randint(0, 3)
             direction = Direction(generated_action)
             if self.is_valid_move(player, direction):
                 action_is_valid = True
@@ -364,7 +428,7 @@ class ScotlandYard:
         self.reset()
         return self
 
-    def set_draw_rectangle_at_position(self, position: (), color: (), alpha=255, small: bool = False):
+    def to_draw_rectangle_at_position(self, position: (), color: (), alpha=255, small: bool = False):
         if small:
             rect_width = self.cell_size // 2 - 1
             rect_height = self.cell_size // 2 - 1
@@ -407,18 +471,18 @@ class ScotlandYard:
     def to_draw_players(self):
         for player in self.players:
             if player.position is not None:
-                self.set_draw_rectangle_at_position(player.position, player.color, small=True)
+                self.to_draw_rectangle_at_position(player.position, player.color, small=True)
         return self
 
     def to_clear_grid(self):
         for row in range(self.grid_size):
             for col in range(self.grid_size):
-                self.set_draw_rectangle_at_position((col, row), BLACK)
+                self.to_draw_rectangle_at_position((col, row), BLACK)
         return self
 
     def to_draw_last_known_positions(self):
         if self.get_mr_x().last_known_position is not None:
-            self.set_draw_rectangle_at_position(self.get_mr_x().last_known_position, GRAY)
+            self.to_draw_rectangle_at_position(self.get_mr_x().last_known_position, GRAY)
         return self
 
     def to_draw_text(self, text: str = "", color: () = WHITE, position: () = (0, 0)):
@@ -430,14 +494,38 @@ class ScotlandYard:
 
     def to_highlight_start_positions(self):
         for position in self.start_positions_cops:
-            self.set_draw_rectangle_at_position(position, GREEN, 128)
+            self.to_draw_rectangle_at_position(position, GREEN, 128)
         for position in self.start_positions_mr_x:
-            self.set_draw_rectangle_at_position(position, RED, 128)
+            self.to_draw_rectangle_at_position(position, RED, 128)
+        return self
+
+    def to_highlight_area_of_interest(self):
+        if self.get_mr_x().last_known_position is not None:
+            possible_mr_x_positions = self.get_circular_radius(
+                self.get_mr_x().last_known_position, self.get_number_of_turns_since_last_reveal()
+            )
+        else:
+            possible_mr_x_positions = []
+            for starting_position in self.start_positions_mr_x:
+                _possible_mr_x_positions = self.get_circular_radius(
+                    starting_position,
+                    self.get_number_of_turns_since_last_reveal()
+                )
+                for position in _possible_mr_x_positions:
+                    if position not in possible_mr_x_positions:
+                        possible_mr_x_positions.append(position)
+
+        for position in possible_mr_x_positions:
+            self.to_draw_rectangle_at_position(position, WHITE, 40)
         return self
 
     def redraw(self):
-        self.to_clear_grid().to_draw_last_known_positions().to_draw_players().to_draw_text(
-            text=f"Turn: {self.turn_number}", position=(10, 10))
+        (self.to_clear_grid()
+         .to_draw_last_known_positions()
+         .to_draw_players()
+         .to_draw_text(text=f"Turn: {self.turn_number}", position=(10, 10))
+         .to_highlight_area_of_interest()
+         )
         # set game status to display if game is over
         game_status = self.get_game_status()
         if game_status == GameStatus.COPS_WON:
@@ -474,6 +562,10 @@ class ScotlandYard:
         for player in self.players:
             action = self.get_action_for_player(player)
             self.move_player(player, action)
+            self.redraw()
+            time.sleep(0.2)
+            if self.get_game_status() != GameStatus.ONGOING:
+                break
 
         self.turn_number += 1
         self.redraw()
@@ -483,6 +575,21 @@ class ScotlandYard:
     # -- END: GAMEPLAY FUNCTIONS -- #
 
     # -- BEGIN: HELPER FUNCTIONS -- #
+
+    def is_position_inside_grid(self, position: (int, int)) -> bool:
+        if position[0] < 0 or position[0] >= self.grid_size or position[1] < 0 or position[1] >= self.grid_size:
+            return False
+        return True
+
+    def get_number_of_turns_since_last_reveal(self):
+        return self.turn_number - self.get_previous_reveal_turn_number()
+
+    def get_previous_reveal_turn_number(self):
+        previous_reveal_turn_number = 0
+        for reveal_turn_number in REVEAL_POSITION_TURNS:
+            if reveal_turn_number < self.turn_number:
+                previous_reveal_turn_number = reveal_turn_number
+        return previous_reveal_turn_number
 
     def generate_start_positions(self, check_positions: [()], number_of_starting_positions: int) -> np.array:
         random_positions = []
@@ -581,7 +688,68 @@ class ScotlandYard:
         print("Start positions mr x: " + str(self.start_positions_mr_x))
         return self
 
+    def get_distance_between_positions(self, position_1: (int, int), position_2: (int, int)) -> float:
+        return math.sqrt((position_1[0] - position_2[0]) ** 2 + (position_1[1] - position_2[1]) ** 2)
+
     # -- END: HELPER FUNCTIONS -- #
+
+    def get_rewards(self):
+        distance_reward = 0
+        minimum_distance = 5
+        rewards = {}
+        # __ MR X __ #
+
+        # Distance to cops
+        for cop in self.get_cops():
+            distance = self.get_mr_x().get_distance_to(cop.position)
+            if distance == 0:
+                distance_reward -= 100
+            else:
+                distance_reward += round((distance - minimum_distance) * (1 / 3.0), 10)
+        # Distance to last known position
+        if self.get_mr_x().last_known_position is not None:
+            distance_reward += round(
+                self.get_mr_x().get_distance_to(self.get_mr_x().last_known_position) * 0.5,
+                10)
+        rewards["mr_x"] = distance_reward
+
+        # __ COPS __ #
+        for cop in self.get_cops():
+
+            # Distance to last known position of mr x
+            distance_reward = 0
+
+            if self.get_mr_x().last_known_position is not None:
+                # Create radius around last known position of mr x
+                possible_mr_x_positions = self.get_circular_radius(
+                    self.get_mr_x().last_known_position, self.get_number_of_turns_since_last_reveal()
+                )
+            else:
+                # Create radius around all possible start positions of mr x
+                possible_mr_x_positions = []
+                for starting_position in self.start_positions_mr_x:
+                    _possible_mr_x_positions = self.get_circular_radius(starting_position, 3)
+                    for position in _possible_mr_x_positions:
+                        if position not in possible_mr_x_positions:
+                            possible_mr_x_positions.append(position)
+
+            closest_position = self.get_closest_position(
+                cop.position,
+                possible_mr_x_positions
+            )
+            distance_to_closest_position = cop.get_distance_to(closest_position)
+            if self.get_mr_x().last_known_position is None:
+                distance_reward = 0
+            else:
+                if cop.position == self.get_mr_x().position:
+                    distance_reward = 100
+                else:
+                    if cop.position in possible_mr_x_positions:
+                        distance_reward = MAX_DISTANCE + 10
+                    else:
+                        distance_reward = MAX_DISTANCE - distance_to_closest_position
+            rewards[cop.name] = distance_reward
+        print(f"Rewards: {rewards}")
 
 
 if __name__ == '__main__':
