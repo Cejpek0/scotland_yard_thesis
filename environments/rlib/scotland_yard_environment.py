@@ -184,68 +184,7 @@ class ScotlandYardEnvironment(MultiAgentEnv):
         return observations, {"mr_x": 0, "cop_1": 0, "cop_2": 0, "cop_3": 0}
 
     def get_rewards(self, invalid_actions_players: List[str] = None):
-        if invalid_actions_players is None:
-            invalid_actions_players = []
-        distance_reward = 0
-        minimum_distance = 5
-        rewards = {}
-        # __ MR X __ #
-        if "mr_x" in invalid_actions_players:
-            rewards["mr_x"] = -50
-        else:
-            # Distance to cops
-            for cop in self.game.get_cops():
-                distance = self.game.get_mr_x().get_distance_to(cop.position)
-                if distance == 0:
-                    distance_reward -= 100
-                else:
-                    distance_reward += round((distance - minimum_distance) * (1 / 3.0), 10)
-            # Distance to last known position
-            if self.game.get_mr_x().last_known_position is not None:
-                distance_reward += round(
-                    self.game.get_mr_x().get_distance_to(self.game.get_mr_x().last_known_position) * 0.5,
-                    10)
-            rewards["mr_x"] = distance_reward
-
-        # __ COPS __ #
-        for cop in self.game.get_cops():
-            if f"cop_{cop.number}" in invalid_actions_players:
-                rewards[cop.name] = -50
-                continue
-            # Distance to last known position of mr x
-            distance_reward = 0
-
-            if self.game.get_mr_x().last_known_position is not None:
-                # Create radius around last known position of mr x
-                possible_mr_x_positions = self.game.get_circular_radius(
-                    self.game.get_mr_x().last_known_position, self.game.get_number_of_turns_since_last_reveal()
-                )
-            else:
-                # Create radius around all possible start positions of mr x
-                possible_mr_x_positions = []
-                for starting_position in self.game.start_positions_mr_x:
-                    _possible_mr_x_positions = self.game.get_circular_radius(
-                        starting_position,
-                        self.game.get_number_of_turns_since_last_reveal()
-                    )
-                    for position in _possible_mr_x_positions:
-                        if position not in possible_mr_x_positions:
-                            possible_mr_x_positions.append(position)
-
-            closest_position = self.game.get_closest_position(
-                cop.position,
-                possible_mr_x_positions
-            )
-            distance_to_closest_position = cop.get_distance_to(closest_position)
-            if self.game.get_mr_x().last_known_position is None:
-                if cop.position == self.game.get_mr_x().position:
-                    distance_reward = 100
-                else:
-                    if cop.position in possible_mr_x_positions:
-                        distance_reward = scotland_yard_game.MAX_DISTANCE + 20
-                    else:
-                        distance_reward = (scotland_yard_game.MAX_DISTANCE - distance_to_closest_position)*0.8
-            rewards[cop.name] = distance_reward
+        rewards = self.game.get_rewards(invalid_actions_players)
         return rewards
 
     def get_observations(self):

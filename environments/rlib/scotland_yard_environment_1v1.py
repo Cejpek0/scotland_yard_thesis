@@ -133,7 +133,7 @@ class ScotlandYardEnvironment1v1(MultiAgentEnv):
     def get_rewards(self, invalid_actions_players: List[str] = None):
         if invalid_actions_players is None:
             invalid_actions_players = []
-        distance_reward = 0
+        distance_reward = 0C
         minimum_distance = 5
         rewards = {}
         # __ MR X __ #

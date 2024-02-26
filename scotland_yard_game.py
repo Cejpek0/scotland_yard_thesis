@@ -141,7 +141,7 @@ class ScotlandYard:
     # -- BEGIN: CORE FUNCTIONS -- #
     def __init__(self, training: bool = False, number_of_cops: int = 3):
         self.number_of_cops = number_of_cops
-        self.turn_number = 1
+        self.turn_number = 0
         self.start_positions_mr_x = []
         self.start_positions_cops = []
         self.clock = None
@@ -199,7 +199,7 @@ class ScotlandYard:
 
     def reset(self):
         # init game state
-        self.turn_number = 1
+        self.turn_number = 0
         self.start_positions_mr_x.clear()
         self.start_positions_cops.clear()
         self.players.clear()
@@ -238,10 +238,10 @@ class ScotlandYard:
                 self.play_turn()
                 self.get_rewards()
                 self.redraw()
-                time.sleep(0.5)
                 if self.get_game_status() != GameStatus.ONGOING:
                     running = False
                     time.sleep(3)
+                started = False
         return self
 
     def quit(self):
@@ -555,6 +555,7 @@ class ScotlandYard:
         return self
 
     def play_turn(self):
+        self.turn_number += 1
         print(f"Turn: {self.turn_number}")
         if self.turn_number in REVEAL_POSITION_TURNS:
             self.get_mr_x().mr_x_reveal_position()
@@ -567,7 +568,6 @@ class ScotlandYard:
             if self.get_game_status() != GameStatus.ONGOING:
                 break
 
-        self.turn_number += 1
         self.redraw()
 
         return self
@@ -693,63 +693,78 @@ class ScotlandYard:
 
     # -- END: HELPER FUNCTIONS -- #
 
-    def get_rewards(self):
+    def get_rewards(self, invalid_actions_players: List[str] = None):
+        if invalid_actions_players is None:
+            invalid_actions_players = []
         distance_reward = 0
         minimum_distance = 5
         rewards = {}
         # __ MR X __ #
-
-        # Distance to cops
-        for cop in self.get_cops():
-            distance = self.get_mr_x().get_distance_to(cop.position)
-            if distance == 0:
-                distance_reward -= 100
-            else:
-                distance_reward += round((distance - minimum_distance) * (1 / 3.0), 10)
-        # Distance to last known position
-        if self.get_mr_x().last_known_position is not None:
-            distance_reward += round(
-                self.get_mr_x().get_distance_to(self.get_mr_x().last_known_position) * 0.5,
-                10)
-        rewards["mr_x"] = distance_reward
+        if "mr_x" in invalid_actions_players:
+            rewards["mr_x"] = -50
+        else:
+            # Distance to cops
+            for cop in self.get_cops():
+                distance = self.get_mr_x().get_distance_to(cop.position)
+                if distance == 0:
+                    distance_rewar0d -= 100
+                else:
+                    distance_reward += round((distance - minimum_distance) * (1 / 3.0), 10)
+            # Distance to last known position
+            if self.get_mr_x().last_known_position is not None:
+                distance_reward += round(
+                    self.get_mr_x().get_distance_to(self.get_mr_x().last_known_position) * 0.5,
+                    10)
+            rewards["mr_x"] = distance_reward
 
         # __ COPS __ #
-        for cop in self.get_cops():
-
-            # Distance to last known position of mr x
-            distance_reward = 0
-
-            if self.get_mr_x().last_known_position is not None:
+        
+        if self.get_mr_x().last_known_position is not None:
                 # Create radius around last known position of mr x
                 possible_mr_x_positions = self.get_circular_radius(
                     self.get_mr_x().last_known_position, self.get_number_of_turns_since_last_reveal()
                 )
-            else:
-                # Create radius around all possible start positions of mr x
-                possible_mr_x_positions = []
-                for starting_position in self.start_positions_mr_x:
-                    _possible_mr_x_positions = self.get_circular_radius(starting_position, 3)
-                    for position in _possible_mr_x_positions:
-                        if position not in possible_mr_x_positions:
-                            possible_mr_x_positions.append(position)
+        else:
+            # Create radius around all possible start positions of mr x
+            possible_mr_x_positions = []
+            for starting_position in self.start_positions_mr_x:
+                _possible_mr_x_positions = self.get_circular_radius(
+                    starting_position,
+                    self.get_number_of_turns_since_last_reveal()
+                )
+                for position in _possible_mr_x_positions:
+                    if position not in possible_mr_x_positions:
+                        possible_mr_x_positions.append(position)
+        
+        for cop in self.get_cops():
+            if f"cop_{cop.number}" in invalid_actions_players:
+                rewards[cop.name] = -50
+                continue
+            
+            # Check winnning condition
+            if cop.position == self.get_mr_x().position:
+                rewards[cop.name] = 100
+                continue
+            
+            # Distance to last known position of mr x
+            distance_reward = 0
+            inside_reward = -5
 
             closest_position = self.get_closest_position(
                 cop.position,
                 possible_mr_x_positions
             )
             distance_to_closest_position = cop.get_distance_to(closest_position)
-            if self.get_mr_x().last_known_position is None:
-                distance_reward = 0
-            else:
-                if cop.position == self.get_mr_x().position:
-                    distance_reward = 100
+            if self.get_mr_x().last_known_position is not None:
+                if cop.position in possible_mr_x_positions:
+                    inside_reward = 5
                 else:
-                    if cop.position in possible_mr_x_positions:
-                        distance_reward = MAX_DISTANCE + 10
-                    else:
-                        distance_reward = MAX_DISTANCE - distance_to_closest_position
-            rewards[cop.name] = distance_reward
-        print(f"Rewards: {rewards}")
+                    # Negative reward for being outside of area of interest
+                    inside_reward = -((MAX_DISTANCE - distance_to_closest_position) / MAX_DISTANCE * 5)
+                            
+            total_reward = distance_reward + inside_reward    
+            rewards[cop.name] = total_reward
+        return rewards
 
 
 if __name__ == '__main__':
