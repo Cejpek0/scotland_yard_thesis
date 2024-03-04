@@ -6,8 +6,6 @@ from ray.rllib import MultiAgentEnv
 from ray.rllib.utils.typing import AgentID
 import random
 
-import scotland_yard_game
-
 
 class ScotlandYardEnvironment(MultiAgentEnv):
     _agent_ids = ["mr_x", "cop_1", "cop_2", "cop_3"]

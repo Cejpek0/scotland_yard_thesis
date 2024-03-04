@@ -5,12 +5,10 @@ import time
 from enum import Enum
 from typing import List
 
-import gymnasium
 import numpy as np
 import pygame
 import ray
 from gymnasium import spaces
-from ray.rllib import Policy
 from ray.rllib.models import ModelCatalog
 from ray.rllib.policy.policy import PolicySpec
 from ray.rllib.algorithms.ppo import PPO, PPOConfig
@@ -18,6 +16,7 @@ from ray.rllib.algorithms.algorithm import Algorithm
 from ray.tune import register_env
 
 from environments.rlib.FakeEnv import FakeEnv
+from src.GameController import GameController
 from src.Player import Player
 from src.colors import *
 
@@ -25,16 +24,16 @@ from ray.rllib.examples.models.centralized_critic_models import (
     TorchCentralizedCriticModel,
 )
 
+from src.states.state import State
+
 # Constants
-WIDTH = 600
-HEIGHT = 600
+
 GRID_SIZE = 15
 MAX_DISTANCE = math.ceil(math.sqrt(GRID_SIZE ** 2 + GRID_SIZE ** 2))
 NUMBER_OF_STARTING_POSITIONS_COPS = 10
 NUMBER_OF_STARTING_POSITIONS_MR_X = 5
 MAX_NUMBER_OF_TURNS = 24
 REVEAL_POSITION_TURNS = [3, 8, 13, 18, 24]
-NAX_DISTANCE = math.ceil(math.sqrt(GRID_SIZE ** 2 + GRID_SIZE ** 2))
 
 ALGORITHM_CHECKPOINT_DIR = "../tuned_results/"
 
@@ -136,24 +135,19 @@ class GameStatus(Enum):
     ONGOING = 3
 
 
-class ScotlandYard:
+class ScotlandYard(State):
+    def __init__(self, game_controller: GameController, gui_controller, training=False):
+        State.__init__(self, game_controller, gui_controller)
 
-    # -- BEGIN: CORE FUNCTIONS -- #
-    def __init__(self, training: bool = False, number_of_cops: int = 3):
-        self.number_of_cops = number_of_cops
+        self.number_of_cops = 3
         self.turn_number = 0
         self.start_positions_mr_x = []
         self.start_positions_cops = []
-        self.clock = None
-        self.window = None
-        self.width = WIDTH
-        self.height = HEIGHT
         self.grid_size = GRID_SIZE
-        self.cell_size = WIDTH // GRID_SIZE
+        self.cell_size = gui_controller.width // GRID_SIZE
         self.number_of_starting_positions_cops = NUMBER_OF_STARTING_POSITIONS_COPS
         self.number_of_starting_positions_mr_x = NUMBER_OF_STARTING_POSITIONS_MR_X
         self.players = []
-
         self.algorithm = None
 
         if not training:
@@ -189,6 +183,20 @@ class ScotlandYard:
                 self.algorithm = algo
         # Create players
         self.create_players()
+        self.reset()
+
+    def update(self, delta_time, actions):
+        if actions["start"]:
+            from src.states.pause_menu import PauseMenu
+            new_state = PauseMenu(self.game_controller, self.gui_controller)
+            new_state.enter_state()
+        self.play_turn()
+        if self.get_game_status() != GameStatus.ONGOING:
+            self.game_controller.playing = False
+            time.sleep(3)
+
+    def render(self, display):
+        self.redraw()
 
     def create_players(self):
         self.players.clear()
@@ -196,6 +204,8 @@ class ScotlandYard:
         for i in range(self.number_of_cops):
             self.players.append(Player(i + 1, color=GREEN, name=f"cop_{i + 1}"))
         return self
+
+    # -- BEGIN: CORE FUNCTIONS -- #
 
     def reset(self):
         # init game state
@@ -218,30 +228,9 @@ class ScotlandYard:
                 self.choose_start_position(player, chosen_start_position)
                 _start_positions_cops_temp.remove(chosen_start_position)
 
-        if self.window is not None:
+        if self.gui_controller.game_canvas is not None:
             self.to_draw_grid()
             self.redraw()
-        return self
-
-    def start_game(self):
-        running = True
-        started = False
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                    self.quit()
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_SPACE:
-                        started = True
-            if started:
-                self.play_turn()
-                self.get_rewards()
-                self.redraw()
-                if self.get_game_status() != GameStatus.ONGOING:
-                    running = False
-                    time.sleep(3)
-                started = False
         return self
 
     def quit(self):
@@ -250,6 +239,102 @@ class ScotlandYard:
         return self
 
     # -- END: CORE FUNCTIONS -- #
+
+    # -- BEGIN: DRAW FUNCTIONS -- #
+
+    def to_draw_rectangle_at_position(self, position: (), color: (), alpha=255, small: bool = False):
+        if small:
+            rect_width = self.cell_size // 2 - 1
+            rect_height = self.cell_size // 2 - 1
+        else:
+            rect_width = self.cell_size - 2
+            rect_height = self.cell_size - 2
+
+        rect_surface = pygame.Surface((rect_width, rect_height), pygame.SRCALPHA)
+        rect_surface.fill((color[0], color[1], color[2], alpha))
+
+        x_position = position[0] * self.cell_size + (self.cell_size - rect_width) // 2 if small else position[
+                                                                                                         0] * self.cell_size + 1
+        y_position = position[1] * self.cell_size + (self.cell_size - rect_height) // 2 if small else position[
+                                                                                                          1] * self.cell_size + 1
+
+        self.gui_controller.game_canvas.blit(rect_surface, (x_position, y_position))
+        return self
+
+    def redraw(self):
+        (self.to_clear_grid()
+         .to_draw_last_known_positions()
+         .to_draw_players()
+         .to_highlight_area_of_interest()
+         )
+        self.gui_controller.to_draw_text(text=f"Turn: {self.turn_number}", position=(10, 10))
+        # set game status to display if game is over
+        game_status = self.get_game_status()
+        if game_status == GameStatus.COPS_WON:
+            self.gui_controller.to_draw_text(text="Cops won!", position=(10, 30))
+        elif game_status == GameStatus.MR_X_WON:
+            self.gui_controller.to_draw_text(text="Mr X won!", position=(10, 30))
+        pygame.display.flip()
+        return self
+
+    def to_draw_grid(self):
+        self.gui_controller.game_canvas.fill(BLACK)
+
+        # Draw horizontal lines
+        for row in range(self.grid_size + 1):
+            pygame.draw.line(self.gui_controller.game_canvas, WHITE, (0, row * self.cell_size),
+                             (self.gui_controller.width, row * self.cell_size), 1)
+        # Draw vertical lines
+        for col in range(self.grid_size + 1):
+            pygame.draw.line(self.gui_controller.game_canvas, WHITE, (col * self.cell_size, 0),
+                             (col * self.cell_size, self.gui_controller.height), 1)
+        return self
+
+    def to_draw_players(self):
+        for player in self.players:
+            if player.position is not None:
+                self.to_draw_rectangle_at_position(player.position, player.color, small=True)
+        return self
+
+    def to_clear_grid(self):
+        for row in range(self.grid_size):
+            for col in range(self.grid_size):
+                self.to_draw_rectangle_at_position((col, row), BLACK)
+        return self
+
+    def to_draw_last_known_positions(self):
+        if self.get_mr_x().last_known_position is not None:
+            self.to_draw_rectangle_at_position(self.get_mr_x().last_known_position, GRAY)
+        return self
+
+    def to_highlight_start_positions(self):
+        for position in self.start_positions_cops:
+            self.to_draw_rectangle_at_position(position, GREEN, 128)
+        for position in self.start_positions_mr_x:
+            self.to_draw_rectangle_at_position(position, RED, 128)
+        return self
+
+    def to_highlight_area_of_interest(self):
+        if self.get_mr_x().last_known_position is not None:
+            possible_mr_x_positions = self.get_circular_radius(
+                self.get_mr_x().last_known_position, self.get_number_of_turns_since_last_reveal()
+            )
+        else:
+            possible_mr_x_positions = []
+            for starting_position in self.start_positions_mr_x:
+                _possible_mr_x_positions = self.get_circular_radius(
+                    starting_position,
+                    self.get_number_of_turns_since_last_reveal()
+                )
+                for position in _possible_mr_x_positions:
+                    if position not in possible_mr_x_positions:
+                        possible_mr_x_positions.append(position)
+
+        for position in possible_mr_x_positions:
+            self.to_draw_rectangle_at_position(position, WHITE, 40)
+        return self
+
+    # -- END: DRAW FUNCTIONS -- #
 
     # -- BEGIN: RL FUNCTIONS -- #
 
@@ -417,127 +502,6 @@ class ScotlandYard:
     # -- END: RL FUNCTIONS -- #
 
     # --GAME CONTROL FUNCTIONS-- #
-
-    # -- BEGIN: DRAW FUNCTIONS -- #
-    def display(self):
-        # Initialize Pygame
-        pygame.init()
-        self.window = pygame.display.set_mode((self.width, self.height), pygame.SRCALPHA)
-        pygame.display.set_caption("Scotland yard AI")
-        self.clock = pygame.time.Clock()
-        self.reset()
-        return self
-
-    def to_draw_rectangle_at_position(self, position: (), color: (), alpha=255, small: bool = False):
-        if small:
-            rect_width = self.cell_size // 2 - 1
-            rect_height = self.cell_size // 2 - 1
-        else:
-            rect_width = self.cell_size - 2
-            rect_height = self.cell_size - 2
-
-        rect_surface = pygame.Surface((rect_width, rect_height), pygame.SRCALPHA)
-        rect_surface.fill((color[0], color[1], color[2], alpha))
-
-        x_position = position[0] * self.cell_size + (self.cell_size - rect_width) // 2 if small else position[
-                                                                                                         0] * self.cell_size + 1
-        y_position = position[1] * self.cell_size + (self.cell_size - rect_height) // 2 if small else position[
-                                                                                                          1] * self.cell_size + 1
-
-        self.window.blit(rect_surface, (x_position, y_position))
-        return self
-
-    def text_display(self):
-        grid = np.full((self.grid_size, self.grid_size), " ")
-        for player in self.players:
-            if player.position is not None:
-                if player.number == 0:
-                    grid[player.position[1]][player.position[0]] = "X"
-                else:
-                    grid[player.position[1]][player.position[0]] = str(player.number)
-        print(f"{grid}\n")
-
-    def to_draw_grid(self):
-        self.window.fill(BLACK)
-
-        # Draw horizontal lines
-        for row in range(self.grid_size + 1):
-            pygame.draw.line(self.window, WHITE, (0, row * self.cell_size), (self.width, row * self.cell_size), 1)
-        # Draw vertical lines
-        for col in range(self.grid_size + 1):
-            pygame.draw.line(self.window, WHITE, (col * self.cell_size, 0), (col * self.cell_size, self.height), 1)
-        return self
-
-    def to_draw_players(self):
-        for player in self.players:
-            if player.position is not None:
-                self.to_draw_rectangle_at_position(player.position, player.color, small=True)
-        return self
-
-    def to_clear_grid(self):
-        for row in range(self.grid_size):
-            for col in range(self.grid_size):
-                self.to_draw_rectangle_at_position((col, row), BLACK)
-        return self
-
-    def to_draw_last_known_positions(self):
-        if self.get_mr_x().last_known_position is not None:
-            self.to_draw_rectangle_at_position(self.get_mr_x().last_known_position, GRAY)
-        return self
-
-    def to_draw_text(self, text: str = "", color: () = WHITE, position: () = (0, 0)):
-        font = pygame.font.SysFont("Arial", 20)
-        text_surface = font.render(text, True, color)
-        self.window.blit(text_surface, position)
-
-        return self
-
-    def to_highlight_start_positions(self):
-        for position in self.start_positions_cops:
-            self.to_draw_rectangle_at_position(position, GREEN, 128)
-        for position in self.start_positions_mr_x:
-            self.to_draw_rectangle_at_position(position, RED, 128)
-        return self
-
-    def to_highlight_area_of_interest(self):
-        if self.get_mr_x().last_known_position is not None:
-            possible_mr_x_positions = self.get_circular_radius(
-                self.get_mr_x().last_known_position, self.get_number_of_turns_since_last_reveal()
-            )
-        else:
-            possible_mr_x_positions = []
-            for starting_position in self.start_positions_mr_x:
-                _possible_mr_x_positions = self.get_circular_radius(
-                    starting_position,
-                    self.get_number_of_turns_since_last_reveal()
-                )
-                for position in _possible_mr_x_positions:
-                    if position not in possible_mr_x_positions:
-                        possible_mr_x_positions.append(position)
-
-        for position in possible_mr_x_positions:
-            self.to_draw_rectangle_at_position(position, WHITE, 40)
-        return self
-
-    def redraw(self):
-        (self.to_clear_grid()
-         .to_draw_last_known_positions()
-         .to_draw_players()
-         .to_draw_text(text=f"Turn: {self.turn_number}", position=(10, 10))
-         .to_highlight_area_of_interest()
-         )
-        # set game status to display if game is over
-        game_status = self.get_game_status()
-        if game_status == GameStatus.COPS_WON:
-            self.to_draw_text(text="Cops won!", position=(10, 30))
-        elif game_status == GameStatus.MR_X_WON:
-            self.to_draw_text(text="Mr X won!", position=(10, 30))
-        pygame.display.flip()
-        return self
-
-    # -- END: DRAW FUNCTIONS -- #
-
-    # --GAMEPLAY FUNCTIONS-- #
 
     def choose_start_position(self, player: Player, position: ()):
         player.set_start_position(position)
@@ -707,7 +671,7 @@ class ScotlandYard:
             for cop in self.get_cops():
                 distance = self.get_mr_x().get_distance_to(cop.position)
                 if distance == 0:
-                    distance_rewar0d -= 100
+                    distance_reward -= 100
                 else:
                     distance_reward += round((distance - minimum_distance) * (1 / 3.0), 10)
             # Distance to last known position
@@ -718,12 +682,12 @@ class ScotlandYard:
             rewards["mr_x"] = distance_reward
 
         # __ COPS __ #
-        
+
         if self.get_mr_x().last_known_position is not None:
-                # Create radius around last known position of mr x
-                possible_mr_x_positions = self.get_circular_radius(
-                    self.get_mr_x().last_known_position, self.get_number_of_turns_since_last_reveal()
-                )
+            # Create radius around last known position of mr x
+            possible_mr_x_positions = self.get_circular_radius(
+                self.get_mr_x().last_known_position, self.get_number_of_turns_since_last_reveal()
+            )
         else:
             # Create radius around all possible start positions of mr x
             possible_mr_x_positions = []
@@ -735,17 +699,17 @@ class ScotlandYard:
                 for position in _possible_mr_x_positions:
                     if position not in possible_mr_x_positions:
                         possible_mr_x_positions.append(position)
-        
+
         for cop in self.get_cops():
             if f"cop_{cop.number}" in invalid_actions_players:
                 rewards[cop.name] = -50
                 continue
-            
+
             # Check winnning condition
             if cop.position == self.get_mr_x().position:
                 rewards[cop.name] = 100
                 continue
-            
+
             # Distance to last known position of mr x
             distance_reward = 0
             inside_reward = -5
@@ -761,11 +725,7 @@ class ScotlandYard:
                 else:
                     # Negative reward for being outside of area of interest
                     inside_reward = -((MAX_DISTANCE - distance_to_closest_position) / MAX_DISTANCE * 5)
-                            
-            total_reward = distance_reward + inside_reward    
+
+            total_reward = distance_reward + inside_reward
             rewards[cop.name] = total_reward
         return rewards
-
-
-if __name__ == '__main__':
-    ScotlandYard().display().start_game().quit()

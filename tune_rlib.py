@@ -1,13 +1,10 @@
-import numpy as np
-from gymnasium import spaces
 from ray import tune
 from ray.rllib.algorithms.ppo import PPO
 from ray.rllib.models import ModelCatalog
-from ray.rllib.policy.policy import PolicySpec
 from ray.tune.experiment.trial import ExportFormat
 from ray.util.client import ray
 from ray.tune.registry import register_env
-import scotland_yard_game as scotland_yard_game
+from src.states import scotland_yard as scotland_yard_game
 from environments.rlib.scotland_yard_environment import ScotlandYardEnvironment
 
 from ray.rllib.examples.models.centralized_critic_models import (
