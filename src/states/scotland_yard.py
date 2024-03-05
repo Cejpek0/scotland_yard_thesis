@@ -151,13 +151,12 @@ class ScotlandYard(State):
         self.algorithm = None
 
         if not training:
-            ray.init()
-
+            print("1")
             ModelCatalog.register_custom_model(
                 "cc_model",
                 TorchCentralizedCriticModel
             )
-
+            print("2")
             my_config = PPOConfig().training(model={"custom_model": "cc_model"}).rl_module(
                 _enable_rl_module_api=False).training(_enable_learner_api=False)
             my_config["policies"] = {
@@ -171,6 +170,7 @@ class ScotlandYard(State):
             def env_creator(env_config):
                 return FakeEnv({})  # return an env instance
 
+            print("3")
             register_env("scotland_env", env_creator)
 
             if False:
@@ -178,22 +178,29 @@ class ScotlandYard(State):
                     "tuned_results/PPO_2024-01-13_10-56-58/PPO_scotland_env_1772b_00000_0_2024-01-13_10-56-58/checkpoint_000016")
             else:
                 algo = PPO(env="scotland_env", config=my_config)
+                print("4")
                 algo.restore(
                     "trained_policies")
+                print("5")
                 self.algorithm = algo
         # Create players
         self.create_players()
         self.reset()
 
     def update(self, delta_time, actions):
-        if actions["start"]:
+        print("update")
+        from src.GameController import UserActions
+        if actions[UserActions.space.name]:
             from src.states.pause_menu import PauseMenu
             new_state = PauseMenu(self.game_controller, self.gui_controller)
             new_state.enter_state()
-        self.play_turn()
-        if self.get_game_status() != GameStatus.ONGOING:
-            self.game_controller.playing = False
-            time.sleep(3)
+        else:
+            self.play_turn()
+            if self.get_game_status() != GameStatus.ONGOING:
+                print("Game over")
+                self.game_controller.playing = False
+                time.sleep(3)
+                self.exit_state()
 
     def render(self, display):
         self.redraw()

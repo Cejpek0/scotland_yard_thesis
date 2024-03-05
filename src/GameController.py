@@ -38,7 +38,7 @@ class GameController():
         self.load_assets()
 
     def game_loop(self):
-        while self.playing:
+        while self.running:
             self.get_dt()
             self.get_events()
             self.update()

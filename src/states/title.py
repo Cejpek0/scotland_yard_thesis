@@ -1,5 +1,4 @@
 from src.Button import Button
-from src.GameController import UserActions
 from src.colors import *
 from src.states.state import State
 
@@ -17,13 +16,19 @@ class Title(State):
             self.game_controller.state_stack.append(new_state)
 
     def render(self, display):
-        display.fill(BLACK)
-        btn_ai = Button("AI", 100, 100, 100, 50, display, BLUE, LIGHT_BLUE, WHITE, BLACK, BLACK, WHITE, 3, 5)
+        display.fill(MIDNIGHT_BLUE)
+        btn_ai = Button("AI VS AI", 100, 100, 200, 50, display, BLACK, WHITE, WHITE, BLACK, WHITE, BLACK, 3, 5)
+        btn_cop = Button("PLAY AS COPS", 100, 200, 200, 50, display, BLACK, WHITE, WHITE, BLACK, WHITE, BLACK, 3, 5)
+        btn_mr_x = Button("PLAY AS MR X", 100, 300, 200, 50, display, BLACK, WHITE, WHITE, BLACK, WHITE, BLACK, 3, 5)
 
-        if btn_ai.is_hovered():
-            btn_ai.color = btn_ai.hover_color
-            btn_ai.text_color = btn_ai.text_hover_color
         btn_ai.draw()
-
-        self.gui_controller.to_draw_text("Game States Demo", WHITE,
-                                         (self.gui_controller.width / 2, self.gui_controller.height / 2))
+        btn_cop.draw()
+        btn_mr_x.draw()
+        
+        from src.GameController import UserActions
+        if self.game_controller.user_actions[UserActions.mouse_left_up.name]:
+            if btn_ai.is_hovered():
+                from src.states.scotland_yard import ScotlandYard
+                new_state = ScotlandYard(self.game_controller, self.gui_controller)
+                new_state.enter_state()
+                self.game_controller.state_stack.append(new_state)
