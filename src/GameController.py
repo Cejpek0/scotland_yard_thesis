@@ -23,10 +23,10 @@ class GameController():
         self.assets_dir = os.path.join("assets")
         self.sprite_dir = os.path.join(self.assets_dir, "sprites")
 
-        self.state_stack = []
-        from states.title import Title
+        self.scene_stack = []
+        from src.scenes.title import Title
         self.title_screen = Title(self, self.gui_controller)
-        self.state_stack.append(self.title_screen)
+        self.scene_stack.append(self.title_screen)
         pygame.init()
 
         self.running, self.playing = True, True
@@ -70,10 +70,10 @@ class GameController():
                 self.user_actions[UserActions.mouse_moved.name] = True
 
     def update(self):
-        self.state_stack[-1].update(self.dt, self.user_actions)
+        self.scene_stack[-1].update(self.dt, self.user_actions)
 
     def render(self):
-        self.state_stack[-1].render(self.gui_controller.game_canvas)
+        self.scene_stack[-1].render(self.gui_controller.game_canvas)
 
         self.gui_controller.screen.blit(self.gui_controller.game_canvas, (0, 0))
         pygame.display.flip()

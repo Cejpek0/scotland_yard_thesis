@@ -6,6 +6,8 @@ from ray.rllib import MultiAgentEnv
 from ray.rllib.utils.typing import AgentID
 import random
 
+import src.scotland_yard_game as scotland_yard_game
+
 
 class ScotlandYardEnvironment(MultiAgentEnv):
     _agent_ids = ["mr_x", "cop_1", "cop_2", "cop_3"]
@@ -13,7 +15,6 @@ class ScotlandYardEnvironment(MultiAgentEnv):
     def __init__(self, config):
         self.next_agent_index = 1
         self.next_agent = "cop_1"
-        scotland_yard_game.NUMBER_OF_COPS = 1
         super().__init__()
         self.config = config
         self.game = scotland_yard_game.ScotlandYard(training=True)

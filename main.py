@@ -1,4 +1,4 @@
-from src.states.scotland_yard import ScotlandYard
+from src.scenes.game_scene import ScotlandYardScene
 
 if __name__ == '__main__':
-    ScotlandYard(number_of_cops=3).display().quit()
+    ScotlandYardScene().display().quit()

@@ -1,19 +1,19 @@
 from src.Button import Button
 from src.colors import *
-from src.states.state import State
+from src.scenes.scene import Scene
 
 
-class Title(State):
+class Title(Scene):
     def __init__(self, game_controller, gui_controller):
-        State.__init__(self, game_controller, gui_controller)
+        Scene.__init__(self, game_controller, gui_controller)
 
     def update(self, delta_time, actions):
         from src.GameController import UserActions
         if actions[UserActions.enter.name]:
-            from src.states.scotland_yard import ScotlandYard
-            new_state = ScotlandYard(self.game_controller, self.gui_controller)
-            new_state.enter_state()
-            self.game_controller.state_stack.append(new_state)
+            from src.scenes.game_scene import ScotlandYardScene
+            new_state = ScotlandYardScene(self.game_controller, self.gui_controller)
+            new_state.enter_scene()
+            self.game_controller.scene_stack.append(new_state)
 
     def render(self, display):
         display.fill(MIDNIGHT_BLUE)
@@ -28,7 +28,7 @@ class Title(State):
         from src.GameController import UserActions
         if self.game_controller.user_actions[UserActions.mouse_left_up.name]:
             if btn_ai.is_hovered():
-                from src.states.scotland_yard import ScotlandYard
-                new_state = ScotlandYard(self.game_controller, self.gui_controller)
-                new_state.enter_state()
-                self.game_controller.state_stack.append(new_state)
+                from src.scenes.game_scene import ScotlandYardScene
+                new_state = ScotlandYardScene(self.game_controller, self.gui_controller)
+                new_state.enter_scene()
+                self.game_controller.scene_stack.append(new_state)

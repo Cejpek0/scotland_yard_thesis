@@ -24,8 +24,6 @@ from ray.rllib.examples.models.centralized_critic_models import (
     TorchCentralizedCriticModel,
 )
 
-from src.states.state import State
-
 # Constants
 
 GRID_SIZE = 15
@@ -135,16 +133,14 @@ class GameStatus(Enum):
     ONGOING = 3
 
 
-class ScotlandYard(State):
-    def __init__(self, game_controller: GameController, gui_controller, training=False):
-        State.__init__(self, game_controller, gui_controller)
+class ScotlandYardGame():
+    def __init__(self, training=False):
 
         self.number_of_cops = 3
         self.turn_number = 0
         self.start_positions_mr_x = []
         self.start_positions_cops = []
         self.grid_size = GRID_SIZE
-        self.cell_size = gui_controller.width // GRID_SIZE
         self.number_of_starting_positions_cops = NUMBER_OF_STARTING_POSITIONS_COPS
         self.number_of_starting_positions_mr_x = NUMBER_OF_STARTING_POSITIONS_MR_X
         self.players = []
@@ -187,24 +183,6 @@ class ScotlandYard(State):
         self.create_players()
         self.reset()
 
-    def update(self, delta_time, actions):
-        print("update")
-        from src.GameController import UserActions
-        if actions[UserActions.space.name]:
-            from src.states.pause_menu import PauseMenu
-            new_state = PauseMenu(self.game_controller, self.gui_controller)
-            new_state.enter_state()
-        else:
-            self.play_turn()
-            if self.get_game_status() != GameStatus.ONGOING:
-                print("Game over")
-                self.game_controller.playing = False
-                time.sleep(3)
-                self.exit_state()
-
-    def render(self, display):
-        self.redraw()
-
     def create_players(self):
         self.players.clear()
         self.players.append(Player(0, color=RED, name="mr_x"))
@@ -235,9 +213,6 @@ class ScotlandYard(State):
                 self.choose_start_position(player, chosen_start_position)
                 _start_positions_cops_temp.remove(chosen_start_position)
 
-        if self.gui_controller.game_canvas is not None:
-            self.to_draw_grid()
-            self.redraw()
         return self
 
     def quit(self):
@@ -246,102 +221,6 @@ class ScotlandYard(State):
         return self
 
     # -- END: CORE FUNCTIONS -- #
-
-    # -- BEGIN: DRAW FUNCTIONS -- #
-
-    def to_draw_rectangle_at_position(self, position: (), color: (), alpha=255, small: bool = False):
-        if small:
-            rect_width = self.cell_size // 2 - 1
-            rect_height = self.cell_size // 2 - 1
-        else:
-            rect_width = self.cell_size - 2
-            rect_height = self.cell_size - 2
-
-        rect_surface = pygame.Surface((rect_width, rect_height), pygame.SRCALPHA)
-        rect_surface.fill((color[0], color[1], color[2], alpha))
-
-        x_position = position[0] * self.cell_size + (self.cell_size - rect_width) // 2 if small else position[
-                                                                                                         0] * self.cell_size + 1
-        y_position = position[1] * self.cell_size + (self.cell_size - rect_height) // 2 if small else position[
-                                                                                                          1] * self.cell_size + 1
-
-        self.gui_controller.game_canvas.blit(rect_surface, (x_position, y_position))
-        return self
-
-    def redraw(self):
-        (self.to_clear_grid()
-         .to_draw_last_known_positions()
-         .to_draw_players()
-         .to_highlight_area_of_interest()
-         )
-        self.gui_controller.to_draw_text(text=f"Turn: {self.turn_number}", position=(10, 10))
-        # set game status to display if game is over
-        game_status = self.get_game_status()
-        if game_status == GameStatus.COPS_WON:
-            self.gui_controller.to_draw_text(text="Cops won!", position=(10, 30))
-        elif game_status == GameStatus.MR_X_WON:
-            self.gui_controller.to_draw_text(text="Mr X won!", position=(10, 30))
-        pygame.display.flip()
-        return self
-
-    def to_draw_grid(self):
-        self.gui_controller.game_canvas.fill(BLACK)
-
-        # Draw horizontal lines
-        for row in range(self.grid_size + 1):
-            pygame.draw.line(self.gui_controller.game_canvas, WHITE, (0, row * self.cell_size),
-                             (self.gui_controller.width, row * self.cell_size), 1)
-        # Draw vertical lines
-        for col in range(self.grid_size + 1):
-            pygame.draw.line(self.gui_controller.game_canvas, WHITE, (col * self.cell_size, 0),
-                             (col * self.cell_size, self.gui_controller.height), 1)
-        return self
-
-    def to_draw_players(self):
-        for player in self.players:
-            if player.position is not None:
-                self.to_draw_rectangle_at_position(player.position, player.color, small=True)
-        return self
-
-    def to_clear_grid(self):
-        for row in range(self.grid_size):
-            for col in range(self.grid_size):
-                self.to_draw_rectangle_at_position((col, row), BLACK)
-        return self
-
-    def to_draw_last_known_positions(self):
-        if self.get_mr_x().last_known_position is not None:
-            self.to_draw_rectangle_at_position(self.get_mr_x().last_known_position, GRAY)
-        return self
-
-    def to_highlight_start_positions(self):
-        for position in self.start_positions_cops:
-            self.to_draw_rectangle_at_position(position, GREEN, 128)
-        for position in self.start_positions_mr_x:
-            self.to_draw_rectangle_at_position(position, RED, 128)
-        return self
-
-    def to_highlight_area_of_interest(self):
-        if self.get_mr_x().last_known_position is not None:
-            possible_mr_x_positions = self.get_circular_radius(
-                self.get_mr_x().last_known_position, self.get_number_of_turns_since_last_reveal()
-            )
-        else:
-            possible_mr_x_positions = []
-            for starting_position in self.start_positions_mr_x:
-                _possible_mr_x_positions = self.get_circular_radius(
-                    starting_position,
-                    self.get_number_of_turns_since_last_reveal()
-                )
-                for position in _possible_mr_x_positions:
-                    if position not in possible_mr_x_positions:
-                        possible_mr_x_positions.append(position)
-
-        for position in possible_mr_x_positions:
-            self.to_draw_rectangle_at_position(position, WHITE, 40)
-        return self
-
-    # -- END: DRAW FUNCTIONS -- #
 
     # -- BEGIN: RL FUNCTIONS -- #
 
@@ -534,12 +413,9 @@ class ScotlandYard(State):
         for player in self.players:
             action = self.get_action_for_player(player)
             self.move_player(player, action)
-            self.redraw()
             time.sleep(0.2)
             if self.get_game_status() != GameStatus.ONGOING:
                 break
-
-        self.redraw()
 
         return self
 

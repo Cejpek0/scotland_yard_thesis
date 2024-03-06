@@ -16,7 +16,7 @@ class ScotlandYardEnvironment1v1(MultiAgentEnv):
         scotland_yard_game.NUMBER_OF_COPS = 1
         super().__init__()
         self.config = config
-        self.game = scotland_yard_game.ScotlandYard(training=True, number_of_cops=1)
+        self.game = scotland_yard_game.ScotlandYardScene(training=True, number_of_cops=1)
         self.observations = None
         self._agent_ids = ["mr_x", "cop_1"]
         self.num_agents = len(self._agent_ids)
