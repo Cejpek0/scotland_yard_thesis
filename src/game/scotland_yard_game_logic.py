@@ -7,7 +7,6 @@ from typing import List
 
 import numpy as np
 import pygame
-import ray
 from gymnasium import spaces
 from ray.rllib.models import ModelCatalog
 from ray.rllib.policy.policy import PolicySpec
@@ -15,8 +14,7 @@ from ray.rllib.algorithms.ppo import PPO, PPOConfig
 from ray.rllib.algorithms.algorithm import Algorithm
 from ray.tune import register_env
 
-from environments.rlib.FakeEnv import FakeEnv
-from src.GameController import GameController
+from src.environments.rlib.FakeEnv import FakeEnv
 from src.Player import Player
 from src.colors import *
 
@@ -133,9 +131,8 @@ class GameStatus(Enum):
     ONGOING = 3
 
 
-class ScotlandYardGame():
+class ScotlandYardGameLogic:
     def __init__(self, training=False):
-
         self.number_of_cops = 3
         self.turn_number = 0
         self.start_positions_mr_x = []
@@ -153,8 +150,7 @@ class ScotlandYardGame():
                 TorchCentralizedCriticModel
             )
             print("2")
-            my_config = PPOConfig().training(model={"custom_model": "cc_model"}).rl_module(
-                _enable_rl_module_api=False).training(_enable_learner_api=False)
+            my_config = PPOConfig()
             my_config["policies"] = {
                 "mr_x_policy": MR_X_POLICY_SPEC,
                 "cop_policy": COP_POLICY_SPEC,
@@ -166,14 +162,17 @@ class ScotlandYardGame():
             def env_creator(env_config):
                 return FakeEnv({})  # return an env instance
 
-            print("3")
             register_env("scotland_env", env_creator)
 
-            if False:
-                self.algorithm = Algorithm.from_checkpoint(
-                    "tuned_results/PPO_2024-01-13_10-56-58/PPO_scotland_env_1772b_00000_0_2024-01-13_10-56-58/checkpoint_000016")
+            print("3")
+
+            if True:
+                from tune_rlib import get_latest_checkpoint
+                latest_checkpoint_dir = get_latest_checkpoint()
+
+                self.algorithm = Algorithm.from_checkpoint(latest_checkpoint_dir)
             else:
-                algo = PPO(env="scotland_env", config=my_config)
+                algo = PPO(env=FakeEnv, config=my_config)
                 print("4")
                 algo.restore(
                     "trained_policies")
@@ -216,7 +215,6 @@ class ScotlandYardGame():
         return self
 
     def quit(self):
-        ray.shutdown()
         pygame.quit()
         return self
 
@@ -548,7 +546,7 @@ class ScotlandYardGame():
         rewards = {}
         # __ MR X __ #
         if "mr_x" in invalid_actions_players:
-            rewards["mr_x"] = -50
+            rewards["mr_x"] = -20
         else:
             # Distance to cops
             for cop in self.get_cops():
@@ -560,7 +558,7 @@ class ScotlandYardGame():
             # Distance to last known position
             if self.get_mr_x().last_known_position is not None:
                 distance_reward += round(
-                    self.get_mr_x().get_distance_to(self.get_mr_x().last_known_position) * 0.5,
+                    self.get_mr_x().get_distance_to(self.get_mr_x().last_known_position) * 0.2,
                     10)
             rewards["mr_x"] = distance_reward
 
@@ -595,7 +593,7 @@ class ScotlandYardGame():
 
             # Distance to last known position of mr x
             distance_reward = 0
-            inside_reward = -5
+            inside_reward = 0
 
             closest_position = self.get_closest_position(
                 cop.position,

@@ -1,4 +1,6 @@
-from src.scenes.game_scene import ScotlandYardScene
+from src.GameController import GameController
 
 if __name__ == '__main__':
-    ScotlandYardScene().display().quit()
+    g = GameController()
+    while g.running:
+        g.game_loop()

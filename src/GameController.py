@@ -89,9 +89,3 @@ class GameController():
     def reset_keys(self):
         for action in self.user_actions:
             self.user_actions[action] = False
-
-
-if __name__ == "__main__":
-    g = GameController()
-    while g.running:
-        g.game_loop()

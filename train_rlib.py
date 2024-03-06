@@ -4,8 +4,8 @@ from ray.rllib.algorithms.ppo import PPOConfig, PPO
 from ray.rllib.models import ModelCatalog
 from ray.util.client import ray
 from ray.tune.registry import register_env
-from src.states import scotland_yard as scotland_yard_game
-from environments.rlib.scotland_yard_environment import ScotlandYardEnvironment
+from src.game import scotland_yard_game_logic as scotland_yard_game
+from src.environments.rlib.scotland_yard_environment import ScotlandYardEnvironment
 from ray.rllib.examples.models.centralized_critic_models import (
     TorchCentralizedCriticModel,
 )

@@ -4,18 +4,15 @@ import sys
 import time
 from enum import Enum
 
-import gymnasium
 import numpy as np
 import pygame
 import ray
 from gymnasium import spaces
-from ray.rllib import Policy
 from ray.rllib.policy.policy import PolicySpec
 from ray.rllib.algorithms.ppo import PPO, PPOConfig
-from ray.rllib.algorithms.algorithm import Algorithm
 from ray.tune import register_env
 
-from environments.rlib.FakeEnv import FakeEnv
+from src.environments.rlib.FakeEnv import FakeEnv
 from src.Player import Player
 from src.colors import *
 

@@ -4,16 +4,44 @@ from ray.rllib.models import ModelCatalog
 from ray.tune.experiment.trial import ExportFormat
 from ray.util.client import ray
 from ray.tune.registry import register_env
-from src.states import scotland_yard as scotland_yard_game
-from environments.rlib.scotland_yard_environment import ScotlandYardEnvironment
+from src.game import scotland_yard_game_logic as scotland_yard_game
+from src.environments.rlib.scotland_yard_environment import ScotlandYardEnvironment
 
 from ray.rllib.examples.models.centralized_critic_models import (
     TorchCentralizedCriticModel,
 )
 
+
+def get_all_subdirs(directory):
+    import os
+    all_subdirs = [os.path.join(directory, d) for d in os.listdir(directory) if
+                   os.path.isdir(os.path.join(directory, d))]
+    return all_subdirs
+
+
+def get_latest_checkpoint():
+    import os
+    tuned_results_dir = 'tuned_results'
+    all_subdirs = get_all_subdirs(tuned_results_dir)
+    if len(all_subdirs) == 0:
+        return None
+    latest_checkpoint_dir = max(all_subdirs, key=os.path.getmtime)
+
+    all_subdirs = get_all_subdirs(latest_checkpoint_dir)
+
+    if len(all_subdirs) == 0:
+        return None
+    latest_checkpoint_dir = max(all_subdirs, key=os.path.getmtime)
+
+    all_subdirs = get_all_subdirs(latest_checkpoint_dir)
+    if len(all_subdirs) == 0:
+        return None
+    latest_checkpoint_dir = max(all_subdirs, key=os.path.getmtime)
+    return latest_checkpoint_dir
+
+
 if __name__ == "__main__":
     ray.init(num_gpus=1)
-
 
     def env_creator(env_config):
         return ScotlandYardEnvironment({})  # return an env instance
@@ -32,10 +60,10 @@ if __name__ == "__main__":
         "env": "scotland_env",
         "num_workers": 1,
         "num_gpus": 1,
-        "num_gpus_per_worker": 0.5,
+        "num_gpus_per_worker": 1,
         "num_envs_per_worker": 1,
         "model": {
-            "fcnet_hiddens": [512, 512, 256],
+            "fcnet_hiddens": [256, 256],
             "fcnet_activation": "relu",
         },
         "lr": 3e-4,
@@ -45,12 +73,12 @@ if __name__ == "__main__":
             "adam_beta1": 0.9,
             "adam_beta2": 0.999,
         },
-        "gamma": 0.99,
+        "gamma": 0.60,
         "num_sgd_iter": 10,
         "sgd_minibatch_size": 500,
         "rollout_fragment_length": 500,
         "train_batch_size": 4000,
-        "stop": {"iter": 20},
+        "stop": {"training_iteration": 40},
         "exploration_config": {},
         "multiagent": {
             "policies_to_train": ["mr_x_policy", "cop_policy"],
@@ -63,13 +91,18 @@ if __name__ == "__main__":
         },
         "framework": "torch",
         "custom_model": "cc_model",
-        "checkpoint_freq": 5,
+        "checkpoint_freq": 100,
         "name": "PPO",
         "local_dir": directory,
         "checkpoint_at_end": True,
+        "reuse_actors": True,
     }
 
-    
+    checkpoint_path = get_latest_checkpoint()
+    print(checkpoint_path)
+    if checkpoint_path:
+        tune_config["restore"] = checkpoint_path
+        print("restoring from checkpoint")
 
     result = tune.run(
         run_or_experiment=PPO,
@@ -77,8 +110,9 @@ if __name__ == "__main__":
         local_dir=directory,
         checkpoint_freq=5,
         checkpoint_at_end=True,
-        stop={"iter": 20},
-        export_formats=[ExportFormat.H5]
+        stop={"training_iteration": 100},
+        export_formats=[ExportFormat.H5],
+        reuse_actors=True,
     )
     print(result)
     ray.shutdown()

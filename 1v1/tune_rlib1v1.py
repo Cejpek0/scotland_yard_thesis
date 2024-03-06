@@ -7,7 +7,7 @@ from ray.tune.experiment.trial import ExportFormat
 from ray.util.client import ray
 from ray.tune.registry import register_env
 import scotland_yard_game1v1 as scotland_yard_game
-from environments.rlib.scotland_yard_environment_1v1 import ScotlandYardEnvironment1v1
+from src.environments.rlib.scotland_yard_environment_1v1 import ScotlandYardEnvironment1v1
 
 if __name__ == "__main__":
     ray.init(num_gpus=1)
