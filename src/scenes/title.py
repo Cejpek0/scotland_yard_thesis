@@ -24,11 +24,10 @@ class Title(Scene):
         btn_ai.draw()
         btn_cop.draw()
         btn_mr_x.draw()
-        
+
         from src.GameController import UserActions
         if self.game_controller.user_actions[UserActions.mouse_left_up.name]:
             if btn_ai.is_hovered():
                 from src.scenes.game_scene import ScotlandYardScene
                 new_state = ScotlandYardScene(self.game_controller, self.gui_controller)
                 new_state.enter_scene()
-                self.game_controller.scene_stack.append(new_state)

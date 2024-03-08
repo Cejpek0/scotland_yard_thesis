@@ -1,1 +1,1 @@
-Nainstalovat ray 2.9.3
+špatný výpočet possible area

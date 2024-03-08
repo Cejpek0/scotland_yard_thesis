@@ -92,20 +92,7 @@ class ScotlandYardGameVisual:
         return self
 
     def to_highlight_area_of_interest(self):
-        if self.game.get_mr_x().last_known_position is not None:
-            possible_mr_x_positions = self.game.get_circular_radius(
-                self.game.get_mr_x().last_known_position, self.game.get_number_of_turns_since_last_reveal()
-            )
-        else:
-            possible_mr_x_positions = []
-            for starting_position in self.game.start_positions_mr_x:
-                _possible_mr_x_positions = self.game.get_circular_radius(
-                    starting_position,
-                    self.game.get_number_of_turns_since_last_reveal()
-                )
-                for position in _possible_mr_x_positions:
-                    if position not in possible_mr_x_positions:
-                        possible_mr_x_positions.append(position)
+        possible_mr_x_positions = self.game.get_possible_mr_x_positions()
 
         for position in possible_mr_x_positions:
             self.to_draw_rectangle_at_position(position, WHITE, 40)

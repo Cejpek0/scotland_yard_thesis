@@ -30,87 +30,11 @@ class ScotlandYardEnvironment(MultiAgentEnv):
             "cop_3": spaces.Discrete(4)
         })
 
-        general_cop_observation_space = spaces.Box(low=np.array([
-            0,  # current turn
-            0,  # max turns
-            0,  # next reveal
-            0,  # position x
-            0,  # position y
-            -1,  # last known position x of mr x
-            -1,  # last known position y of mr x
-            -1,  # distance to last known position of mr x
-            0,  # position x of other cop_1
-            0,  # position y or other cop_1
-            0,  # distance to other cop_1
-            0,  # position x of other cop_2
-            0,  # position y or other cop_2
-            0,  # distance to other cop_2
-            0,  # position x of closest point of interest
-            0,  # position y of closest point of interest
-            0,  # distance to the closest point of interest
-            0,  # inside or outside area of interest
-        ]), high=np.array([
-            scotland_yard_game.MAX_NUMBER_OF_TURNS,  # current turn
-            scotland_yard_game.MAX_NUMBER_OF_TURNS,  # max turns
-            scotland_yard_game.MAX_NUMBER_OF_TURNS,  # next reveal
-            scotland_yard_game.GRID_SIZE,  # position x
-            scotland_yard_game.GRID_SIZE,  # position y
-            scotland_yard_game.GRID_SIZE,  # last known position x of mr x
-            scotland_yard_game.GRID_SIZE,  # last known position y of mr x
-            scotland_yard_game.MAX_DISTANCE,  # distance to last known position of mr x
-            scotland_yard_game.GRID_SIZE,  # position x of other cop_1
-            scotland_yard_game.GRID_SIZE,  # position y or other cop_1
-            scotland_yard_game.MAX_DISTANCE,  # distance to other cop_1
-            scotland_yard_game.GRID_SIZE,  # position x of other cop_2
-            scotland_yard_game.GRID_SIZE,  # position y or other cop_2
-            scotland_yard_game.MAX_DISTANCE,  # distance to other cop_2,
-            scotland_yard_game.GRID_SIZE,  # position x of closest point of interest
-            scotland_yard_game.GRID_SIZE,  # position y of closest point of interest
-            scotland_yard_game.MAX_DISTANCE,  # distance to the closest point of interest
-            1,  # inside or outside area of interest
-        ]), dtype=np.float32)
-
         self.observation_space = spaces.dict.Dict({
-            "mr_x": spaces.Box(low=np.array([
-                0,  # current turn
-                0,  # max turns
-                0,  # next reveal
-                0,  # position x
-                0,  # position y
-                -1,  # last known position x
-                -1,  # last known position y
-                -1,  # distance to last known position
-                0,  # position x of cop_1
-                0,  # position y or cop_1
-                0,  # distance to cop_1
-                0,  # position x of cop_2
-                0,  # position y or cop_2
-                0,  # distance to cop_2
-                0,  # position x of cop_3
-                0,  # position y or cop_3
-                0,  # distance to cop_3
-            ]), high=np.array([
-                scotland_yard_game.MAX_NUMBER_OF_TURNS,  # current turn
-                scotland_yard_game.MAX_NUMBER_OF_TURNS,  # max turns
-                scotland_yard_game.MAX_NUMBER_OF_TURNS,  # next reveal
-                scotland_yard_game.GRID_SIZE,  # position x
-                scotland_yard_game.GRID_SIZE,  # position y
-                scotland_yard_game.GRID_SIZE,  # last known position x
-                scotland_yard_game.GRID_SIZE,  # last known position y
-                scotland_yard_game.GRID_SIZE * 2,  # distance to last known position
-                scotland_yard_game.GRID_SIZE,  # position x of cop_1
-                scotland_yard_game.GRID_SIZE,  # position y or cop_1
-                scotland_yard_game.GRID_SIZE * 2,  # distance to cop_1
-                scotland_yard_game.GRID_SIZE,  # position x of cop_2
-                scotland_yard_game.GRID_SIZE,  # position y or cop_2
-                scotland_yard_game.GRID_SIZE * 2,  # distance to cop_2
-                scotland_yard_game.GRID_SIZE,  # position x of cop_3
-                scotland_yard_game.GRID_SIZE,  # position y or cop_3
-                scotland_yard_game.GRID_SIZE * 2,  # distance to cop_3
-            ]), dtype=np.float32),
-            "cop_1": general_cop_observation_space,
-            "cop_2": general_cop_observation_space,
-            "cop_3": general_cop_observation_space
+            "mr_x": scotland_yard_game.mrx_observation_space,
+            "cop_1": scotland_yard_game.general_cop_observation_space,
+            "cop_2": scotland_yard_game.general_cop_observation_space,
+            "cop_3": scotland_yard_game.general_cop_observation_space
         })
 
     def step(self, action_dict: Dict[AgentID, int]) -> (
@@ -183,7 +107,61 @@ class ScotlandYardEnvironment(MultiAgentEnv):
         return observations, {"mr_x": 0, "cop_1": 0, "cop_2": 0, "cop_3": 0}
 
     def get_rewards(self, invalid_actions_players: List[str] = None):
-        rewards = self.game.get_rewards(invalid_actions_players)
+        if invalid_actions_players is None:
+            invalid_actions_players = []
+        distance_reward = 0
+        minimum_distance = 5
+        rewards = {}
+        # __ MR X __ #
+        if "mr_x" in invalid_actions_players:
+            rewards["mr_x"] = -20
+        else:
+            # Distance to cops
+            for cop in self.game.get_cops():
+                distance = self.game.get_mr_x().get_distance_to(cop.position)
+                if distance == 0:
+                    distance_reward -= 100
+                else:
+                    distance_reward += round((distance - minimum_distance) * (1 / 3.0), 10)
+            # Distance to last known position
+            if self.game.get_mr_x().last_known_position is not None:
+                distance_reward += round(
+                    self.game.get_mr_x().get_distance_to(self.game.get_mr_x().last_known_position) * 0.2,
+                    10)
+            rewards["mr_x"] = distance_reward
+
+        # __ COPS __ #
+
+        possible_mr_x_positions = self.game.get_possible_mr_x_positions()
+
+        for cop in self.game.get_cops():
+            if f"cop_{cop.number}" in invalid_actions_players:
+                rewards[cop.name] = -50
+                continue
+
+            # Check winnning condition
+            if cop.position == self.game.get_mr_x().position:
+                rewards[cop.name] = 100
+                continue
+
+            # Distance to last known position of mr x
+            distance_reward = 0
+            inside_reward = 0
+
+            closest_position = self.game.get_closest_position(
+                cop.position,
+                possible_mr_x_positions
+            )
+            distance_to_closest_position = cop.get_distance_to(closest_position)
+            if self.game.get_mr_x().last_known_position is not None:
+                if cop.position in possible_mr_x_positions:
+                    inside_reward = 5
+                else:
+                    # Negative reward for being outside of area of interest
+                    inside_reward = -((scotland_yard_game.MAX_DISTANCE - distance_to_closest_position) / scotland_yard_game.MAX_DISTANCE * 5)
+
+            total_reward = distance_reward + inside_reward
+            rewards[cop.name] = total_reward
         return rewards
 
     def get_observations(self):
@@ -196,8 +174,6 @@ class ScotlandYardEnvironment(MultiAgentEnv):
         return {
             "mr_x": mrx_obs
         }
-
-
 
     def getTerminations(self):
         game_over = self.game.get_game_status()

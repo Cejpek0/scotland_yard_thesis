@@ -15,6 +15,7 @@ class UserActions(Enum):
     mouse_left_up = pygame.MOUSEBUTTONUP
     mouse_right_up = pygame.MOUSEBUTTONUP
     mouse_moved = pygame.MOUSEMOTION
+    p_key = pygame.K_p
 
 
 class GameController():
@@ -29,7 +30,7 @@ class GameController():
         self.scene_stack.append(self.title_screen)
         pygame.init()
 
-        self.running, self.playing = True, True
+        self.running, self.playing = True, False
         self.user_actions = {}
         for action in UserActions:
             self.user_actions[action.name] = False
@@ -56,6 +57,12 @@ class GameController():
                     self.running = False
                 if event.key == UserActions.enter.value:  # Enter btn
                     self.user_actions[UserActions.enter.name] = True
+                if event.key == UserActions.space.value:  # Space btn
+                    self.user_actions[UserActions.space.name] = True
+                if event.key == UserActions.backspace.value:  # Backspace btn
+                    self.user_actions[UserActions.backspace.name] = True
+                if event.key == UserActions.p_key.value:  # P btn
+                    self.user_actions[UserActions.p_key.name] = True
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     self.user_actions[UserActions.mouse_left_down.name] = True

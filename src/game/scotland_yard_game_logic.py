@@ -3,24 +3,22 @@ import random
 import sys
 import time
 from enum import Enum
-from typing import List
 
 import numpy as np
 import pygame
 from gymnasium import spaces
-from ray.rllib.models import ModelCatalog
-from ray.rllib.policy.policy import PolicySpec
-from ray.rllib.algorithms.ppo import PPO, PPOConfig
 from ray.rllib.algorithms.algorithm import Algorithm
-from ray.tune import register_env
-
-from src.environments.rlib.FakeEnv import FakeEnv
-from src.Player import Player
-from src.colors import *
-
+from ray.rllib.algorithms.ppo import PPO, PPOConfig
 from ray.rllib.examples.models.centralized_critic_models import (
     TorchCentralizedCriticModel,
 )
+from ray.rllib.models import ModelCatalog
+from ray.rllib.policy.policy import PolicySpec
+from ray.tune import register_env
+
+from src.Player import Player
+from src.colors import *
+from src.environments.rlib.FakeEnv import FakeEnv
 
 # Constants
 
@@ -33,86 +31,90 @@ REVEAL_POSITION_TURNS = [3, 8, 13, 18, 24]
 
 ALGORITHM_CHECKPOINT_DIR = "../tuned_results/"
 
+mrx_observation_space = spaces.Box(low=np.array([
+    0,  # current turn
+    0,  # max turns
+    0,  # next reveal
+    0,  # position x
+    0,  # position y
+    -1,  # last known position x
+    -1,  # last known position y
+    -1,  # distance to last known position
+    0,  # position x of cop_1
+    0,  # position y or cop_1
+    0,  # distance to cop_1
+    0,  # position x of cop_2
+    0,  # position y or cop_2
+    0,  # distance to cop_2
+    0,  # position x of cop_3
+    0,  # position y or cop_3
+    0,  # distance to cop_3
+], dtype=np.float32), high=np.array([
+    MAX_NUMBER_OF_TURNS,  # current turn
+    MAX_NUMBER_OF_TURNS,  # max turns
+    MAX_NUMBER_OF_TURNS,  # next reveal
+    GRID_SIZE,  # position x
+    GRID_SIZE,  # position y
+    GRID_SIZE,  # last known position x
+    GRID_SIZE,  # last known position y
+    GRID_SIZE * 2,  # distance to last known position
+    GRID_SIZE,  # position x of cop_1
+    GRID_SIZE,  # position y or cop_1
+    GRID_SIZE * 2,  # distance to cop_1
+    GRID_SIZE,  # position x of cop_2
+    GRID_SIZE,  # position y or cop_2
+    GRID_SIZE * 2,  # distance to cop_2
+    GRID_SIZE,  # position x of cop_3
+    GRID_SIZE,  # position y or cop_3
+    GRID_SIZE * 2,  # distance to cop_3
+]), dtype=np.float32)
+
+general_cop_observation_space = spaces.Box(low=np.array([
+    0,  # current turn
+    0,  # max turns
+    0,  # next reveal
+    0,  # position x
+    0,  # position y
+    -1,  # last known position x of mr x
+    -1,  # last known position y of mr x
+    -1,  # distance to last known position of mr x
+    0,  # position x of other cop_1
+    0,  # position y or other cop_1
+    0,  # distance to other cop_1
+    0,  # position x of other cop_2
+    0,  # position y or other cop_2
+    0,  # distance to other cop_2
+    0,  # position x of closest point of interest
+    0,  # position y of closest point of interest
+    0,  # distance to the closest point of interest
+    0,  # inside or outside area of interest
+], dtype=np.float32), high=np.array([
+    MAX_NUMBER_OF_TURNS,  # current turn
+    MAX_NUMBER_OF_TURNS,  # max turns
+    MAX_NUMBER_OF_TURNS,  # next reveal
+    GRID_SIZE,  # position x
+    GRID_SIZE,  # position y
+    GRID_SIZE,  # last known position x of mr x
+    GRID_SIZE,  # last known position y of mr x
+    MAX_DISTANCE,  # distance to last known position of mr x
+    GRID_SIZE,  # position x of other cop_1
+    GRID_SIZE,  # position y or other cop_1
+    MAX_DISTANCE,  # distance to other cop_1
+    GRID_SIZE,  # position x of other cop_2
+    GRID_SIZE,  # position y or other cop_2
+    MAX_DISTANCE,  # distance to other cop_2,
+    GRID_SIZE,  # position x of closest point of interest
+    GRID_SIZE,  # position y of closest point of interest
+    MAX_DISTANCE,  # distance to the closest point of interest
+    1,  # inside or outside area of interest
+]), dtype=np.float32)
+
 MR_X_POLICY_SPEC = PolicySpec(
-    observation_space=spaces.Box(low=np.array([
-        0,  # current turn
-        0,  # max turns
-        0,  # next reveal
-        0,  # position x
-        0,  # position y
-        -1,  # last known position x
-        -1,  # last known position y
-        -1,  # distance to last known position
-        0,  # position x of cop_1
-        0,  # position y or cop_1
-        0,  # distance to cop_1
-        0,  # position x of cop_2
-        0,  # position y or cop_2
-        0,  # distance to cop_2
-        0,  # position x of cop_3
-        0,  # position y or cop_3
-        0,  # distance to cop_3
-    ]), high=np.array([
-        MAX_NUMBER_OF_TURNS,  # current turn
-        MAX_NUMBER_OF_TURNS,  # max turns
-        MAX_NUMBER_OF_TURNS,  # next reveal
-        GRID_SIZE,  # position x
-        GRID_SIZE,  # position y
-        GRID_SIZE,  # last known position x
-        GRID_SIZE,  # last known position y
-        GRID_SIZE * 2,  # distance to last known position
-        GRID_SIZE,  # position x of cop_1
-        GRID_SIZE,  # position y or cop_1
-        GRID_SIZE * 2,  # distance to cop_1
-        GRID_SIZE,  # position x of cop_2
-        GRID_SIZE,  # position y or cop_2
-        GRID_SIZE * 2,  # distance to cop_2
-        GRID_SIZE,  # position x of cop_3
-        GRID_SIZE,  # position y or cop_3
-        GRID_SIZE * 2,  # distance to cop_3
-    ]), dtype=np.float32),
+    observation_space=mrx_observation_space,
     action_space=spaces.Discrete(4),
 )
 COP_POLICY_SPEC = PolicySpec(
-    observation_space=spaces.Box(low=np.array([
-        0,  # current turn
-        0,  # max turns
-        0,  # next reveal
-        0,  # position x
-        0,  # position y
-        -1,  # last known position x of mr x
-        -1,  # last known position y of mr x
-        -1,  # distance to last known position
-        0,  # position x of other cop_1
-        0,  # position y or other cop_1
-        0,  # distance to other cop_1
-        0,  # position x of other cop_2
-        0,  # position y or other cop_2
-        0,  # distance to other cop_2
-        0,  # position x of closest point of interest
-        0,  # position y of closest point of interest
-        0,  # distance to the closest point of interest
-        0,  # inside or outside area of interest
-    ]), high=np.array([
-        MAX_NUMBER_OF_TURNS,  # current turn
-        MAX_NUMBER_OF_TURNS,  # max turns
-        MAX_NUMBER_OF_TURNS,  # next reveal
-        GRID_SIZE,  # position x
-        GRID_SIZE,  # position y
-        GRID_SIZE,  # last known position x of mr x
-        GRID_SIZE,  # last known position y of mr x
-        MAX_DISTANCE,  # distance to last known position
-        GRID_SIZE,  # position x of other cop_1
-        GRID_SIZE,  # position y or other cop_1
-        MAX_DISTANCE,  # distance to other cop_1
-        GRID_SIZE,  # position x of other cop_2
-        GRID_SIZE,  # position y or other cop_2
-        MAX_DISTANCE,  # distance to other cop_2,
-        GRID_SIZE,  # position x of closest point of interest
-        GRID_SIZE,  # position y of closest point of interest
-        MAX_DISTANCE,  # distance to the closest point of interest
-        1,  # inside or outside area of interest
-    ]), dtype=np.float32),
+    observation_space=general_cop_observation_space,
     action_space=spaces.Discrete(4),
 )
 
@@ -144,35 +146,38 @@ class ScotlandYardGameLogic:
         self.algorithm = None
 
         if not training:
-            print("1")
+            def env_creator(env_config):
+                return FakeEnv({})
+
+            register_env("scotland_env", env_creator)
+
             ModelCatalog.register_custom_model(
                 "cc_model",
                 TorchCentralizedCriticModel
             )
-            print("2")
-            my_config = PPOConfig()
+
+            my_config = (PPOConfig()
+                         .training(model={"custom_model": "cc_model"}))
+
             my_config["policies"] = {
                 "mr_x_policy": MR_X_POLICY_SPEC,
                 "cop_policy": COP_POLICY_SPEC,
             }
-            my_config.framework("torch")
-            my_config["policy_mapping_fn"] = \
-                lambda agent_id, episode, worker, *kw: "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
 
-            def env_creator(env_config):
-                return FakeEnv({})  # return an env instance
+            def policy_mapping_fn(agent_id, episode, worker):
+                return "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
 
-            register_env("scotland_env", env_creator)
+            my_config["policy_mapping_fn"] = policy_mapping_fn
 
             print("3")
 
-            if True:
+            if False:
                 from tune_rlib import get_latest_checkpoint
                 latest_checkpoint_dir = get_latest_checkpoint()
 
                 self.algorithm = Algorithm.from_checkpoint(latest_checkpoint_dir)
             else:
-                algo = PPO(env=FakeEnv, config=my_config)
+                algo = PPO(env="scotland_env", config=my_config)
                 print("4")
                 algo.restore(
                     "trained_policies")
@@ -364,7 +369,6 @@ class ScotlandYardGameLogic:
     def get_action_for_player(self, player: Player) -> Direction:
         # Use the policy to obtain an action for the given player and observation
         observations = self.get_observations()
-        player_observation = observations[player.name]
 
         count = 0
         direction = None
@@ -376,6 +380,7 @@ class ScotlandYardGameLogic:
                                                                         policy_id="mr_x_policy" if player.number == 0 else "cop_policy")
             else:
                 generated_action = random.randint(0, 3)
+                print(f"Generated random action after 100 tries")
             direction = Direction(generated_action)
             if self.is_valid_move(player, direction):
                 action_is_valid = True
@@ -404,9 +409,6 @@ class ScotlandYardGameLogic:
 
     def play_turn(self):
         self.turn_number += 1
-        print(f"Turn: {self.turn_number}")
-        if self.turn_number in REVEAL_POSITION_TURNS:
-            self.get_mr_x().mr_x_reveal_position()
 
         for player in self.players:
             action = self.get_action_for_player(player)
@@ -414,6 +416,8 @@ class ScotlandYardGameLogic:
             time.sleep(0.2)
             if self.get_game_status() != GameStatus.ONGOING:
                 break
+        if self.turn_number in REVEAL_POSITION_TURNS:
+            self.get_mr_x().mr_x_reveal_position()
 
         return self
 
@@ -536,41 +540,14 @@ class ScotlandYardGameLogic:
     def get_distance_between_positions(self, position_1: (int, int), position_2: (int, int)) -> float:
         return math.sqrt((position_1[0] - position_2[0]) ** 2 + (position_1[1] - position_2[1]) ** 2)
 
-    # -- END: HELPER FUNCTIONS -- #
-
-    def get_rewards(self, invalid_actions_players: List[str] = None):
-        if invalid_actions_players is None:
-            invalid_actions_players = []
-        distance_reward = 0
-        minimum_distance = 5
-        rewards = {}
-        # __ MR X __ #
-        if "mr_x" in invalid_actions_players:
-            rewards["mr_x"] = -20
-        else:
-            # Distance to cops
-            for cop in self.get_cops():
-                distance = self.get_mr_x().get_distance_to(cop.position)
-                if distance == 0:
-                    distance_reward -= 100
-                else:
-                    distance_reward += round((distance - minimum_distance) * (1 / 3.0), 10)
-            # Distance to last known position
-            if self.get_mr_x().last_known_position is not None:
-                distance_reward += round(
-                    self.get_mr_x().get_distance_to(self.get_mr_x().last_known_position) * 0.2,
-                    10)
-            rewards["mr_x"] = distance_reward
-
-        # __ COPS __ #
+    def get_possible_mr_x_positions(self) -> [()]:
+        possible_mr_x_positions = []
 
         if self.get_mr_x().last_known_position is not None:
-            # Create radius around last known position of mr x
             possible_mr_x_positions = self.get_circular_radius(
                 self.get_mr_x().last_known_position, self.get_number_of_turns_since_last_reveal()
             )
         else:
-            # Create radius around all possible start positions of mr x
             possible_mr_x_positions = []
             for starting_position in self.start_positions_mr_x:
                 _possible_mr_x_positions = self.get_circular_radius(
@@ -580,33 +557,5 @@ class ScotlandYardGameLogic:
                 for position in _possible_mr_x_positions:
                     if position not in possible_mr_x_positions:
                         possible_mr_x_positions.append(position)
-
-        for cop in self.get_cops():
-            if f"cop_{cop.number}" in invalid_actions_players:
-                rewards[cop.name] = -50
-                continue
-
-            # Check winnning condition
-            if cop.position == self.get_mr_x().position:
-                rewards[cop.name] = 100
-                continue
-
-            # Distance to last known position of mr x
-            distance_reward = 0
-            inside_reward = 0
-
-            closest_position = self.get_closest_position(
-                cop.position,
-                possible_mr_x_positions
-            )
-            distance_to_closest_position = cop.get_distance_to(closest_position)
-            if self.get_mr_x().last_known_position is not None:
-                if cop.position in possible_mr_x_positions:
-                    inside_reward = 5
-                else:
-                    # Negative reward for being outside of area of interest
-                    inside_reward = -((MAX_DISTANCE - distance_to_closest_position) / MAX_DISTANCE * 5)
-
-            total_reward = distance_reward + inside_reward
-            rewards[cop.name] = total_reward
-        return rewards
+        return possible_mr_x_positions
+    # -- END: HELPER FUNCTIONS -- #

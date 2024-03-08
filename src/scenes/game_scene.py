@@ -13,24 +13,29 @@ class ScotlandYardScene(Scene):
     def __init__(self, game_controller: GameController, gui_controller: GuiController):
         Scene.__init__(self, game_controller, gui_controller)
 
+        self.time_of_end = None
         self.game = ScotlandYardGameLogic(training=False)
         self.game_visual = ScotlandYardGameVisual(self.game, gui_controller)
         self.cell_size = gui_controller.width // GRID_SIZE
 
     def update(self, delta_time, actions):
-        print("update")
         from src.GameController import UserActions
-        if actions[UserActions.space.name]:
+
+        if actions[UserActions.p_key.name]:
             from src.scenes.pause_menu import PauseMenu
             new_state = PauseMenu(self.game_controller, self.gui_controller)
             new_state.enter_scene()
-        else:
+        elif actions[UserActions.space.name] and self.game.get_game_status() == GameStatus.ONGOING:
+            self.game_controller.playing = not self.game_controller.playing
+        elif self.game_controller.playing:
             self.game.play_turn()
             if self.game.get_game_status() != GameStatus.ONGOING:
-                print("Game over")
+                print("Game overrrr")
                 self.game_controller.playing = False
-                time.sleep(3)
-                self.exit_scene()
+                self.time_of_end = time.time()
+
+        if self.time_of_end and time.time() - self.time_of_end > 2:
+            self.exit_scene()
 
     def render(self, display):
         self.game_visual.redraw()
