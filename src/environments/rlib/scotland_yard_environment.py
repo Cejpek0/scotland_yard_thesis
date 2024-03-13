@@ -24,10 +24,10 @@ class ScotlandYardEnvironment(MultiAgentEnv):
         self.num_agents = len(self._agent_ids)
 
         self.action_space = spaces.dict.Dict({
-            "mr_x": spaces.Discrete(4),
-            "cop_1": spaces.Discrete(4),
-            "cop_2": spaces.Discrete(4),
-            "cop_3": spaces.Discrete(4)
+            "mr_x": spaces.Discrete(9),
+            "cop_1": spaces.Discrete(9),
+            "cop_2": spaces.Discrete(9),
+            "cop_3": spaces.Discrete(9)
         })
 
         self.observation_space = spaces.dict.Dict({

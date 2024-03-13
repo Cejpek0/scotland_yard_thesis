@@ -112,21 +112,25 @@ general_cop_observation_space = spaces.Box(low=np.array([
 
 MR_X_POLICY_SPEC = PolicySpec(
     observation_space=mrx_observation_space,
-    action_space=spaces.Discrete(4),
+    action_space=spaces.Discrete(9),
 )
 COP_POLICY_SPEC = PolicySpec(
     observation_space=general_cop_observation_space,
-    action_space=spaces.Discrete(4),
+    action_space=spaces.Discrete(9),
 )
 
 
 # Enumerations
 class Direction(Enum):
-    RIGHT = 0
-    LEFT = 1
-    UP = 2
-    DOWN = 3
-
+    STOP = 0
+    UP = 1
+    UP_RIGHT = 2
+    RIGHT = 3
+    DOWN_RIGHT = 4
+    DOWN = 5
+    DOWN_LEFT = 6
+    LEFT = 7
+    UP_LEFT = 8
 
 class GameStatus(Enum):
     COPS_WON = 1
@@ -228,13 +232,12 @@ class ScotlandYardGameLogic:
 
     # -- BEGIN: RL FUNCTIONS -- #
 
-    def get_circular_radius(self, position: (int, int), r: int):
+    def get_square_radius(self, position: (int, int), r: int):
         positions = []
-        for i in range(-r, r + 1):
-            for j in range(-r, r + 1):
-                if i ** 2 + j ** 2 <= r ** 2:
-                    if self.is_position_inside_grid((position[0] + i, position[1] + j)):
-                        positions.append((position[0] + i, position[1] + j))
+        for x in range(position[0] - r, position[0] + r + 1):
+            for y in range(position[1] - r, position[1] + r + 1):
+                if self.is_position_inside_grid((x, y)):
+                    positions.append((x, y))    
         return positions
 
     def get_closest_position(self, position: (int, int), positions: [(int, int)]):
@@ -298,19 +301,7 @@ class ScotlandYardGameLogic:
         # cops
         cops_observations = []
 
-        if self.get_mr_x().last_known_position is not None:
-            # Create radius around last known position of mr x
-            possible_mr_x_positions = self.get_circular_radius(
-                self.get_mr_x().last_known_position, self.get_number_of_turns_since_last_reveal()
-            )
-        else:
-            # Create radius around all possible start positions of mr x
-            possible_mr_x_positions = []
-            for starting_position in self.start_positions_mr_x:
-                _possible_mr_x_positions = self.get_circular_radius(starting_position, 3)
-                for position in _possible_mr_x_positions:
-                    if position not in possible_mr_x_positions:
-                        possible_mr_x_positions.append(position)
+        possible_mr_x_positions = self.get_possible_mr_x_positions()
 
         for cop_number in range(1, self.number_of_cops + 1):
             cop = self.get_cop_by_number(cop_number)
@@ -486,15 +477,25 @@ class ScotlandYardGameLogic:
         return False
 
     def get_position_after_move(self, player: Player, direction: Direction) -> ():
-        if direction == Direction.RIGHT:
-            return player.position[0] + 1, player.position[1]
-        elif direction == Direction.LEFT:
-            return player.position[0] - 1, player.position[1]
+        if direction == Direction.STOP:
+            return player.position
         elif direction == Direction.UP:
             return player.position[0], player.position[1] - 1
+        elif direction == Direction.UP_RIGHT:
+            return player.position[0] + 1, player.position[1] - 1
+        elif direction == Direction.RIGHT:
+            return player.position[0] + 1, player.position[1]
+        elif direction == Direction.DOWN_RIGHT:
+            return player.position[0] + 1, player.position[1] + 1
         elif direction == Direction.DOWN:
             return player.position[0], player.position[1] + 1
-        sys.stderr.write(f"Direction {direction} is not valid\n")
+        elif direction == Direction.DOWN_LEFT:
+            return player.position[0] - 1, player.position[1] + 1
+        elif direction == Direction.LEFT:
+            return player.position[0] - 1, player.position[1]
+        elif direction == Direction.UP_LEFT:
+            return player.position[0] - 1, player.position[1] - 1
+        return -1, -1
 
     def is_valid_move(self, player: Player, direction: Direction) -> bool:
         # Player can only move to position on grid
@@ -544,13 +545,13 @@ class ScotlandYardGameLogic:
     def get_possible_mr_x_positions(self) -> [()]:
 
         if self.get_mr_x().last_known_position is not None:
-            possible_mr_x_positions = self.get_circular_radius(
+            possible_mr_x_positions = self.get_square_radius(
                 self.get_mr_x().last_known_position, self.get_number_of_turns_since_last_reveal()
             )
         else:
             possible_mr_x_positions = []
             for starting_position in self.start_positions_mr_x:
-                _possible_mr_x_positions = self.get_circular_radius(
+                _possible_mr_x_positions = self.get_square_radius(
                     starting_position,
                     self.get_number_of_turns_since_last_reveal()
                 )
