@@ -8,10 +8,4 @@
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\addvspace {10\p@ }
-\addvspace {10\p@ }
-\addvspace {10\p@ }
-\contentsline {figure}{\numberline {D.1}{\ignorespaces \textbf {Široký obrázek.} Obrázek může být složen z více menších obrázků. Chcete-li se na tyto dílčí obrázky odkazovat z textu, využijte balíček \texttt {subcaption}.}}{26}{figure.D.1}%
-\contentsline {figure}{\numberline {D.2}{\ignorespaces Dobrý text je špatným textem, který byl několikrát přepsán. Nebojte se prostě něčím začít.}}{27}{figure.D.2}%
-\addvspace {10\p@ }
 \contentsfinish 

@@ -1,25 +1,20 @@
 \babel@toc {czech}{}\relax 
 \contentsline {chapter}{\numberline {1}Úvod}{3}{chapter.1}%
 \contentsline {chapter}{\numberline {2}Shrnutí dosavadního stavu}{4}{chapter.2}%
-\contentsline {section}{\numberline {2.1}Problémy s neúplnou informací}{4}{section.2.1}%
-\contentsline {section}{\numberline {2.2}Vhodné algoritmy pro řešení problému}{4}{section.2.2}%
-\contentsline {section}{\numberline {2.3}Algoritmus PPO}{4}{section.2.3}%
-\contentsline {chapter}{\numberline {3}Zhodnocení současného stavu a plán práce (návrh)}{5}{chapter.3}%
-\contentsline {chapter}{\numberline {4}Uživatelské rozhraní}{6}{chapter.4}%
-\contentsline {chapter}{\numberline {5}Implementace}{7}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Logika hry}{7}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Prostředí}{7}{section.5.2}%
-\contentsline {section}{\numberline {5.3}Vizuální stránka}{7}{section.5.3}%
-\contentsline {section}{\numberline {5.4}Učení}{7}{section.5.4}%
-\contentsline {chapter}{\numberline {6}Testování}{8}{chapter.6}%
-\contentsline {chapter}{\numberline {7}Závěr}{9}{chapter.7}%
-\contentsline {chapter}{\numberline {8}Přílohy}{10}{chapter.8}%
-\contentsline {chapter}{Literatura}{11}{chapter*.3}%
-\contentsline {chapter}{\numberline {A}Jak pracovat s touto šablonou}{12}{appendix.A}%
-\contentsline {paragraph}{Pozor na číslování stránek!}{13}{section*.5}%
-\contentsline {chapter}{\numberline {B}Psaní anglického textu}{17}{appendix.B}%
-\contentsline {paragraph}{Časté chyby ve slovech}{20}{section*.16}%
-\contentsline {chapter}{\numberline {C}Checklist}{21}{appendix.C}%
-\contentsline {chapter}{\numberline {D}\LaTeX pro začátečníky}{25}{appendix.D}%
-\contentsline {chapter}{\numberline {E}Příklady bibliografických citací}{28}{appendix.E}%
+\contentsline {section}{\numberline {2.1}Hra na motivy Scotland Yard}{4}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Problémy s neúplnou informací}{5}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Vhodné algoritmy pro řešení problému}{5}{section.2.3}%
+\contentsline {section}{\numberline {2.4}Algoritmus PPO}{5}{section.2.4}%
+\contentsline {chapter}{\numberline {3}Zhodnocení současného stavu a plán práce (návrh)}{6}{chapter.3}%
+\contentsline {chapter}{\numberline {4}Uživatelské rozhraní}{7}{chapter.4}%
+\contentsline {chapter}{\numberline {5}Implementace}{8}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Logika hry}{8}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Prostředí}{8}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Vizuální stránka}{8}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Učení}{8}{section.5.4}%
+\contentsline {chapter}{\numberline {6}Testování}{9}{chapter.6}%
+\contentsline {chapter}{\numberline {7}Závěr}{10}{chapter.7}%
+\contentsline {chapter}{\numberline {8}Přílohy}{11}{chapter.8}%
+\contentsline {chapter}{Literatura}{12}{chapter*.7}%
+\contentsline {chapter}{\numberline {A}Checklist}{13}{appendix.A}%
 \contentsfinish 

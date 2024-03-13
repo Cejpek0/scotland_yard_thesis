@@ -17,9 +17,9 @@
 %   projekt-30-prilohy-appendices.tex - přílohy / appendices
 %   projekt-30-prilohy-appendices-en.tex - přílohy v angličtině / appendices in English
 %==============================================================================
-\documentclass[]{fitthesis} % bez zadání - pro začátek práce, aby nebyl problém s překladem
+%\documentclass[]{fitthesis} % bez zadání - pro začátek práce, aby nebyl problém s překladem
 %\documentclass[english]{fitthesis} % without assignment - for the work start to avoid compilation problem
-%\documentclass[zadani]{fitthesis} % odevzdani do IS VUT a/nebo tisk s barevnými odkazy - odkazy jsou barevné
+\documentclass[zadani]{fitthesis} % odevzdani do IS VUT a/nebo tisk s barevnými odkazy - odkazy jsou barevné
 %\documentclass[english,zadani]{fitthesis} % for submission to the IS VUT and/or print with color links - links are color
 %\documentclass[zadani,print]{fitthesis} % pro černobílý tisk - odkazy jsou černé
 %\documentclass[english,zadani,print]{fitthesis} % for the black and white print - links are black
@@ -175,7 +175,16 @@ Uvedl jsem všechny literární prameny, publikace a další zdroje, ze kterých
 }
 
 % Rozšířený abstrakt (cca 3 normostrany) - lze definovat zde nebo výše / Extended abstract (approximately 3 standard pages) - can be defined here or above
-%\extendedabstract{Do tohoto odstavce bude zapsán výtah (abstrakt) práce v českém (slovenském) jazyce.}
+\extendedabstract{
+  \subsection*{Úvod}
+  \subsection*{Hra Scotland Yard} %popsat, že je využita zjednodušená verza, blíže definovaná v jiné kapitole
+  \subsection*{Experimenty}
+  \begin{itemize}
+    \item \textit {Porovnání s náhodnou politikou}
+    \item \textit {Porovnání s jinými algoritmy - implementace DQN - v knihovně rlib}
+    \item \textit {Porovnání s monte carlo algoritmem - zdroj na internetu}
+  \end{itemize}
+}
 % Začít rozšířený abstrakt na liché stránce? / Should extended abstract start on the odd page?
 %\extabstractodd{true}
 

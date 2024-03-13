@@ -1,1 +1,0 @@
-špatný výpočet possible area

@@ -2,30 +2,10 @@
 \makeatother
 \begin{thebibliography}{1}
 
-\bibitem{CernockyEnglish}
-{\sc\bgroup}Černocký{\egroup}, J.
-\newblock {\em English SOS} [online].
-\newblock 2016 {\small [cit. 2019-10-02]}.
-\newblock Dostupn{\'{e}} z: ~{\small\url{https://merlin.fit.vutbr.cz/wiki/index.php/English_SOS}}.
-
 \bibitem{Herout}
 {\sc\bgroup}Herout{\egroup}, A.
 \newblock {\em Herout.net -- Poznámky učitele, kouče, čtenáře.} [online].
 \newblock 2018 {\small [cit. 2019-10-02]}.
 \newblock Dostupn{\'{e}} z: ~{\small\url{http://www.herout.net/}}.
-
-\bibitem{Pysny}
-{\sc\bgroup}Py{\v{s}}n{\'{y}}{\egroup}, R.
-\newblock {\em BiBTeX styl pro {\v{C}}SN ISO 690 a {\v{C}}SN ISO 690-2}.
-\newblock Brno, CZ, 2009.
-\newblock Bakal{\'{a}}{\v{r}}sk{\'{a}} pr{\'{a}}ce.
-\newblock Vysok{\'{e}} u{\v{c}}en{\'{i}} technick{\'{e}} v Brn{\v{e}}, Fakulta informa{\v{c}}n{\'{i}}ch technologi{\'{i}}.
-\newblock Dostupn{\'{e}} z: ~{\small\url{https://www.fit.vut.cz/study/thesis/7848/}}.
-
-\bibitem{fitWeb}
-{\sc\bgroup}Rábová{\egroup}, Z., {\sc\bgroup}Hanáček{\egroup}, P., {\sc\bgroup}Peringer{\egroup}, P., {\sc\bgroup}Přikryl{\egroup}, P. a~{\sc\bgroup}Křena{\egroup}, B.
-\newblock {\em Užitečné rady pro psaní práce} [online].
-\newblock FIT VUT v~Brně, listopad 2008 {\small [cit. 2019-10-02]}.
-\newblock Dostupn{\'{e}} z: ~{\small\url{https://www.fit.vut.cz/study/theses/theses-advice/}}.
 
 \end{thebibliography}

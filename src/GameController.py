@@ -4,6 +4,7 @@ from enum import Enum
 from src.GuiController import GuiController
 
 
+
 # Enumerations
 class UserActions(Enum):
     backspace = pygame.K_BACKSPACE
@@ -24,10 +25,11 @@ class GameController():
         self.assets_dir = os.path.join("assets")
         self.sprite_dir = os.path.join(self.assets_dir, "sprites")
 
-        self.scene_stack = []
+        from src.scene_stack import SceneStack
+        self.scene_stack = SceneStack()
         from src.scenes.title import Title
         self.title_screen = Title(self, self.gui_controller)
-        self.scene_stack.append(self.title_screen)
+        self.scene_stack.push(self.title_screen)
         pygame.init()
 
         self.running, self.playing = True, False
@@ -42,6 +44,11 @@ class GameController():
         while self.running:
             self.get_dt()
             self.get_events()
+            if self.user_actions[UserActions.escape.name]:
+                if len(self.scene_stack) > 1:
+                    self.scene_stack.pop()
+                else:
+                    self.quit_game()
             self.update()
             self.render()
             self.reset_keys()
@@ -53,8 +60,7 @@ class GameController():
                 self.running = False
             if event.type == pygame.KEYDOWN:
                 if event.key == UserActions.escape.value:
-                    self.playing = False
-                    self.running = False
+                    self.user_actions[UserActions.escape.name] = True
                 if event.key == UserActions.enter.value:  # Enter btn
                     self.user_actions[UserActions.enter.name] = True
                 if event.key == UserActions.space.value:  # Space btn
@@ -77,13 +83,20 @@ class GameController():
                 self.user_actions[UserActions.mouse_moved.name] = True
 
     def update(self):
-        self.scene_stack[-1].update(self.dt, self.user_actions)
+        self.scene_stack.top().update(self.dt, self.user_actions)
 
     def render(self):
-        self.scene_stack[-1].render(self.gui_controller.game_canvas)
+        self.scene_stack.top().render(self.gui_controller.game_canvas)
 
         self.gui_controller.screen.blit(self.gui_controller.game_canvas, (0, 0))
         pygame.display.flip()
+
+    def quit_game(self):
+        self.playing = False
+        self.running = False
+        self.scene_stack.top().scene_cleanup()
+        pygame.quit()
+        exit(0)
 
     def get_dt(self):
         now = time.time()

@@ -35,7 +35,13 @@ class ScotlandYardScene(Scene):
                 self.time_of_end = time.time()
 
         if self.time_of_end and time.time() - self.time_of_end > 2:
-            self.exit_scene()
+            self.game.reset()
+            self.game_controller.playing = True
+            self.time_of_end = None
 
     def render(self, display):
         self.game_visual.redraw()
+
+    def scene_cleanup(self):
+        self.game_controller.playing = False
+        self.game.quit()

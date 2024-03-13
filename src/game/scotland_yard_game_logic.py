@@ -6,6 +6,7 @@ from enum import Enum
 
 import numpy as np
 import pygame
+import ray
 from gymnasium import spaces
 from ray.rllib.algorithms.algorithm import Algorithm
 from ray.rllib.algorithms.ppo import PPO, PPOConfig
@@ -220,7 +221,7 @@ class ScotlandYardGameLogic:
         return self
 
     def quit(self):
-        pygame.quit()
+        ray.shutdown()
         return self
 
     # -- END: CORE FUNCTIONS -- #
@@ -436,7 +437,7 @@ class ScotlandYardGameLogic:
     def get_previous_reveal_turn_number(self):
         previous_reveal_turn_number = 0
         for reveal_turn_number in REVEAL_POSITION_TURNS:
-            if reveal_turn_number < self.turn_number:
+            if reveal_turn_number <= self.turn_number:
                 previous_reveal_turn_number = reveal_turn_number
         return previous_reveal_turn_number
 
@@ -541,7 +542,6 @@ class ScotlandYardGameLogic:
         return math.sqrt((position_1[0] - position_2[0]) ** 2 + (position_1[1] - position_2[1]) ** 2)
 
     def get_possible_mr_x_positions(self) -> [()]:
-        possible_mr_x_positions = []
 
         if self.get_mr_x().last_known_position is not None:
             possible_mr_x_positions = self.get_circular_radius(
