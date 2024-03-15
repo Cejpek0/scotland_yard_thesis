@@ -52,6 +52,7 @@ class GameController():
             self.update()
             self.render()
             self.reset_keys()
+            time.sleep(0.2)
 
     def get_events(self):
         for event in pygame.event.get():

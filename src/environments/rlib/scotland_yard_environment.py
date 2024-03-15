@@ -79,9 +79,9 @@ class ScotlandYardEnvironment(MultiAgentEnv):
 
         # Update game state
         if "cop_3" in action_dict.keys():
-            self.game.turn_number += 1
+            self.game.round_number += 1
             # Reveal mr x position if current turn is in REVEAL_POSITION_TURNS
-            if self.game.get_current_turn_number() in scotland_yard_game.REVEAL_POSITION_TURNS:
+            if self.game.get_current_round_number() in scotland_yard_game.REVEAL_POSITION_TURNS:
                 self.game.get_mr_x().last_known_position = self.game.get_mr_x().position
 
         # Return observations, rewards, terminates,truncateds, info

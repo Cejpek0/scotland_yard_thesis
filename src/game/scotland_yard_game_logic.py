@@ -17,6 +17,8 @@ from ray.rllib.models import ModelCatalog
 from ray.rllib.policy.policy import PolicySpec
 from ray.tune import register_env
 
+from src.Cop import Cop
+from src.MrX import MrX
 from src.Player import Player
 from src.colors import *
 from src.environments.rlib.FakeEnv import FakeEnv
@@ -28,7 +30,7 @@ MAX_DISTANCE = math.ceil(math.sqrt(GRID_SIZE ** 2 + GRID_SIZE ** 2))
 NUMBER_OF_STARTING_POSITIONS_COPS = 10
 NUMBER_OF_STARTING_POSITIONS_MR_X = 5
 MAX_NUMBER_OF_TURNS = 24
-REVEAL_POSITION_TURNS = [3, 8, 13, 18, 24]
+REVEAL_POSITION_ROUNDS = [3, 8, 13, 18, 24]
 
 ALGORITHM_CHECKPOINT_DIR = "../tuned_results/"
 
@@ -132,16 +134,22 @@ class Direction(Enum):
     LEFT = 7
     UP_LEFT = 8
 
+
 class GameStatus(Enum):
     COPS_WON = 1
     MR_X_WON = 2
     ONGOING = 3
 
 
+class DefinedAlgorithms(Enum):
+    PPO = 1
+    RANDOM = 2
+
+
 class ScotlandYardGameLogic:
     def __init__(self, training=False):
         self.number_of_cops = 3
-        self.turn_number = 0
+        self.round_number = 0
         self.start_positions_mr_x = []
         self.start_positions_cops = []
         self.grid_size = GRID_SIZE
@@ -149,6 +157,7 @@ class ScotlandYardGameLogic:
         self.number_of_starting_positions_mr_x = NUMBER_OF_STARTING_POSITIONS_MR_X
         self.players = []
         self.algorithm = None
+        self.playing_player_index = 0
 
         if not training:
             def env_creator(env_config):
@@ -194,16 +203,16 @@ class ScotlandYardGameLogic:
 
     def create_players(self):
         self.players.clear()
-        self.players.append(Player(0, color=RED, name="mr_x"))
+        self.players.append(MrX(0, color=RED, name="mr_x"))
         for i in range(self.number_of_cops):
-            self.players.append(Player(i + 1, color=GREEN, name=f"cop_{i + 1}"))
+            self.players.append(Cop(i + 1, color=GREEN, name=f"cop_{i + 1}"))
         return self
 
     # -- BEGIN: CORE FUNCTIONS -- #
 
     def reset(self):
         # init game state
-        self.turn_number = 0
+        self.round_number = 0
         self.start_positions_mr_x.clear()
         self.start_positions_cops.clear()
         self.players.clear()
@@ -237,7 +246,7 @@ class ScotlandYardGameLogic:
         for x in range(position[0] - r, position[0] + r + 1):
             for y in range(position[1] - r, position[1] + r + 1):
                 if self.is_position_inside_grid((x, y)):
-                    positions.append((x, y))    
+                    positions.append((x, y))
         return positions
 
     def get_closest_position(self, position: (int, int), positions: [(int, int)]):
@@ -259,9 +268,9 @@ class ScotlandYardGameLogic:
         # mr_x
         if mr_x.last_known_position is not None:
             obs_list_mrx = np.array([
-                self.get_current_turn_number(),
-                self.get_max_turns(),
-                self.get_next_reveal_turn_number(),
+                self.get_current_round_number(),
+                self.get_round_turns(),
+                self.get_next_reveal_round_number(),
                 mr_x.position[0],
                 mr_x.position[1],
                 mr_x.last_known_position[0],
@@ -279,9 +288,9 @@ class ScotlandYardGameLogic:
             ]).astype(np.float32)
         else:
             obs_list_mrx = np.array([
-                self.get_current_turn_number(),
-                self.get_max_turns(),
-                self.get_next_reveal_turn_number(),
+                self.get_current_round_number(),
+                self.get_round_turns(),
+                self.get_next_reveal_round_number(),
                 mr_x.position[0],
                 mr_x.position[1],
                 -1,
@@ -307,9 +316,9 @@ class ScotlandYardGameLogic:
             cop = self.get_cop_by_number(cop_number)
             if mr_x.last_known_position is not None:
                 obs_list_cop = np.array([
-                    self.get_current_turn_number(),
-                    self.get_max_turns(),
-                    self.get_next_reveal_turn_number(),
+                    self.get_current_round_number(),
+                    self.get_round_turns(),
+                    self.get_next_reveal_round_number(),
                     cop.position[0],
                     cop.position[1],
                     mr_x.last_known_position[0],
@@ -318,9 +327,9 @@ class ScotlandYardGameLogic:
                 ]).astype(np.float32)
             else:
                 obs_list_cop = np.array([
-                    self.get_current_turn_number(),
-                    self.get_max_turns(),
-                    self.get_next_reveal_turn_number(),
+                    self.get_current_round_number(),
+                    self.get_round_turns(),
+                    self.get_next_reveal_round_number(),
                     cop.position[0],
                     cop.position[1],
                     -1,
@@ -358,6 +367,25 @@ class ScotlandYardGameLogic:
 
         return observations
 
+    def get_random_action(self):
+        count = 0
+        direction = None
+        action_is_valid = False
+        while not action_is_valid:
+            if count < 10:
+                generated_action = random.randint(0, len(Direction) - 1)
+            else:
+                generated_action = 0
+                for i in range(len(Direction)):
+                    generated_action = i
+                    if self.is_valid_move(self.get_current_player(), Direction(generated_action)):
+                        return Direction(generated_action)
+            direction = Direction(generated_action)
+            if self.is_valid_move(self.get_current_player(), direction):
+                action_is_valid = True
+            count += 1
+        return direction
+
     def get_action_for_player(self, player: Player) -> Direction:
         # Use the policy to obtain an action for the given player and observation
         observations = self.get_observations()
@@ -369,15 +397,15 @@ class ScotlandYardGameLogic:
         while not action_is_valid:
             if count < 100:
                 generated_action = self.algorithm.compute_single_action(observations[player.name],
-                                                                        policy_id="mr_x_policy" if player.number == 0 else "cop_policy")
+                                                                        policy_id="mr_x_policy" if player.number == 0
+                                                                        else "cop_policy")
             else:
-                generated_action = random.randint(0, 3)
+                generated_action = self.get_random_action()
                 print(f"Generated random action after 100 tries")
             direction = Direction(generated_action)
             if self.is_valid_move(player, direction):
                 action_is_valid = True
             count += 1
-        print(f"Generated action after {count} tries")
         return direction
 
     # -- END: RL FUNCTIONS -- #
@@ -399,18 +427,30 @@ class ScotlandYardGameLogic:
             exit(1)
         return self
 
-    def play_turn(self):
-        self.turn_number += 1
+    def get_current_player(self):
+        return self.players[self.playing_player_index]
 
-        for player in self.players:
-            action = self.get_action_for_player(player)
-            self.move_player(player, action)
-            time.sleep(0.2)
-            if self.get_game_status() != GameStatus.ONGOING:
-                break
-        if self.turn_number in REVEAL_POSITION_TURNS:
+    def play_turn(self, cop_algo=DefinedAlgorithms.PPO, mr_x_algo=DefinedAlgorithms.PPO):
+        if self.playing_player_index == 0:
+            self.round_number += 1
+
+        player = self.get_current_player()
+        action = None
+        if player.is_mr_x():
+            if mr_x_algo == DefinedAlgorithms.PPO:
+                action = self.get_action_for_player(player)
+            elif mr_x_algo == DefinedAlgorithms.RANDOM:
+                action = self.get_random_action()
+        elif player.is_cop():
+            if cop_algo == DefinedAlgorithms.PPO:
+                action = self.get_action_for_player(player)
+            elif cop_algo == DefinedAlgorithms.RANDOM:
+                action = self.get_random_action()
+
+        self.move_player(player, action)
+        if self.round_number in REVEAL_POSITION_ROUNDS and player.is_mr_x():
             self.get_mr_x().mr_x_reveal_position()
-
+        self.playing_player_index = (self.playing_player_index + 1) % len(self.players)
         return self
 
     # -- END: GAMEPLAY FUNCTIONS -- #
@@ -422,13 +462,13 @@ class ScotlandYardGameLogic:
             return False
         return True
 
-    def get_number_of_turns_since_last_reveal(self):
-        return self.turn_number - self.get_previous_reveal_turn_number()
+    def get_number_of_rounds_since_last_reveal(self):
+        return self.round_number - self.get_previous_reveal_round_number()
 
-    def get_previous_reveal_turn_number(self):
+    def get_previous_reveal_round_number(self):
         previous_reveal_turn_number = 0
-        for reveal_turn_number in REVEAL_POSITION_TURNS:
-            if reveal_turn_number <= self.turn_number:
+        for reveal_turn_number in REVEAL_POSITION_ROUNDS:
+            if reveal_turn_number <= self.round_number:
                 previous_reveal_turn_number = reveal_turn_number
         return previous_reveal_turn_number
 
@@ -445,7 +485,7 @@ class ScotlandYardGameLogic:
                 success = True
         return random_positions
 
-    def get_mr_x(self):
+    def get_mr_x(self) -> MrX:
         return self.players[0]
 
     def get_cops(self):
@@ -457,19 +497,21 @@ class ScotlandYardGameLogic:
                 return cop
         return None
 
-    def get_current_turn_number(self):
-        return self.turn_number
+    def get_current_round_number(self):
+        return self.round_number
 
-    def get_max_turns(self):
+    def get_round_turns(self):
         return MAX_NUMBER_OF_TURNS
 
-    def get_next_reveal_turn_number(self):
-        for turn_number in REVEAL_POSITION_TURNS:
-            if turn_number > self.turn_number:
+    def get_next_reveal_round_number(self):
+        for turn_number in REVEAL_POSITION_ROUNDS:
+            if turn_number > self.round_number:
                 return turn_number
         return MAX_NUMBER_OF_TURNS
 
     def is_valid_start_position(self, player: Player, position: ()):
+        if position[0] < 0 or position[0] >= self.grid_size or position[1] < 0 or position[1] >= self.grid_size:
+            return False
         if player.number == 0 and position in self.start_positions_mr_x:
             return True
         elif player.number != 0 and position in self.start_positions_cops:
@@ -524,7 +566,7 @@ class ScotlandYardGameLogic:
         for cop in self.get_cops():
             if cop.position == mr_x.position:
                 return GameStatus.COPS_WON
-        if self.turn_number >= MAX_NUMBER_OF_TURNS:
+        if self.round_number >= MAX_NUMBER_OF_TURNS:
             return GameStatus.MR_X_WON
         return GameStatus.ONGOING
 
@@ -546,14 +588,14 @@ class ScotlandYardGameLogic:
 
         if self.get_mr_x().last_known_position is not None:
             possible_mr_x_positions = self.get_square_radius(
-                self.get_mr_x().last_known_position, self.get_number_of_turns_since_last_reveal()
+                self.get_mr_x().last_known_position, self.get_number_of_rounds_since_last_reveal()
             )
         else:
             possible_mr_x_positions = []
             for starting_position in self.start_positions_mr_x:
                 _possible_mr_x_positions = self.get_square_radius(
                     starting_position,
-                    self.get_number_of_turns_since_last_reveal()
+                    self.get_number_of_rounds_since_last_reveal()
                 )
                 for position in _possible_mr_x_positions:
                     if position not in possible_mr_x_positions:

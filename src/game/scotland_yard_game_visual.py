@@ -43,7 +43,7 @@ class ScotlandYardGameVisual:
          .to_draw_players()
          .to_highlight_area_of_interest()
          )
-        self.gui_controller.to_draw_text(text=f"Turn: {self.game.turn_number}", position=(10, 10))
+        self.gui_controller.to_draw_text(text=f"Turn: {self.game.round_number}", position=(10, 10))
         # set game status to display if game is over
         game_status = self.game.get_game_status()
         if game_status == GameStatus.COPS_WON:
