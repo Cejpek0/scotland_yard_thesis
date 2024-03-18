@@ -1,0 +1,141 @@
+% Tento soubor nahraďte vlastním souborem s obsahem práce.
+%=========================================================================
+% Autoři: Michal Bidlo, Bohuslav Křena, Jaroslav Dytrych, Petr Veigend a Adam Herout 2019
+
+% Pro kompilaci po částech (viz projekt.tex), nutno odkomentovat a upravit
+%\documentclass[../projekt.tex]{subfiles}
+%\begin{document}
+
+\chapter{Úvod}
+\label{uvod}
+
+Umělá inteligence je obor, který nás postupem let všechny obkopuje čím dál tím více.
+Dokonce je navždy spjata i s naším českým národem, když Karel Čapek dal zrodu slova robot.
+
+Pokrok umělé inteligence je často měřen aplikací v oblasti her.
+Hry jsou vhodným ukazatelem pokroku v oblasti umělé inteligence, protože mají jasná pravidla, výkon je snadno měřitelný a pokrok dokáže vidět i lajk.
+Umělá inteligence již dokázala porazit nejlepší hráče v šachu \cite{DeepBlue}, Dota 2 \cite{Dota2} a Go \cite{AlphaGo}.
+
+Hra studovaná v této práci je hra Scotland Yard. Je to hra pro tři až šest hráčů.
+V této hře obvykle hraje jeden hráč jako Pan X, který se snaží uniknout policistům, ovládanými ostatními hráči.
+Policisté avšak nevědí, kde na herním poli se Pan X nachází. Musí tedy odhadovat jeho pozici a spolupracovat mezi sebou, aby ho mohli polapit.
+Pozice Pana X je odhalena pouze v určitých kolech.
+Hra končí, když je Pan X chycen (vyhrávají policisté), nebo když je dosažen maximální počet kol (vyhrává Pan X).
+Scotland Yard je ideální hrou pro studování umělé inteligence, protože je hra s neúplnou informací a k vítězství policistů je zapotřebí spolupráce.
+
+Zaměření této práce jsem si vybral jelikož mi vždy byla umělá inteligence blízká a vždy jsem chtěl .
+Avšak jsem nikdy nenašel odhodlání ponořit se do této oblasti.
+
+Rozhodl jsem se pro bližší zkoumání algoritmů posilovaného učení, konkrétně algoritmu PPO (Proximal Policy Optimization).
+Tento algoritmus je často používán pro řešení problémů se spojitými veličinamy a ve 3D prostoru.
+Dle provedených studií je vhodný pro řešení problémů s neúplnou informací \cite{Manille} a je vhodný pro hry na schování a hledání \cite{PPO_Hide_Seek}.
+Proto je pro mě zajímavý a zkušenost s tímto algoritmém by se dala využít v mém pracovním životě.
+
+Pro zpracování práce byl využity tyto hlavní knihovny:
+\begin{itemize}
+  \item \textit{Ray.Rlib} - knihovna s implementací algoritmu PPO
+  \item \textit{PyTorch} - podpůrná knihovna Ray.Rlib
+  \item \textit{TensorFlow} - podpůrná knihovna Ray.Rlib
+  \item \textit{Gym} - knihovna pro vytvoření prostředí pro učení
+  \item \textit{Pygame} - knihovna pro vytváření uživatelského rozhraní
+\end{itemize}
+
+
+\chapter{Shrnutí dosavadního stavu}
+\label{dosavadni-stav}
+
+\begin{itemize}
+  \item \textit {40-50\,\% rozsahu práce}
+  \item \textit{Hodně citovat literaturu}
+  \item \textit{Vysvětlit všechno, už ne pro plebíky}
+  \item \textit{Je vhodné na začátku této části uvést, co obsahuje a proč a taky že „není encyklopedickým přehledem“}
+  \item \textit{Asi tak ze 2 kapitol?}
+  \item \textit{Existující řešení (implementace scotlandu, říct že se implementuje pomocí tamtoho algoritmu a proč jsem vzal PPO)}
+\end{itemize}
+
+
+\section{Hra na motivy Scotland Yard}
+
+Scotland Yard je populární hra pro tři a více hráčů, která kombinuje prvky schovávané a hry na honěnou.
+Jeden hráč hraje za Pana X, který se snaží uniknout policistům, ovládanými ostatními hráči.
+Hra končí, když je Pan X chycen (vyhrávají policisté), nebo když je dosažen maximální počet kol (vyhrává Pan X).
+Originální hra se odehrává v Londýně.
+Na herní mapě se nachází 200 polí, které jsou vzájemně propojené náhodnými cestami.
+Každá cesta povoluje určitý způsob pohybu (např. pouze taxíkem, pouze autobusem, atd.).
+Jednotliví hráči využívají prvky veřejné dopravy k pohybu po herní ploše, kterými jsou:
+\begin{itemize}
+  \item \textit{Taxi}
+  \item \textit{Autobus}
+  \item \textit{Metro}
+  \item \textit{Trajekt}
+\end{itemize}
+
+Každému hráči je na začátku hry přidělen pouze určitý počet jízdenek na tyto dopravní prostředky. Pro využití dopravy je potřebná právě tato jízdenka. Pokud ji hráč nemá, nemůže již tento způsob přepravy použít.
+Hra se dělí na kola, ve kterých se hráči střídají.
+
+
+Hlavní myšlenkou hry je, že po většinu kol je pozice Pana X je policistům utajena. Odhaluje se jim pouze určená kola. To znamená, že policisté musí odhadovat další kroky Pana X aby ho mohli polapit.
+Tímto se ze hry Scotland Yard stává hra s neúplnou informací. Tento fakt ji činí vhodnou pro studování a rozvíjení oboru umělé inteligence.
+
+\subsection*{Zkoumaná modifikovaná verze}
+
+Tato práce využívá modifikovanou verzi hry Scotland Yard, ve které se hráči pohybují po mřížkové herní ploše ve tvaru čtverce.
+Na mřížce se nachází 15x15 polí. Hračí se po těchto polích pohybují ortogonálně i diagonálně, vždy o maximálně 1 pole.
+Hráč se může rozhodnot nezměnit pozici a zůstat na svém aktuálním poli.
+K pohybu nejsou potřebné žádné jízdenky.
+Toto zjednodušení herní plochy nijak nemění základní podstatu hry, zachovává neurčitost, ale značně zjednodušuje implementaci.
+
+\section{Hry s neúplnou informací}
+
+
+
+\section{Vhodné algoritmy pro řešení problému} // Popsat algoritmy pro řešení problému s neúplnou informací + algoritmy úspěšné v řešení hry scotland yard
+\section{Algoritmus PPO}
+
+\chapter{Zhodnocení současného stavu a plán práce (návrh)}
+\label{navrh}
+\begin{itemize}
+  \item \textit {Kritické zhodnocení dosavadního stavu}
+  \item \textit {Návrh, co by bylo vhodné vyřešit na základě znalostí dosavadního stavu}
+  \item \textit {Co jste konkrétně udělal s teorií popsanou výše}
+  \item \textit {Volba OS, jazyk, knihovny}
+  \item \textit {Detailní rozbor zadání práce, detailní specifikace a formulace cíle a jeho částí}
+  \item \textit {Popis použití řešení, situace/problémy, které projekt řeší}
+  \item \textit {Postup práce/kroky vedoucí k cíli, rozdělení celku na podčásti}
+  \item \textit {Návrh celého řešení i jeho částí, s odkazy na teoretickou část}
+\end{itemize}
+
+\chapter{Uživatelské rozhraní}
+\label{rozhrani}
+
+\begin{itemize}
+  \item \textit {}
+\end{itemize}
+
+\chapter{Implementace}
+\label{implementace}
+
+\begin{itemize}
+  \item \textit {}
+\end{itemize}
+
+\section{Logika hry}
+\section{Prostředí}
+\section{Vizuální stránka}
+\section{Učení}
+
+
+
+\chapter{Testování}
+\label{testovani}
+\chapter{Závěr}
+\label{zaver}
+\chapter{Přílohy}
+\label{prilohy}
+
+
+
+%===============================================================================
+
+% Pro kompilaci po částech (viz projekt.tex) nutno odkomentovat
+%\end{document}

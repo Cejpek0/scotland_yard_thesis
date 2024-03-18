@@ -2,10 +2,40 @@
 \makeatother
 \begin{thebibliography}{1}
 
+\bibitem{Manille}
+{\sc\bgroup}Baes{\egroup}, J.
+\newblock {\em Application of Reinforcement Learning Algorithms to the Card Game Manille}.
+\newblock 2022.
+\newblock Diplomová práce.
+\newblock UGent. Faculteit Ingenieurswetenschappen en Architectuur.
+
+\bibitem{PPO_Hide_Seek}
+{\sc\bgroup}Baker{\egroup}, B., {\sc\bgroup}Kanitscheider{\egroup}, I., {\sc\bgroup}Markov{\egroup}, T., {\sc\bgroup}Wu{\egroup}, Y., {\sc\bgroup}Powell{\egroup}, G. et~al.
+\newblock {\em Emergent Tool Use From Multi-Agent Autocurricula}.
+\newblock 2020.
+
+\bibitem{AlphaGo}
+{\sc\bgroup}Borowiec{\egroup}, S.
+\newblock {\em AlphaGo seals 4-1 victory over Go grandmaster Lee Sedol} [online].
+\newblock 2019 {\small [cit. 2024-03-18]}.
+\newblock Dostupn{\'{e}} z: ~{\small\url{https://www.theguardian.com/technology/2016/mar/15/googles-alphago-seals-4-1-victory-over-grandmaster-lee-sedol}}.
+
 \bibitem{Herout}
 {\sc\bgroup}Herout{\egroup}, A.
 \newblock {\em Herout.net -- Poznámky učitele, kouče, čtenáře.} [online].
 \newblock 2018 {\small [cit. 2019-10-02]}.
 \newblock Dostupn{\'{e}} z: ~{\small\url{http://www.herout.net/}}.
+
+\bibitem{DeepBlue}
+{\sc\bgroup}Newborn{\egroup}, M.
+\newblock {\em Kasparov versus deep blue: computer chess comes of age}.
+\newblock Springer-VerlagBerlin, Heidelberg, 1996.
+\newblock ISBN 978-0-387-94820-1.
+
+\bibitem{Dota2}
+{\sc\bgroup}OpenAI{\egroup}.
+\newblock {\em OpenAI Five defeats Dota 2 world champions} [online].
+\newblock 2019 {\small [cit. 2024-03-18]}.
+\newblock Dostupn{\'{e}} z: ~{\small\url{https://en.wikipedia.org/wiki/Deep_Blue_(chess_computer)}}.
 
 \end{thebibliography}
