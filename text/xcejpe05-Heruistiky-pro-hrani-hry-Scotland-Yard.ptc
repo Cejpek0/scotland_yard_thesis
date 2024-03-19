@@ -2,20 +2,22 @@
 \contentsline {chapter}{\numberline {1}Úvod}{3}{chapter.1}%
 \contentsline {chapter}{\numberline {2}Shrnutí dosavadního stavu}{4}{chapter.2}%
 \contentsline {section}{\numberline {2.1}Hra na motivy Scotland Yard}{4}{section.2.1}%
-\contentsline {section}{\numberline {2.2}Hry s neúplnou informací}{5}{section.2.2}%
-\contentsline {section}{\numberline {2.3}Vhodné algoritmy pro řešení problému}{5}{section.2.3}%
-\contentsline {section}{\numberline {2.4}Algoritmus PPO}{5}{section.2.4}%
-\contentsline {chapter}{\numberline {3}Zhodnocení současného stavu a plán práce (návrh)}{6}{chapter.3}%
-\contentsline {chapter}{\numberline {4}Uživatelské rozhraní}{7}{chapter.4}%
-\contentsline {chapter}{\numberline {5}Implementace}{8}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Logika hry}{8}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Prostředí}{8}{section.5.2}%
-\contentsline {section}{\numberline {5.3}Vizuální stránka}{8}{section.5.3}%
-\contentsline {section}{\numberline {5.4}Učení}{8}{section.5.4}%
-\contentsline {chapter}{\numberline {6}Testování}{9}{chapter.6}%
-\contentsline {chapter}{\numberline {7}Závěr}{10}{chapter.7}%
-\contentsline {chapter}{\numberline {8}Přílohy}{11}{chapter.8}%
-\contentsline {chapter}{Literatura}{12}{chapter*.7}%
+\contentsline {section}{\numberline {2.2}Bayesovské hry: Hry s neúplnou informací}{5}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Klíčové koncepty posilovaného učení}{6}{section.2.3}%
+\contentsline {section}{\numberline {2.4}Vhodné algoritmy pro řešení her s neúplnou informací}{6}{section.2.4}%
+\contentsline {section}{\numberline {2.5}Proximální optimalizace politiky}{7}{section.2.5}%
+\contentsline {section}{\numberline {2.6}Algoritmus PPO}{7}{section.2.6}%
+\contentsline {chapter}{\numberline {3}Zhodnocení současného stavu a plán práce (návrh)}{8}{chapter.3}%
+\contentsline {chapter}{\numberline {4}Uživatelské rozhraní hry Scotland Yard}{9}{chapter.4}%
+\contentsline {chapter}{\numberline {5}Implementace umělé inteligence do hry Scotland Yard pomocí algoritmu PPO}{10}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Logika hry}{10}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Prostředí}{10}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Vizuální stránka}{10}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Učení}{10}{section.5.4}%
+\contentsline {chapter}{\numberline {6}Testování}{11}{chapter.6}%
+\contentsline {chapter}{\numberline {7}Závěr}{12}{chapter.7}%
+\contentsline {chapter}{\numberline {8}Přílohy}{13}{chapter.8}%
+\contentsline {chapter}{Literatura}{14}{chapter*.15}%
 \ttl@starttoc {chapters@1}
-\contentsline {chapter}{\numberline {A}Checklist}{13}{appendix.A}%
+\contentsline {chapter}{\numberline {A}Checklist}{15}{appendix.A}%
 \contentsfinish 

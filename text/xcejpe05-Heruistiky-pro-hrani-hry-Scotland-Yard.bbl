@@ -20,15 +20,16 @@
 \newblock 2019 {\small [cit. 2024-03-18]}.
 \newblock Dostupn{\'{e}} z: ~{\small\url{https://www.theguardian.com/technology/2016/mar/15/googles-alphago-seals-4-1-victory-over-grandmaster-lee-sedol}}.
 
-\bibitem{Herout}
-{\sc\bgroup}Herout{\egroup}, A.
-\newblock {\em Herout.net -- Poznámky učitele, kouče, čtenáře.} [online].
-\newblock 2018 {\small [cit. 2019-10-02]}.
-\newblock Dostupn{\'{e}} z: ~{\small\url{http://www.herout.net/}}.
+\bibitem{Y_Narahari}
+{\sc\bgroup}Narahari{\egroup}, Y.
+\newblock {\em Game Theory} [online].
+\newblock 2012 {\small [cit. 2024-03-19]}.
+\newblock Dostupn{\'{e}} z: ~{\small\url{https://gtl.csa.iisc.ac.in/gametheory/ln/web-ncp13-bayesian.pdf}}.
 
 \bibitem{DeepBlue}
 {\sc\bgroup}Newborn{\egroup}, M.
 \newblock {\em Kasparov versus deep blue: computer chess comes of age}.
+\newblock 1. vyd.
 \newblock Springer-VerlagBerlin, Heidelberg, 1996.
 \newblock ISBN 978-0-387-94820-1.
 
@@ -37,5 +38,15 @@
 \newblock {\em OpenAI Five defeats Dota 2 world champions} [online].
 \newblock 2019 {\small [cit. 2024-03-18]}.
 \newblock Dostupn{\'{e}} z: ~{\small\url{https://en.wikipedia.org/wiki/Deep_Blue_(chess_computer)}}.
+
+\bibitem{Perolat_2022}
+{\sc\bgroup}Perolat{\egroup}, J., {\sc\bgroup}De Vylder{\egroup}, B., {\sc\bgroup}Hennes{\egroup}, D., {\sc\bgroup}Tarassov{\egroup}, E., {\sc\bgroup}Strub{\egroup}, F. et~al.
+\newblock Mastering the game of Stratego with model-free multiagent reinforcement learning.
+\newblock {\em Science}.
+\newblock American Association for the Advancement of Science (AAAS).
+\newblock prosinec 2022, sv.~378, č.~6623, s.~990–996.
+\newblock DOI: 10.1126/science.add4679.
+\newblock ISSN 1095-9203.
+\newblock Dostupn{\'{e}} z: ~{\small\url{http://dx.doi.org/10.1126/science.add4679}}.
 
 \end{thebibliography}

@@ -16,9 +16,11 @@ Pokrok umělé inteligence je často měřen aplikací v oblasti her.
 Hry jsou vhodným ukazatelem pokroku v oblasti umělé inteligence, protože mají jasná pravidla, výkon je snadno měřitelný a pokrok dokáže vidět i lajk.
 Umělá inteligence již dokázala porazit nejlepší hráče v šachu \cite{DeepBlue}, Dota 2 \cite{Dota2} a Go \cite{AlphaGo}.
 
-Hra studovaná v této práci je hra Scotland Yard. Je to hra pro tři až šest hráčů.
+Hra studovaná v této práci je hra Scotland Yard.
+Je to hra pro tři až šest hráčů.
 V této hře obvykle hraje jeden hráč jako Pan X, který se snaží uniknout policistům, ovládanými ostatními hráči.
-Policisté avšak nevědí, kde na herním poli se Pan X nachází. Musí tedy odhadovat jeho pozici a spolupracovat mezi sebou, aby ho mohli polapit.
+Policisté avšak nevědí, kde na herním poli se Pan X nachází.
+Musí tedy odhadovat jeho pozici a spolupracovat mezi sebou, aby ho mohli polapit.
 Pozice Pana X je odhalena pouze v určitých kolech.
 Hra končí, když je Pan X chycen (vyhrávají policisté), nebo když je dosažen maximální počet kol (vyhrává Pan X).
 Scotland Yard je ideální hrou pro studování umělé inteligence, protože je hra s neúplnou informací a k vítězství policistů je zapotřebí spolupráce.
@@ -33,11 +35,11 @@ Proto je pro mě zajímavý a zkušenost s tímto algoritmém by se dala využí
 
 Pro zpracování práce byl využity tyto hlavní knihovny:
 \begin{itemize}
-  \item \textit{Ray.Rlib} - knihovna s implementací algoritmu PPO
-  \item \textit{PyTorch} - podpůrná knihovna Ray.Rlib
-  \item \textit{TensorFlow} - podpůrná knihovna Ray.Rlib
-  \item \textit{Gym} - knihovna pro vytvoření prostředí pro učení
-  \item \textit{Pygame} - knihovna pro vytváření uživatelského rozhraní
+  \item \emph{Ray.Rlib} - knihovna s implementací algoritmu PPO
+  \item \emph{PyTorch} - podpůrná knihovna Ray.Rlib
+  \item \emph{TensorFlow} - podpůrná knihovna Ray.Rlib
+  \item \emph{Gym} - knihovna pro vytvoření prostředí pro učení
+  \item \emph{Pygame} - knihovna pro vytváření uživatelského rozhraní
 \end{itemize}
 
 
@@ -45,12 +47,12 @@ Pro zpracování práce byl využity tyto hlavní knihovny:
 \label{dosavadni-stav}
 
 \begin{itemize}
-  \item \textit {40-50\,\% rozsahu práce}
-  \item \textit{Hodně citovat literaturu}
-  \item \textit{Vysvětlit všechno, už ne pro plebíky}
-  \item \textit{Je vhodné na začátku této části uvést, co obsahuje a proč a taky že „není encyklopedickým přehledem“}
-  \item \textit{Asi tak ze 2 kapitol?}
-  \item \textit{Existující řešení (implementace scotlandu, říct že se implementuje pomocí tamtoho algoritmu a proč jsem vzal PPO)}
+  \item \emph {40-50\,\% rozsahu práce}
+  \item \emph{Hodně citovat literaturu}
+  \item \emph{Vysvětlit všechno, už ne pro plebíky}
+  \item \emph{Je vhodné na začátku této části uvést, co obsahuje a proč a taky že „není encyklopedickým přehledem“}
+  \item \emph{Asi tak ze 2 kapitol?}
+  \item \emph{Existující řešení (implementace scotlandu, říct že se implementuje pomocí tamtoho algoritmu a proč jsem vzal PPO)}
 \end{itemize}
 
 
@@ -61,62 +63,175 @@ Jeden hráč hraje za Pana X, který se snaží uniknout policistům, ovládaný
 Hra končí, když je Pan X chycen (vyhrávají policisté), nebo když je dosažen maximální počet kol (vyhrává Pan X).
 Originální hra se odehrává v Londýně.
 Na herní mapě se nachází 200 polí, které jsou vzájemně propojené náhodnými cestami.
-Každá cesta povoluje určitý způsob pohybu (např. pouze taxíkem, pouze autobusem, atd.).
+Každá cesta povoluje určitý způsob pohybu (např.
+pouze taxíkem, pouze autobusem, atd.).
 Jednotliví hráči využívají prvky veřejné dopravy k pohybu po herní ploše, kterými jsou:
 \begin{itemize}
-  \item \textit{Taxi}
-  \item \textit{Autobus}
-  \item \textit{Metro}
-  \item \textit{Trajekt}
+  \item \emph{Taxi}
+  \item \emph{Autobus}
+  \item \emph{Metro}
+  \item \emph{Trajekt}
 \end{itemize}
 
-Každému hráči je na začátku hry přidělen pouze určitý počet jízdenek na tyto dopravní prostředky. Pro využití dopravy je potřebná právě tato jízdenka. Pokud ji hráč nemá, nemůže již tento způsob přepravy použít.
+Každému hráči je na začátku hry přidělen pouze určitý počet jízdenek na tyto dopravní prostředky.
+Pro využití dopravy je potřebná právě tato jízdenka.
+Pokud ji hráč nemá, nemůže již tento způsob přepravy použít.
 Hra se dělí na kola, ve kterých se hráči střídají.
 
 
-Hlavní myšlenkou hry je, že po většinu kol je pozice Pana X je policistům utajena. Odhaluje se jim pouze určená kola. To znamená, že policisté musí odhadovat další kroky Pana X aby ho mohli polapit.
-Tímto se ze hry Scotland Yard stává hra s neúplnou informací. Tento fakt ji činí vhodnou pro studování a rozvíjení oboru umělé inteligence.
+Hlavní myšlenkou hry je, že po většinu kol je pozice Pana X je policistům utajena.
+Odhaluje se jim pouze určená kola.
+To znamená, že policisté musí odhadovat další kroky Pana X aby ho mohli polapit.
+Tímto se ze hry Scotland Yard stává hra s neúplnou informací, jelikož policisté nevidí přesnou pozici Pana X.
+Tento fakt ji činí vhodnou pro studování a rozvíjení oboru umělé inteligence.
 
 \subsection*{Zkoumaná modifikovaná verze}
 
 Tato práce využívá modifikovanou verzi hry Scotland Yard, ve které se hráči pohybují po mřížkové herní ploše ve tvaru čtverce.
-Na mřížce se nachází 15x15 polí. Hračí se po těchto polích pohybují ortogonálně i diagonálně, vždy o maximálně 1 pole.
+Na mřížce se nachází {\color{red}[15x15]} polí.
+Hračí se po těchto polích pohybují ortogonálně i diagonálně, vždy o maximálně 1 pole.
 Hráč se může rozhodnot nezměnit pozici a zůstat na svém aktuálním poli.
 K pohybu nejsou potřebné žádné jízdenky.
 Toto zjednodušení herní plochy nijak nemění základní podstatu hry, zachovává neurčitost, ale značně zjednodušuje implementaci.
 
-\section{Hry s neúplnou informací}
+\section{Bayesovské hry: Hry s neúplnou informací}
+V oblasti umělé inteligence hraje důležitou roli modelování a řešení her.
+Hry představují abstraktní formalizaci konfliktních interakcí mezi aktéry, tzv.
+hráči.
+Klasická teorie her se zaměřuje na hry s úplnou informací, kde mají všechny strany v daném okamžiku přístup ke všem relevantním informacím z herního prostředí.
+V praxi se však častěji setkáváme se situacemi kde jednotlivým stranám chybí určité informace.
+Tyto případy lze modelovat pomocí her s neúplnou informací, kde hráči nemají úplné znalosti o prostředí či soupeřích.
+Neúplnou informaci můžeme sledovat například v:
+\begin{itemize}
+  \item \emph{Ekonomii} - kde se jedná o neúplnou informaci o trhu, cenách, situačních výkyvech, atd.
+  \item \emph{Vojenské strategii} - kde se jedná o neúplnou informaci o pozici nepřítele, jeho vybavení, strategii, cíli, atd.
+  \item \emph{Sportovní hry} - kde se jedná o neúplnou informaci o taktice soupeře, jeho schopnostech, atd.
+\end{itemize}
+
+\emph{Bayesovská hra s neúplnou informací} \cite{Y_Narahari} je definována pěticí $(N, A_i, \theta_i, p(\theta_i), u_i)$, kde:
+
+\begin{itemize}
+\item $N$ je konečná množina hráčů, $N = \{1, 2, \ldots, n\}$.
+\item $A_i$ je neprázdná množina strategií hráče $i$.
+\item $\theta_i$ je neprázdná množina typů hráče $i$.
+\item $p(\theta_i)$ je apriorní pravděpodobnostní rozdělení typu hráče $i$ na $\theta_i$.
+\item $u_i: A_1 \times \cdots \times A_n \times \theta_1 \times \cdots \times \theta_n \rightarrow \mathbb{R}$ je výplatní funkce hráče $i$.
+\end{itemize}
+
+Bayesovské hry představují formální rámec pro modelování her s neúplnou informací.
+
+\subsection*{Stratego}
+
+Stratego je desková strategická hra pro dva hráče, která se odehrává na hracím plánu rozděleném do políček a využívá se k ní sada figurek reprezentujících armádu.
+Vychází z dřívějších her, jako je Šachy a Go, a kombinuje strategické plánování, taktické manévry.
+
+Cílem hry je porazit soupeře nalezením a obsazením jeho vlajky.
+Hráči to dělají tak, že se navzájem utkávají se svými figurkami na herním plánu.
+
+Každý hráč má 40 figur, rozdělených do 11 hodností(generál, plukovník, skaut, atd.).
+Figury lze rozeznat jen z jedné strany, proto oponent neví o jakou figuru se jedná.
+Hráči se střídají v tazích, kdy se snaží najít oponentovu vlajku.
+Hra začíná tím, že každý hráč rozmístí své figury na herní pole.
+Hráči se střídají v tazích, kdy se snaží najít oponentovu vlajku.
+Pokud hráč táhne na pole, kde se nachází oponentova figura, nastává souboj.
+Souboj spočívá v odkrytí obou figur a vyhrává ta s vyšší hodností.
+Figura, která vyhrála zůstává, poražená figura je odstraněna z hry.
+Ve hře Stratego je důležité blafování a odhadování soupeřových tahů.
+
+Z pohledu umělé inteligence je Stratego zapeklitý problém.
+Nejenže je hra s neúplnou informací a je tedy zapotřebí odhadovat oponentovy tahy a blafovat, ale také je hra s velkým prostorem stavů $10^{535}$\cite{Perolat_2022}.
+Až do roku 2022 se AI nepodařilo porazit expertního hráče v této hře.
+To se změnilo příchodem \emph{DeepNash}\cite{Perolat_2022}, kdy se tato metoda umístila mezi 3 nejlepšími hráči světa.
 
 
+\section{Klíčové koncepty posilovaného učení}
+Posilované učení (Reinforcement Learning, RL) je oblast strojového učení, která se zaměřuje na učení agentů v dynamickém prostředí. Agent se učí, jak se chovat, aby maximalizoval kumulativní odměnu.
 
-\section{Vhodné algoritmy pro řešení problému} // Popsat algoritmy pro řešení problému s neúplnou informací + algoritmy úspěšné v řešení hry scotland yard
+\emph{Základní pojmy}
+\begin{itemize}
+  \item \emph{Agent}
+  
+  Je komplexní entita, která interaguje s prostředím.
+  Prostředí poskytuje agentovi informace o stavu a agent na základě těchto pozorování vykonává akce.
+  Tyto akce mohou ovlivnit stav prostředí a agent obdrží odměnu na základě odměnové funkce.
+  Agent volí takové akce aby maximalizoval kumulativní odměnu.
+
+  \item \emph{Prostředí}
+  
+  Je vše s čím agent interaguje.
+  Prostředí je buď fyzické(reálný svět) nebo virtuální(simulace, například hra).
+  Prostředí reaguje na akce agenta poskytuje mu zpětnou vazbu ve formě odměny či trestu(záporná odměna).
+
+  \item \emph{Model}
+  
+  Je matematická funkce, která popisuje chování prostředí v závislosti na agentových akcích.
+  Model může být známý nebo neznámý, to následně rozděluje metody posilovaného učení na 2 základní kategorie: metody s modelem a metody bez modelu.
+
+  \item \emph{Stav}
+  \item \emph{Akce}
+  \item \emph{Odměna}
+  \item \emph{Politika}
+  \item \emph{Hodnotová funkce}
+\end{itemize}
+
+
+\subsection*{Rozdíl mezi nekompletní a neúplnou informací}
+
+
+\section{Vhodné algoritmy pro řešení her s neúplnou informací}
+
+Tato kapitola se zaměřuje na algoritmy, které jsou vhodné pro řešení her s neúplnou informací, s důrazem na metody posilovaného učení a srovnáním s klasickými metodami jako Monte Carlo.
+
+\subsection*{Monte Carlo}
+Metoda Monte Carlo (MC) je pravděpodobnostní metoda, která využívá simulaci hry anásledné odhady hodnoty stavu.
+
+\subsection*{Q-learning}
+\subsection*{Deep Q-learning}
+\subsection*{Metody gradientu politiky}
+\subsubsection*{Věta o gradientu politiky}
+\section{Proximální optimalizace politiky}
+\label{sec:proximalni-optimalizace-politiky}
+
+
+\subsection*{Metody učení}
+\emph{S modelem}
+\emph{Bez modelu}
+\emph{V rámci politky}
+\emph{Mimo rámec politky}
+
+\emph{Model}
+\emph{Epizoda}
+\emph{Politika}
+\emph{Hodnotová funkce}
+\emph{Markovský rozhodovací proces}
+\emph{Bellmanova rovnice}
 \section{Algoritmus PPO}
 
 \chapter{Zhodnocení současného stavu a plán práce (návrh)}
 \label{navrh}
 \begin{itemize}
-  \item \textit {Kritické zhodnocení dosavadního stavu}
-  \item \textit {Návrh, co by bylo vhodné vyřešit na základě znalostí dosavadního stavu}
-  \item \textit {Co jste konkrétně udělal s teorií popsanou výše}
-  \item \textit {Volba OS, jazyk, knihovny}
-  \item \textit {Detailní rozbor zadání práce, detailní specifikace a formulace cíle a jeho částí}
-  \item \textit {Popis použití řešení, situace/problémy, které projekt řeší}
-  \item \textit {Postup práce/kroky vedoucí k cíli, rozdělení celku na podčásti}
-  \item \textit {Návrh celého řešení i jeho částí, s odkazy na teoretickou část}
+  \item \emph {Kritické zhodnocení dosavadního stavu}
+  \item \emph {Návrh, co by bylo vhodné vyřešit na základě znalostí dosavadního stavu}
+  \item \emph {Co jste konkrétně udělal s teorií popsanou výše}
+  \item \emph {Volba OS, jazyk, knihovny}
+  \item \emph {Detailní rozbor zadání práce, detailní specifikace a formulace cíle a jeho částí}
+  \item \emph {Popis použití řešení, situace/problémy, které projekt řeší}
+  \item \emph {Postup práce/kroky vedoucí k cíli, rozdělení celku na podčásti}
+  \item \emph {Návrh celého řešení i jeho částí, s odkazy na teoretickou část}
 \end{itemize}
 
-\chapter{Uživatelské rozhraní}
+\chapter{Uživatelské rozhraní hry Scotland Yard}
 \label{rozhrani}
 
 \begin{itemize}
-  \item \textit {}
+  \item \emph {}
 \end{itemize}
 
-\chapter{Implementace}
+\chapter{Implementace umělé inteligence do hry Scotland Yard pomocí algoritmu PPO}
 \label{implementace}
 
 \begin{itemize}
-  \item \textit {}
+  \item \emph {}
 \end{itemize}
 
 \section{Logika hry}
