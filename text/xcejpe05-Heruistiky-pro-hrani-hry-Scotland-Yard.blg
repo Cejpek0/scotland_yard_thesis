@@ -10,47 +10,46 @@ Reallocated singl_function (elt_size=4) to 100 items from 50.
 Reallocated singl_function (elt_size=4) to 100 items from 50.
 Reallocated singl_function (elt_size=4) to 100 items from 50.
 Database file #1: projekt-20-literatura-bibliography.bib
-Warning--I didn't find a database entry for "Herout"
 Warning--empty edition in Perolat_2022
-You've used 8 entries,
+You've used 11 entries,
             3945 wiz_defined-function locations,
-            872 strings with 7358 characters,
-and the built_in function-call counts, 4202 in all, are:
-= -- 334
-> -- 184
-< -- 17
-+ -- 71
-- -- 63
-* -- 259
-:= -- 555
-add.period$ -- 29
-call.type$ -- 8
-change.case$ -- 89
-chr.to.int$ -- 20
-cite$ -- 9
-duplicate$ -- 230
-empty$ -- 472
-format.name$ -- 63
-if$ -- 982
+            888 strings with 7783 characters,
+and the built_in function-call counts, 5433 in all, are:
+= -- 427
+> -- 212
+< -- 21
++ -- 81
+- -- 69
+* -- 325
+:= -- 695
+add.period$ -- 38
+call.type$ -- 11
+change.case$ -- 110
+chr.to.int$ -- 22
+cite$ -- 12
+duplicate$ -- 316
+empty$ -- 654
+format.name$ -- 69
+if$ -- 1292
 int.to.chr$ -- 0
-int.to.str$ -- 8
+int.to.str$ -- 11
 missing$ -- 0
-newline$ -- 58
-num.names$ -- 16
-pop$ -- 156
+newline$ -- 76
+num.names$ -- 22
+pop$ -- 205
 preamble$ -- 1
-purify$ -- 63
+purify$ -- 72
 quote$ -- 0
-skip$ -- 169
+skip$ -- 233
 stack$ -- 0
-substring$ -- 127
-swap$ -- 49
-text.length$ -- 11
+substring$ -- 159
+swap$ -- 68
+text.length$ -- 17
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 17
+type$ -- 23
 warning$ -- 1
-while$ -- 22
-width$ -- 9
-write$ -- 110
-(There were 2 warnings)
+while$ -- 29
+width$ -- 13
+write$ -- 149
+(There was 1 warning)

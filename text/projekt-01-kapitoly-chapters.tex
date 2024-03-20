@@ -56,7 +56,7 @@ Pro zpracování práce byl využity tyto hlavní knihovny:
 \end{itemize}
 
 
-\section{Hra na motivy Scotland Yard}
+\section{Desková hra Scotland Yard}
 
 Scotland Yard je populární hra pro tři a více hráčů, která kombinuje prvky schovávané a hry na honěnou.
 Jeden hráč hraje za Pana X, který se snaží uniknout policistům, ovládanými ostatními hráči.
@@ -73,26 +73,23 @@ Jednotliví hráči využívají prvky veřejné dopravy k pohybu po herní plo�
   \item \emph{Trajekt}
 \end{itemize}
 
+\begin{figure}[hbt]
+	\centering
+	\includegraphics[width=0.9\textwidth]{obrazky-figures/scotland_original.png}
+	\caption{Ukázka herní mapy pro hru Scotland Yard.
+  Zdroj:\cite{scotland_original_image}}
+\end{figure}
+
 Každému hráči je na začátku hry přidělen pouze určitý počet jízdenek na tyto dopravní prostředky.
 Pro využití dopravy je potřebná právě tato jízdenka.
 Pokud ji hráč nemá, nemůže již tento způsob přepravy použít.
 Hra se dělí na kola, ve kterých se hráči střídají.
-
 
 Hlavní myšlenkou hry je, že po většinu kol je pozice Pana X je policistům utajena.
 Odhaluje se jim pouze určená kola.
 To znamená, že policisté musí odhadovat další kroky Pana X aby ho mohli polapit.
 Tímto se ze hry Scotland Yard stává hra s neúplnou informací, jelikož policisté nevidí přesnou pozici Pana X.
 Tento fakt ji činí vhodnou pro studování a rozvíjení oboru umělé inteligence.
-
-\subsection*{Zkoumaná modifikovaná verze}
-
-Tato práce využívá modifikovanou verzi hry Scotland Yard, ve které se hráči pohybují po mřížkové herní ploše ve tvaru čtverce.
-Na mřížce se nachází {\color{red}[15x15]} polí.
-Hračí se po těchto polích pohybují ortogonálně i diagonálně, vždy o maximálně 1 pole.
-Hráč se může rozhodnot nezměnit pozici a zůstat na svém aktuálním poli.
-K pohybu nejsou potřebné žádné jízdenky.
-Toto zjednodušení herní plochy nijak nemění základní podstatu hry, zachovává neurčitost, ale značně zjednodušuje implementaci.
 
 \section{Bayesovské hry: Hry s neúplnou informací}
 V oblasti umělé inteligence hraje důležitou roli modelování a řešení her.
@@ -138,6 +135,13 @@ Souboj spočívá v odkrytí obou figur a vyhrává ta s vyšší hodností.
 Figura, která vyhrála zůstává, poražená figura je odstraněna z hry.
 Ve hře Stratego je důležité blafování a odhadování soupeřových tahů.
 
+\begin{figure}[hbt]
+	\centering
+	\includegraphics[width=0.6\textwidth]{obrazky-figures/stratego.png}
+	\caption{Ukázka rozestavěných figur ve hře Stratego.
+  Zdroj:\cite{Stratego_image}}
+\end{figure}
+
 Z pohledu umělé inteligence je Stratego zapeklitý problém.
 Nejenže je hra s neúplnou informací a je tedy zapotřebí odhadovat oponentovy tahy a blafovat, ale také je hra s velkým prostorem stavů $10^{535}$\cite{Perolat_2022}.
 Až do roku 2022 se AI nepodařilo porazit expertního hráče v této hře.
@@ -158,7 +162,7 @@ Agent volí takové akce aby maximalizoval kumulativní odměnu.
 \subsection{Prostředí}
 
 Je vše s čím agent interaguje.
-Prostředí je buď fyzické (reálný svět) nebo virtuální (simulace, například hra).
+Prostředí je buď fyzické (entity z reálného světa, ovládání chytré domácnosti, ovládání reaktoru, atd.) nebo virtuální (simulace, například hra).
 Prostředí reaguje na akce agenta poskytuje mu zpětnou vazbu ve formě odměny či trestu (záporná odměna).
 Pokud v prostředí existuje více agentů, může mít každý agent jiné pozorování.
 Diky tomuto můžeme například schovat agentu \textit{A} určité informace, které agent \textit{B} vidí.
@@ -200,17 +204,74 @@ Politika může být deterministická nebo stochastická.
 
   Akce je přechod z aktuálního stavu, do následujícího stavu z množiny možných stavů.
   Zjednodušeně, je to rozhodnutí, které agent vykonává v prostředí a toto rozhodnutí ovlivňuje prostředí.
-  Akce je definována politikou a je závislá na pozorování agenta.
-  
-  
-  
+  Akce zvolena dle politiky a je závislá na pozorování agenta.
   
   \subsection{Odměna}
 
+  Odměna je hodnota, kterou agent obdrží od prostředí po vykonání akce.
+  Může být kladná, záporná nebo nulová.
+  Dle této zpětné vazby se agent učí, jak moc byla jeho zvolená akce v daném stavu vhodná.
+
 \subsection{Hodnotová funkce}
+
+  Hodnotová funkce vyhodnocuje, jak dobrý je stav tím, že predikuje budoucí odměnu.
+  Čím vzdálenější odměna je, tím více je snížena.
+  Jelikož, čím je odměna vzdálenější tím více je nejistá.
+
+  Existují dva typy hodnotových funkcí:
+
+  \subsubsection{Hodnotová funkce stavu $V(s)$}
+
+  Hodnotová funkce stavu \emph{$V(s)$} vyhodnocuje očekávanou komulativní odměnu, pokud se agent nachází v tomto stavu.
+  Tato funkce je závislá na politice, kterou se agent řídí.
+  Vyhodnocuje tedy jak příznivý je daný stav pro agenta.
+
+  \subsubsection*{Hodnotová funkce akce $Q(s, a)$}
+
+  Hodnotová funkce akce \emph{$Q(s, a)$} vyhodnocuje očekávanou komulativní odměnu, pokud se agent nachází v tomto stavu a zvolí tuto akci.
+  Tato funkce je opět závislá na politice, kterou se agent řídí.
+  Vyhodnocuije tedy jak příznié je zvolení dané akce v aktuálním stavu.
+
+
 \subsection{Markovský rozhodovací proces}
+
+Teměř všechny problémy, řešené posilovaným učením, mohou být označeny jako Markovy rozhodovací procesy (Markov Decision Process).
+Tato abstrakce je základním kamenem pro modelování algoritmů posilovaného učení.
+Markovský rozhodovací proces značí, že následující stav není závislý na stavech minulých, nýbrž pouze na aktuálním stavu.
+
+\begin{figure}[hbt]
+	\centering
+	\includegraphics[width=0.6\textwidth]{obrazky-figures/RL_basics.png}
+	\caption{Interakce mezi prostředím a agentem podle Markova rozhodovacího procesu.
+  Zdroj:\cite{RL_basics}}
+\end{figure}
+
+Markovský rozhodovací proces je definován pěticí $(S, A, P, R, \gamma)$\cite{RL_basics}, kde:
+
+\begin{itemize}
+\item $S$ je množina stavů.
+
+\item $A$ je množina akcí.
+\item $P$ je pravděpodobnostní přechodová funkce
+\item $R$ je odměnová funkce
+\item $\gamma$ je diskontní faktor pro budoucí odměny
+\end{itemize}
+
 \subsection{Bellmanova rovnice}
+
+Belmanova rovnice se zamuřuje na rozložení hodnotových funkcí na menží snadněji zpracovatelné celky.
+Dociluje toho tak, že rozděluje hodnotovou funkci na dvě části: \emph{okamžitou odměnu} a postupně snižovanou \emph{budoucí odměnu}.
+
+\begin{equation}
+  V(s) = E[R_{t+1} + \gamma V(S_{t+1}) | S_t = s]
+\end{equation}
+
+\begin{equation}
+  Q(s, a) = E[R_{t+1} + \gamma E_{a\sim\pi}Q(S_{t+1}, a) | S_t = s, A_t = a]
+\end{equation}
+
 \subsection{Rovnováha mezi explorací a exploatací (exploration-exploitation)}
+
 
 
 \subsection*{Rozdíl mezi nekompletní a neúplnou informací}
@@ -230,19 +291,6 @@ Metoda Monte Carlo (MC) je pravděpodobnostní metoda, která využívá simulac
 \section{Proximální optimalizace politiky}
 \label{sec:proximalni-optimalizace-politiky}
 
-
-\subsection*{Metody učení}
-\emph{S modelem}
-\emph{Bez modelu}
-\emph{V rámci politky}
-\emph{Mimo rámec politky}
-
-\emph{Model}
-\emph{Epizoda}
-\emph{Politika}
-\emph{Hodnotová funkce}
-\emph{Markovský rozhodovací proces}
-\emph{Bellmanova rovnice}
 \section{Algoritmus PPO}
 
 \chapter{Zhodnocení současného stavu a plán práce (návrh)}
@@ -258,29 +306,33 @@ Metoda Monte Carlo (MC) je pravděpodobnostní metoda, která využívá simulac
   \item \emph {Návrh celého řešení i jeho částí, s odkazy na teoretickou část}
 \end{itemize}
 
-\chapter{Uživatelské rozhraní hry Scotland Yard}
-\label{rozhrani}
+\section*{Zkoumaná modifikovaná verze hry Scotland Yard}
 
-\begin{itemize}
-  \item \emph {}
-\end{itemize}
+Tato práce využívá modifikovanou verzi hry Scotland Yard, ve které se hráči pohybují po mřížkové herní ploše ve tvaru čtverce.
+Na mřížce se nachází {\color{red}[15x15]} polí.
+Hračí se po těchto polích pohybují ortogonálně i diagonálně, vždy o maximálně 1 pole.
+Hráč se může rozhodnot nezměnit pozici a zůstat na svém aktuálním poli.
+K pohybu nejsou potřebné žádné jízdenky.
+Toto zjednodušení herní plochy nijak nemění základní podstatu hry, zachovává neurčitost, ale značně zjednodušuje implementaci.
+Hra začíná tím, že se vyberou náhodné možné pozice Pana X a policistů.
+Z těchto možných pozíc se následně náhodná pozice přidělí jednotlivým hráčům.
 
-\chapter{Implementace umělé inteligence do hry Scotland Yard pomocí algoritmu PPO}
+
+
+\section*{Implementace umělé inteligence do hry Scotland Yard pomocí algoritmu PPO}
 \label{implementace}
 
-\begin{itemize}
-  \item \emph {}
-\end{itemize}
+\subsection*{Vizuální stránka}
 
-\section{Logika hry}
-\section{Prostředí}
-\section{Vizuální stránka}
-\section{Učení}
+\subsection*{Prostředí}
 
+\subsection*{Učení}
 
+//zmínit, že ray rlib neumí action mapping, takže nejde zamezit zvolení jistých akcí.
+Proto jsou možné i nevalidní akce. Ale jsou velmi penalizovány.
 
-\chapter{Testování}
-\label{testovani}
+\chapter{Experimenty}
+\label{experimenty}
 \chapter{Závěr}
 \label{zaver}
 \chapter{Přílohy}

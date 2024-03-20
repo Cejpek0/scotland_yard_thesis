@@ -1,6 +1,6 @@
 \makeatletter
 \makeatother
-\begin{thebibliography}{1}
+\begin{thebibliography}{10}
 
 \bibitem{Manille}
 {\sc\bgroup}Baes{\egroup}, J.
@@ -25,6 +25,18 @@
 \newblock {\em Policies in Reinforcement Learning} [online].
 \newblock March 2024 {\small [cit. 2024-03-20]}.
 \newblock Dostupn{\'{e}} z: ~{\small\url{https://www.baeldung.com/cs/rl-deterministic-vs-stochastic-policies}}.
+
+\bibitem{Stratego_image}
+{\sc\bgroup}Guinness{\egroup}, H.
+\newblock {\em Here’s how a new AI mastered the tricky game of Stratego} [online].
+\newblock 2022 {\small [cit. 2024-03-20]}.
+\newblock Dostupn{\'{e}} z: ~{\small\url{https://www.popsci.com/technology/ai-stratego/}}.
+
+\bibitem{scotland_original_image}
+{\sc\bgroup}Mliu92{\egroup}.
+\newblock {\em Scotland Yard schematic} [online].
+\newblock 2023 {\small [cit. 2024-03-20]}.
+\newblock Dostupn{\'{e}} z: ~{\small\url{https://commons.wikimedia.org/wiki/File:Scotland_Yard_schematic.svg}}.
 
 \bibitem{Y_Narahari}
 {\sc\bgroup}Narahari{\egroup}, Y.
@@ -54,5 +66,11 @@
 \newblock DOI: 10.1126/science.add4679.
 \newblock ISSN 1095-9203.
 \newblock Dostupn{\'{e}} z: ~{\small\url{http://dx.doi.org/10.1126/science.add4679}}.
+
+\bibitem{RL_basics}
+{\sc\bgroup}Weng{\egroup}, L.
+\newblock {\em A (Long) Peek into Reinforcement Learning} [online].
+\newblock February 2018 {\small [cit. 2024-03-20]}.
+\newblock Dostupn{\'{e}} z: ~{\small\url{https://lilianweng.github.io/posts/2018-02-19-rl-overview/#key-concepts}}.
 
 \end{thebibliography}

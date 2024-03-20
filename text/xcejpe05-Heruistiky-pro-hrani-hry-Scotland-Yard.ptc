@@ -1,35 +1,29 @@
 \babel@toc {czech}{}\relax 
-\contentsline {chapter}{\numberline {1}Úvod}{4}{chapter.1}%
-\contentsline {chapter}{\numberline {2}Shrnutí dosavadního stavu}{5}{chapter.2}%
-\contentsline {section}{\numberline {2.1}Hra na motivy Scotland Yard}{5}{section.2.1}%
-\contentsline {section}{\numberline {2.2}Bayesovské hry: Hry s neúplnou informací}{6}{section.2.2}%
+\contentsline {chapter}{\numberline {1}Úvod}{3}{chapter.1}%
+\contentsline {chapter}{\numberline {2}Shrnutí dosavadního stavu}{4}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Desková hra Scotland Yard}{4}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Bayesovské hry: Hry s neúplnou informací}{5}{section.2.2}%
 \contentsline {section}{\numberline {2.3}Klíčové koncepty posilovaného učení}{7}{section.2.3}%
 \contentsline {subsection}{\numberline {2.3.1}Agent}{7}{subsection.2.3.1}%
 \contentsline {subsection}{\numberline {2.3.2}Prostředí}{7}{subsection.2.3.2}%
 \contentsline {subsection}{\numberline {2.3.3}Model}{7}{subsection.2.3.3}%
 \contentsline {subsection}{\numberline {2.3.4}Politika}{7}{subsection.2.3.4}%
-\contentsline {subsubsection}{Deterministická politika}{7}{section*.8}%
-\contentsline {subsubsection}{Stochastická politika}{8}{section*.9}%
+\contentsline {subsubsection}{Deterministická politika}{7}{section*.7}%
+\contentsline {subsubsection}{Stochastická politika}{7}{section*.8}%
 \contentsline {subsection}{\numberline {2.3.5}Akce}{8}{subsection.2.3.5}%
 \contentsline {subsection}{\numberline {2.3.6}Odměna}{8}{subsection.2.3.6}%
 \contentsline {subsection}{\numberline {2.3.7}Hodnotová funkce}{8}{subsection.2.3.7}%
+\contentsline {subsubsection}{Hodnotová funkce stavu $V(s)$}{8}{section*.9}%
 \contentsline {subsection}{\numberline {2.3.8}Markovský rozhodovací proces}{8}{subsection.2.3.8}%
-\contentsline {subsection}{\numberline {2.3.9}Bellmanova rovnice}{8}{subsection.2.3.9}%
-\contentsline {subsection}{\numberline {2.3.10}Rovnováha mezi explorací a exploatací (exploration-exploitation)}{8}{subsection.2.3.10}%
-\contentsline {section}{\numberline {2.4}Vhodné algoritmy pro řešení her s neúplnou informací}{8}{section.2.4}%
+\contentsline {subsection}{\numberline {2.3.9}Bellmanova rovnice}{9}{subsection.2.3.9}%
+\contentsline {subsection}{\numberline {2.3.10}Rovnováha mezi explorací a exploatací (exploration-exploitation)}{9}{subsection.2.3.10}%
+\contentsline {section}{\numberline {2.4}Vhodné algoritmy pro řešení her s neúplnou informací}{9}{section.2.4}%
 \contentsline {section}{\numberline {2.5}Proximální optimalizace politiky}{9}{section.2.5}%
 \contentsline {section}{\numberline {2.6}Algoritmus PPO}{9}{section.2.6}%
 \contentsline {chapter}{\numberline {3}Zhodnocení současného stavu a plán práce (návrh)}{10}{chapter.3}%
-\contentsline {chapter}{\numberline {4}Uživatelské rozhraní hry Scotland Yard}{11}{chapter.4}%
-\contentsline {chapter}{\numberline {5}Implementace umělé inteligence do hry Scotland Yard pomocí algoritmu PPO}{12}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Logika hry}{12}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Prostředí}{12}{section.5.2}%
-\contentsline {section}{\numberline {5.3}Vizuální stránka}{12}{section.5.3}%
-\contentsline {section}{\numberline {5.4}Učení}{12}{section.5.4}%
-\contentsline {chapter}{\numberline {6}Testování}{13}{chapter.6}%
-\contentsline {chapter}{\numberline {7}Závěr}{14}{chapter.7}%
-\contentsline {chapter}{\numberline {8}Přílohy}{15}{chapter.8}%
-\contentsline {chapter}{Literatura}{16}{chapter*.17}%
+\contentsline {chapter}{\numberline {4}Experimenty}{12}{chapter.4}%
+\contentsline {chapter}{\numberline {5}Závěr}{13}{chapter.5}%
+\contentsline {chapter}{\numberline {6}Přílohy}{14}{chapter.6}%
+\contentsline {chapter}{Literatura}{15}{chapter*.22}%
 \ttl@starttoc {chapters@1}
-\contentsline {chapter}{\numberline {A}Checklist}{17}{appendix.A}%
 \contentsfinish 
