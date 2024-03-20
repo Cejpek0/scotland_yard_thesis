@@ -7,17 +7,17 @@
 \contentsline {subsection}{\numberline {2.3.1}Agent}{7}{subsection.2.3.1}%
 \contentsline {subsection}{\numberline {2.3.2}Prostředí}{7}{subsection.2.3.2}%
 \contentsline {subsection}{\numberline {2.3.3}Model}{7}{subsection.2.3.3}%
-\contentsline {subsection}{\numberline {2.3.4}Akce}{7}{subsection.2.3.4}%
-\contentsline {subsection}{\numberline {2.3.5}Odměna}{7}{subsection.2.3.5}%
-\contentsline {subsection}{\numberline {2.3.6}Politika}{7}{subsection.2.3.6}%
-\contentsline {subsubsection}{Deterministická politika}{8}{section*.8}%
+\contentsline {subsection}{\numberline {2.3.4}Politika}{7}{subsection.2.3.4}%
+\contentsline {subsubsection}{Deterministická politika}{7}{section*.8}%
 \contentsline {subsubsection}{Stochastická politika}{8}{section*.9}%
+\contentsline {subsection}{\numberline {2.3.5}Akce}{8}{subsection.2.3.5}%
+\contentsline {subsection}{\numberline {2.3.6}Odměna}{8}{subsection.2.3.6}%
 \contentsline {subsection}{\numberline {2.3.7}Hodnotová funkce}{8}{subsection.2.3.7}%
 \contentsline {subsection}{\numberline {2.3.8}Markovský rozhodovací proces}{8}{subsection.2.3.8}%
 \contentsline {subsection}{\numberline {2.3.9}Bellmanova rovnice}{8}{subsection.2.3.9}%
 \contentsline {subsection}{\numberline {2.3.10}Rovnováha mezi explorací a exploatací (exploration-exploitation)}{8}{subsection.2.3.10}%
 \contentsline {section}{\numberline {2.4}Vhodné algoritmy pro řešení her s neúplnou informací}{8}{section.2.4}%
-\contentsline {section}{\numberline {2.5}Proximální optimalizace politiky}{8}{section.2.5}%
+\contentsline {section}{\numberline {2.5}Proximální optimalizace politiky}{9}{section.2.5}%
 \contentsline {section}{\numberline {2.6}Algoritmus PPO}{9}{section.2.6}%
 \contentsline {chapter}{\numberline {3}Zhodnocení současného stavu a plán práce (návrh)}{10}{chapter.3}%
 \contentsline {chapter}{\numberline {4}Uživatelské rozhraní hry Scotland Yard}{11}{chapter.4}%
