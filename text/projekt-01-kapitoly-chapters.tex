@@ -6,6 +6,8 @@
 %\documentclass[../projekt.tex]{subfiles}
 %\begin{document}
 
+\newtheorem{definition}{\textbf{Definice}}
+
 \chapter{Úvod}
 \label{uvod}
 
@@ -105,7 +107,8 @@ Neúplnou informaci můžeme sledovat například v:
   \item \emph{Sportovní hry} - kde se jedná o neúplnou informaci o taktice soupeře, jeho schopnostech, atd.
 \end{itemize}
 
-\emph{Bayesovská hra s neúplnou informací} \cite{Y_Narahari} je definována pěticí $(N, A_i, \theta_i, p(\theta_i), u_i)$, kde:
+\begin{definition}[Bayesovská hra]
+\cite{Y_Narahari} je definována pěticí $(N, A_i, \theta_i, p(\theta_i), u_i)$, kde:
 
 \begin{itemize}
 \item $N$ je konečná množina hráčů, $N = \{1, 2, \ldots, n\}$.
@@ -114,7 +117,7 @@ Neúplnou informaci můžeme sledovat například v:
 \item $p(\theta_i)$ je apriorní pravděpodobnostní rozdělení typu hráče $i$ na $\theta_i$.
 \item $u_i: A_1 \times \cdots \times A_n \times \theta_1 \times \cdots \times \theta_n \rightarrow \mathbb{R}$ je výplatní funkce hráče $i$.
 \end{itemize}
-
+\end{definition}
 Bayesovské hry představují formální rámec pro modelování her s neúplnou informací.
 
 \subsection*{Stratego}
@@ -246,6 +249,8 @@ Markovský rozhodovací proces značí, že následující stav není závislý 
   Zdroj:\cite{RL_basics}}
 \end{figure}
 
+\begin{definition}
+  
 Markovský rozhodovací proces je definován pěticí $(S, A, P, R, \gamma)$\cite{RL_basics}, kde:
 
 \begin{itemize}
@@ -256,7 +261,7 @@ Markovský rozhodovací proces je definován pěticí $(S, A, P, R, \gamma)$\cit
 \item $R$ je odměnová funkce
 \item $\gamma$ je diskontní faktor pro budoucí odměny
 \end{itemize}
-
+\end{definition}
 \subsection{Bellmanova rovnice}
 
 Belmanova rovnice se zamuřuje na rozložení hodnotových funkcí na menží snadněji zpracovatelné celky.
