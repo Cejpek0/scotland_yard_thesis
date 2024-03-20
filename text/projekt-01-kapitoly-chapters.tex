@@ -128,7 +128,7 @@ Vychází z dřívějších her, jako je Šachy a Go, a kombinuje strategické p
 Cílem hry je porazit soupeře nalezením a obsazením jeho vlajky.
 Hráči to dělají tak, že se navzájem utkávají se svými figurkami na herním plánu.
 
-Každý hráč má 40 figur, rozdělených do 11 hodností(generál, plukovník, skaut, atd.).
+Každý hráč má 40 figur, rozdělených do 11 hodností (generál, plukovník, skaut, atd.).
 Figury lze rozeznat jen z jedné strany, proto oponent neví o jakou figuru se jedná.
 Hráči se střídají v tazích, kdy se snaží najít oponentovu vlajku.
 Hra začíná tím, že každý hráč rozmístí své figury na herní pole.
@@ -145,34 +145,72 @@ To se změnilo příchodem \emph{DeepNash}\cite{Perolat_2022}, kdy se tato metod
 
 
 \section{Klíčové koncepty posilovaného učení}
-Posilované učení (Reinforcement Learning, RL) je oblast strojového učení, která se zaměřuje na učení agentů v dynamickém prostředí. Agent se učí, jak se chovat, aby maximalizoval kumulativní odměnu.
+Posilované učení (Reinforcement Learning, RL) je oblast strojového učení, která se zaměřuje na učení agentů v dynamickém prostředí.
+Agent se učí strategii chování, která maximalizuje kumulativní odměnu.
 
-\emph{Základní pojmy}
-\begin{itemize}
-  \item \emph{Agent}
+\subsection{Agent}
+
+Je komplexní entita, která interaguje s prostředím.
+Prostředí poskytuje agentovi informace o stavu a agent na základě těchto pozorování vykonává akce.
+Tyto akce mohou ovlivnit stav prostředí a agent obdrží odměnu na základě odměnové funkce.
+Agent volí takové akce aby maximalizoval kumulativní odměnu.
+
+\subsection{Prostředí}
+
+Je vše s čím agent interaguje.
+Prostředí je buď fyzické (reálný svět) nebo virtuální (simulace, například hra).
+Prostředí reaguje na akce agenta poskytuje mu zpětnou vazbu ve formě odměny či trestu (záporná odměna).
+Pokud v prostředí existuje více agentů, může mít každý agent jiné pozorování.
+Diky tomuto můžeme například schovat agentu \textit{A} určité informace, které agent \textit{B} vidí.
+
+\subsection{Model}
+
+Je matematická funkce, která popisuje chování prostředí v závislosti na agentových akcích.
+Model může být známý nebo neznámý, to následně rozděluje metody učení posilovaného na 2 základní kategorie: metody \emph{s modelem} a metody \emph{ bez modelu}.
+
+
+\subsection{Politika}
+
+Pomocí posilovaného učení vzniká takzvaná politika.
+Politika je matematická funkce, která definuje agentovo chování na základě jeho pozorování (stavu).
+Snaží se definovat takové chování, které vede k maximální kumulativní odměně.
+Politika může být deterministická nebo stochastická.
+
+
+  \subsubsection{Deterministická politika}
   
-  Je komplexní entita, která interaguje s prostředím.
-  Prostředí poskytuje agentovi informace o stavu a agent na základě těchto pozorování vykonává akce.
-  Tyto akce mohou ovlivnit stav prostředí a agent obdrží odměnu na základě odměnové funkce.
-  Agent volí takové akce aby maximalizoval kumulativní odměnu.
+  Deterministická politika přesně definuje cílový stav přechodu pro každý stav.
+  Agent tedy pro jeden stav vždy volí stejnou akci.
+  Tato politika je vhodná pokud je zapotřebí v každém stavu reagovat konzistentně, bez odchylek.
+  Například, pokud agent ovládá termostat v domě a teplota je pod požadovanou hladinu.
+  Nemůže se stát aby byla šance, že agent zvolí akci, která teplotu ještě sníží.
+  Další výhoda, je že je jednoduchá na interpretaci a implementaci.\cite{Policies}
 
-  \item \emph{Prostředí}
+  \subsubsection{Stochastická politika}
   
-  Je vše s čím agent interaguje.
-  Prostředí je buď fyzické(reálný svět) nebo virtuální(simulace, například hra).
-  Prostředí reaguje na akce agenta poskytuje mu zpětnou vazbu ve formě odměny či trestu(záporná odměna).
+  Zato stochastická politika definuje pro každý stav pravděpodobnostní rozdělení nad množinou akcí.
+  Výsledná akce je tedy náhodná dle rozdělení pravděpodobnosti.
+  Může tedy nastat situace kdy pro jeden stav agent zvolí jinou akci.
+  Tato politika je vhodná pro situace, kdy je potřeba zkoumat různé strategie a kdy agent nemá úplnou informaci o prostředí.
+  Například tam kde by deterministická politika zvolila jasnou akci \textit{A}, stochastická politika by mohla  s malou pravděpodobností zvolit akci \textit{B}.
+  Čímž ale může odhalit, že stav \textit{B} je s ohledem na komulativní odměnu lepší než stav \textit{A}.\cite{Policies}
 
-  \item \emph{Model}
+
+  \subsection{Akce}
+
+  Akce je přechod z aktuálního stavu, do následujícího stavu z množiny možných stavů.
+  Zjednodušeně, je to rozhodnutí, které agent vykonává v prostředí a toto rozhodnutí ovlivňuje prostředí.
+  Akce je definována politikou a je závislá na pozorování agenta.
   
-  Je matematická funkce, která popisuje chování prostředí v závislosti na agentových akcích.
-  Model může být známý nebo neznámý, to následně rozděluje metody posilovaného učení na 2 základní kategorie: metody s modelem a metody bez modelu.
+  
+  
+  
+  \subsection{Odměna}
 
-  \item \emph{Stav}
-  \item \emph{Akce}
-  \item \emph{Odměna}
-  \item \emph{Politika}
-  \item \emph{Hodnotová funkce}
-\end{itemize}
+\subsection{Hodnotová funkce}
+\subsection{Markovský rozhodovací proces}
+\subsection{Bellmanova rovnice}
+\subsection{Rovnováha mezi explorací a exploatací (exploration-exploitation)}
 
 
 \subsection*{Rozdíl mezi nekompletní a neúplnou informací}

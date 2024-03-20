@@ -20,6 +20,12 @@
 \newblock 2019 {\small [cit. 2024-03-18]}.
 \newblock Dostupn{\'{e}} z: ~{\small\url{https://www.theguardian.com/technology/2016/mar/15/googles-alphago-seals-4-1-victory-over-grandmaster-lee-sedol}}.
 
+\bibitem{Policies}
+{\sc\bgroup}Carr{\egroup}, T.
+\newblock {\em Policies in Reinforcement Learning} [online].
+\newblock March 2024 {\small [cit. 2024-03-20]}.
+\newblock Dostupn{\'{e}} z: ~{\small\url{https://www.baeldung.com/cs/rl-deterministic-vs-stochastic-policies}}.
+
 \bibitem{Y_Narahari}
 {\sc\bgroup}Narahari{\egroup}, Y.
 \newblock {\em Game Theory} [online].
