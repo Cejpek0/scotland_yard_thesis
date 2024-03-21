@@ -14,6 +14,15 @@
 \newblock {\em Emergent Tool Use From Multi-Agent Autocurricula}.
 \newblock 2020.
 
+\bibitem{Exploitation_Exploration}
+{\sc\bgroup}Berger Tal{\egroup}, O., {\sc\bgroup}Nathan{\egroup}, J., {\sc\bgroup}Meron{\egroup}, E. a~{\sc\bgroup}Saltz{\egroup}, D.
+\newblock The Exploration-Exploitation Dilemma: A Multidisciplinary Framework.
+\newblock {\em PLOS ONE}.
+\newblock Public Library of Science.
+\newblock Duben 2014, sv.~9, č.~4, s.~1--8.
+\newblock DOI: 10.1371/journal.pone.0095693.
+\newblock Dostupn{\'{e}} z: ~{\small\url{https://doi.org/10.1371/journal.pone.0095693}}.
+
 \bibitem{AlphaGo}
 {\sc\bgroup}Borowiec{\egroup}, S.
 \newblock {\em AlphaGo seals 4-1 victory over Go grandmaster Lee Sedol} [online].

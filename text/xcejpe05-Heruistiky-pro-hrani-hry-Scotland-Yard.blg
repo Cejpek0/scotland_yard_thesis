@@ -10,46 +10,47 @@ Reallocated singl_function (elt_size=4) to 100 items from 50.
 Reallocated singl_function (elt_size=4) to 100 items from 50.
 Reallocated singl_function (elt_size=4) to 100 items from 50.
 Database file #1: projekt-20-literatura-bibliography.bib
+Warning--empty edition in Exploitation_Exploration
 Warning--empty edition in Perolat_2022
-You've used 11 entries,
+You've used 12 entries,
             3945 wiz_defined-function locations,
-            888 strings with 7783 characters,
-and the built_in function-call counts, 5433 in all, are:
-= -- 427
-> -- 212
-< -- 21
-+ -- 81
-- -- 69
-* -- 325
-:= -- 695
-add.period$ -- 38
-call.type$ -- 11
-change.case$ -- 110
-chr.to.int$ -- 22
-cite$ -- 12
-duplicate$ -- 316
-empty$ -- 654
-format.name$ -- 69
-if$ -- 1292
+            899 strings with 8082 characters,
+and the built_in function-call counts, 6199 in all, are:
+= -- 478
+> -- 260
+< -- 29
++ -- 113
+- -- 97
+* -- 369
+:= -- 813
+add.period$ -- 44
+call.type$ -- 12
+change.case$ -- 118
+chr.to.int$ -- 32
+cite$ -- 14
+duplicate$ -- 354
+empty$ -- 725
+format.name$ -- 77
+if$ -- 1452
 int.to.chr$ -- 0
-int.to.str$ -- 11
+int.to.str$ -- 12
 missing$ -- 0
-newline$ -- 76
-num.names$ -- 22
-pop$ -- 205
+newline$ -- 85
+num.names$ -- 24
+pop$ -- 220
 preamble$ -- 1
-purify$ -- 72
+purify$ -- 79
 quote$ -- 0
-skip$ -- 233
+skip$ -- 258
 stack$ -- 0
-substring$ -- 159
-swap$ -- 68
-text.length$ -- 17
+substring$ -- 189
+swap$ -- 78
+text.length$ -- 21
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 23
-warning$ -- 1
-while$ -- 29
-width$ -- 13
-write$ -- 149
-(There was 1 warning)
+type$ -- 25
+warning$ -- 2
+while$ -- 38
+width$ -- 14
+write$ -- 166
+(There were 2 warnings)

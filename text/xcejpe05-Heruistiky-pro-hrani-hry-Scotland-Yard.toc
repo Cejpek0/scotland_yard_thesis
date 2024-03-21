@@ -17,12 +17,12 @@
 \contentsline {subsection}{\numberline {2.3.8}Markovský rozhodovací proces}{8}{subsection.2.3.8}%
 \contentsline {subsection}{\numberline {2.3.9}Bellmanova rovnice}{9}{subsection.2.3.9}%
 \contentsline {subsection}{\numberline {2.3.10}Rovnováha mezi explorací a exploatací (exploration-exploitation)}{9}{subsection.2.3.10}%
-\contentsline {section}{\numberline {2.4}Vhodné algoritmy pro řešení her s neúplnou informací}{9}{section.2.4}%
-\contentsline {section}{\numberline {2.5}Proximální optimalizace politiky}{9}{section.2.5}%
-\contentsline {section}{\numberline {2.6}Algoritmus PPO}{9}{section.2.6}%
-\contentsline {chapter}{\numberline {3}Zhodnocení současného stavu a plán práce (návrh)}{10}{chapter.3}%
-\contentsline {chapter}{\numberline {4}Experimenty}{12}{chapter.4}%
-\contentsline {chapter}{\numberline {5}Závěr}{13}{chapter.5}%
-\contentsline {chapter}{\numberline {6}Přílohy}{14}{chapter.6}%
-\contentsline {chapter}{Literatura}{15}{chapter*.22}%
+\contentsline {section}{\numberline {2.4}Vhodné algoritmy pro řešení her s nedokonalou informací}{10}{section.2.4}%
+\contentsline {section}{\numberline {2.5}Proximální optimalizace politiky}{10}{section.2.5}%
+\contentsline {section}{\numberline {2.6}Algoritmus PPO}{10}{section.2.6}%
+\contentsline {chapter}{\numberline {3}Zhodnocení současného stavu a plán práce (návrh)}{11}{chapter.3}%
+\contentsline {chapter}{\numberline {4}Experimenty}{13}{chapter.4}%
+\contentsline {chapter}{\numberline {5}Závěr}{14}{chapter.5}%
+\contentsline {chapter}{\numberline {6}Přílohy}{15}{chapter.6}%
+\contentsline {chapter}{Literatura}{16}{chapter*.22}%
 \contentsfinish 

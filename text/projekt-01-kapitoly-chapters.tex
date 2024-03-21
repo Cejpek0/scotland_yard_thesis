@@ -25,14 +25,14 @@ Policisté avšak nevědí, kde na herním poli se Pan X nachází.
 Musí tedy odhadovat jeho pozici a spolupracovat mezi sebou, aby ho mohli polapit.
 Pozice Pana X je odhalena pouze v určitých kolech.
 Hra končí, když je Pan X chycen (vyhrávají policisté), nebo když je dosažen maximální počet kol (vyhrává Pan X).
-Scotland Yard je ideální hrou pro studování umělé inteligence, protože je hra s neúplnou informací a k vítězství policistů je zapotřebí spolupráce.
+Scotland Yard je ideální hrou pro studování umělé inteligence, protože je hra s nedokonalou informací a k vítězství policistů je zapotřebí spolupráce.
 
 Zaměření této práce jsem si vybral jelikož mi vždy byla umělá inteligence blízká a vždy jsem chtěl .
 Avšak jsem nikdy nenašel odhodlání ponořit se do této oblasti.
 
 Rozhodl jsem se pro bližší zkoumání algoritmů posilovaného učení, konkrétně algoritmu PPO (Proximal Policy Optimization).
 Tento algoritmus je často používán pro řešení problémů se spojitými veličinamy a ve 3D prostoru.
-Dle provedených studií je vhodný pro řešení problémů s neúplnou informací \cite{Manille} a je vhodný pro hry na schování a hledání \cite{PPO_Hide_Seek}.
+Dle provedených studií je vhodný pro řešení problémů s nedokonalou informací \cite{Manille} a je vhodný pro hry na schování a hledání \cite{PPO_Hide_Seek}.
 Proto je pro mě zajímavý a zkušenost s tímto algoritmém by se dala využít v mém pracovním životě.
 
 Pro zpracování práce byl využity tyto hlavní knihovny:
@@ -90,10 +90,13 @@ Hra se dělí na kola, ve kterých se hráči střídají.
 Hlavní myšlenkou hry je, že po většinu kol je pozice Pana X je policistům utajena.
 Odhaluje se jim pouze určená kola.
 To znamená, že policisté musí odhadovat další kroky Pana X aby ho mohli polapit.
-Tímto se ze hry Scotland Yard stává hra s neúplnou informací, jelikož policisté nevidí přesnou pozici Pana X.
+Tímto se ze hry Scotland Yard stává hra s nedokonalou informací, jelikož policisté nevidí přesnou pozici Pana X.
 Tento fakt ji činí vhodnou pro studování a rozvíjení oboru umělé inteligence.
 
 \section{Bayesovské hry: Hry s neúplnou informací}
+
+{\color {red} [PŘEPSAT]}
+
 V oblasti umělé inteligence hraje důležitou roli modelování a řešení her.
 Hry představují abstraktní formalizaci konfliktních interakcí mezi aktéry, tzv.
 hráči.
@@ -102,9 +105,9 @@ V praxi se však častěji setkáváme se situacemi kde jednotlivým stranám ch
 Tyto případy lze modelovat pomocí her s neúplnou informací, kde hráči nemají úplné znalosti o prostředí či soupeřích.
 Neúplnou informaci můžeme sledovat například v:
 \begin{itemize}
-  \item \emph{Ekonomii} - kde se jedná o neúplnou informaci o trhu, cenách, situačních výkyvech, atd.
-  \item \emph{Vojenské strategii} - kde se jedná o neúplnou informaci o pozici nepřítele, jeho vybavení, strategii, cíli, atd.
-  \item \emph{Sportovní hry} - kde se jedná o neúplnou informaci o taktice soupeře, jeho schopnostech, atd.
+  \item \emph{Ekonomii} - kde se jedná o nedokonalou informaci o trhu, cenách, situačních výkyvech, atd.
+  \item \emph{Armáda} - kde se jedná o neúplnou informaci o pozici nepřítele, jeho vybavení, strategii, cíli, atd.
+  \item \emph{Sportovní hry} - kde se jedná o nedokonalou informaci o taktice soupeře, jeho schopnostech, atd.
 \end{itemize}
 
 \begin{definition}[Bayesovská hra]
@@ -118,7 +121,7 @@ Neúplnou informaci můžeme sledovat například v:
 \item $u_i: A_1 \times \cdots \times A_n \times \theta_1 \times \cdots \times \theta_n \rightarrow \mathbb{R}$ je výplatní funkce hráče $i$.
 \end{itemize}
 \end{definition}
-Bayesovské hry představují formální rámec pro modelování her s neúplnou informací.
+Bayesovské hry představují formální rámec pro modelování her s nedokonalou informací.
 
 \subsection*{Stratego}
 
@@ -146,7 +149,7 @@ Ve hře Stratego je důležité blafování a odhadování soupeřových tahů.
 \end{figure}
 
 Z pohledu umělé inteligence je Stratego zapeklitý problém.
-Nejenže je hra s neúplnou informací a je tedy zapotřebí odhadovat oponentovy tahy a blafovat, ale také je hra s velkým prostorem stavů $10^{535}$\cite{Perolat_2022}.
+Nejenže je hra s nedokonalou informací a je tedy zapotřebí odhadovat oponentovy tahy a blafovat, ale také je hra s velkým prostorem stavů $10^{535}$\cite{Perolat_2022}.
 Až do roku 2022 se AI nepodařilo porazit expertního hráče v této hře.
 To se změnilo příchodem \emph{DeepNash}\cite{Perolat_2022}, kdy se tato metoda umístila mezi 3 nejlepšími hráči světa.
 
@@ -201,7 +204,6 @@ Politika může být deterministická nebo stochastická.
   Tato politika je vhodná pro situace, kdy je potřeba zkoumat různé strategie a kdy agent nemá úplnou informaci o prostředí.
   Například tam kde by deterministická politika zvolila jasnou akci \textit{A}, stochastická politika by mohla  s malou pravděpodobností zvolit akci \textit{B}.
   Čímž ale může odhalit, že stav \textit{B} je s ohledem na komulativní odměnu lepší než stav \textit{A}.\cite{Policies}
-
 
   \subsection{Akce}
 
@@ -262,6 +264,7 @@ Markovský rozhodovací proces je definován pěticí $(S, A, P, R, \gamma)$\cit
 \item $\gamma$ je diskontní faktor pro budoucí odměny
 \end{itemize}
 \end{definition}
+
 \subsection{Bellmanova rovnice}
 
 Belmanova rovnice se zamuřuje na rozložení hodnotových funkcí na menží snadněji zpracovatelné celky.
@@ -277,14 +280,53 @@ Dociluje toho tak, že rozděluje hodnotovou funkci na dvě části: \emph{okam�
 
 \subsection{Rovnováha mezi explorací a exploatací (exploration-exploitation)}
 
+\cite[Kompromis mezi potřebou získávat nové znalosti a potřebou použít již nabyté znalosti k vylepšení výkonnosti je jedním z nejzákladnějších kompromisů v přírodě]{Exploitation_Exploration}.
+Explorace a exploatace jsou dvě protichůdné strategie, které se vyskytují jak ve strojovém učení tak i v reálném životě.
+
+\emph{Exploatace} se snaží vybrat nejlepší možnou akci na bázi známých informací.
+Tyto informace, nemusí být kompletní, nebo mohou být zavádějící.
+A to z důvodu nedostatečného trénování, či nedostatečného prozkoumávání možností prostředí.
+
+Tomu opačná metoda \emph{explorace} se snaží prozkoumat možnosti, které nejsou známé a mohly by vést k lepší budoucí odměně.
 
 
-\subsection*{Rozdíl mezi nekompletní a neúplnou informací}
+
+\subsection*{Druhy informací v teorii her}
+Všechny hry s neúplnou informací se dají považovat za hry s nedokonalou informací.
+
+\emph{Dokonalá informace} znamená, že agent ví o prostředí a o ostatních hračích vše.
+Například ve hře šachny.
+Hrač vidí všechny figury na herní ploše, i ty soupeřovy.
+
+\emph{Kompletní informace} značí, že agent je obeznámen se strukturou hry a jsou mu také odhaleny odměnové funkce ostatních hráčů.
+Hráč tedy ví jakou hru hraje je obeznámen s jejímy pravidly.
+A rozumí jaké jsou podmínky výhry a je obeznámn s taktikou ostatních hráčů.
+
+\emph{Nedokonalá informace} znamená, že agent nemá všechny relevantní informace o prostředí a ostatních hráčích.
+Například, tedy všechny hry ve kterých hrají hráči zároveň jsou hry s nedokonalou informací.
+Jelikož hráč v daném okamžiku nezná informaci o tahu ostatních hráčů.
+
+Další příklad je například hra poker, kde hráč nezná rozdané karty ostatních hráčů.
+Také hra Scotland Yard, kde policisté neznají pozici Pana X.
+
+\emph{Neúplná informace} znamená, že hráč nezná strukturu odměn, podstatu hry nebo její pravidla.
+Hráč tedy nezná výchozí informace o hře.
+
+\emph{Soukromá informace} je informace, která není dostupná ostatním hráčům.
+
+\emph{Společná informace} je informace, která je dostupná všem hráčům.
+
+Příklady
+\begin{itemize}
+  \item Nedokonalá ale kompletní informace - poker
+    Karty ostatních hráču jsou skryté
+
+\end{itemize}
 
 
-\section{Vhodné algoritmy pro řešení her s neúplnou informací}
+\section{Vhodné algoritmy pro řešení her s nedokonalou informací}
 
-Tato kapitola se zaměřuje na algoritmy, které jsou vhodné pro řešení her s neúplnou informací, s důrazem na metody posilovaného učení a srovnáním s klasickými metodami jako Monte Carlo.
+Tato kapitola se zaměřuje na algoritmy, které jsou vhodné pro řešení her s nedokonalou informací, s důrazem na metody posilovaného učení a srovnáním s klasickými metodami jako Monte Carlo.
 
 \subsection*{Monte Carlo}
 Metoda Monte Carlo (MC) je pravděpodobnostní metoda, která využívá simulaci hry anásledné odhady hodnoty stavu.
