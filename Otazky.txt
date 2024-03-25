@@ -1,0 +1,10 @@
+
+ 
+
+ Jak psát anglické názvy, jejih překlad a poté zkratku
+  Strom s horní mezí spolehlivosti (Upper confidence bounds applied to trees, UCT)
+  dále psát anglicky
+
+Pokud píši teoretickou kapitolu. Mělo by být napsáno, odkud se čerpaly informace i přesto, že doslovně nic doslovně necituji či nepřekládám?
+
+Na začátku kapitoly napsat, že je to popsáno tady a tady

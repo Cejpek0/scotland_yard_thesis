@@ -25,28 +25,30 @@ Policisté avšak nevědí, kde na herním poli se Pan X nachází.
 Musí tedy odhadovat jeho pozici a spolupracovat mezi sebou, aby ho mohli polapit.
 Pozice Pana X je odhalena pouze v určitých kolech.
 Hra končí, když je Pan X chycen (vyhrávají policisté), nebo když je dosažen maximální počet kol (vyhrává Pan X).
-Scotland Yard je ideální hrou pro studování umělé inteligence, protože je hra s nedokonalou informací a k vítězství policistů je zapotřebí spolupráce.
+Scotland Yard je ideální hrou ke studování umělé inteligence, protože se jedná o hru s nedokonalou informací a k vítězství policistů je zapotřebí spolupráce a strategie.
 
-Zaměření této práce jsem si vybral jelikož mi vždy byla umělá inteligence blízká a vždy jsem chtěl .
-Avšak jsem nikdy nenašel odhodlání ponořit se do této oblasti.
+Zaměření této práce jsem si vybral jelikož mi vždy byla umělá inteligence blízká a vždy jsem chtěl začít tomuto odvětví více věnovat i po praktické stránce.
 
-Rozhodl jsem se pro bližší zkoumání algoritmů posilovaného učení, konkrétně algoritmu PPO (Proximal Policy Optimization).
-Tento algoritmus je často používán pro řešení problémů se spojitými veličinamy a ve 3D prostoru.
-Dle provedených studií je vhodný pro řešení problémů s nedokonalou informací \cite{Manille} a je vhodný pro hry na schování a hledání \cite{PPO_Hide_Seek}.
+Tato práce blíže zkoumá algoritmy posilovaného učení, konkrétně algoritmu PPO (Proximal Policy Optimization) a jejich použití na hry s neurčitostí.
+Algoritmus PPO je často používán k řešení problémů se spojitými veličinamy a ve 3D prostoru.
+Často se využívá ve hrách.
+Dle provedených studií je vhodný k řešení problémů s nedokonalou informací \cite{Manille} a je vhodný pro hry na schování a hledání \cite{PPO_Hide_Seek}.
 Proto je pro mě zajímavý a zkušenost s tímto algoritmém by se dala využít v mém pracovním životě.
 
-Pro zpracování práce byl využity tyto hlavní knihovny:
+Pro zpracování práce byly využity tyto hlavní knihovny:
 \begin{itemize}
-  \item \emph{Ray.Rlib} - knihovna s implementací algoritmu PPO
+  \item \emph{Ray.Rlib} - knihovna s implementací algoritmu PPO, použita k učení agenta
   \item \emph{PyTorch} - podpůrná knihovna Ray.Rlib
   \item \emph{TensorFlow} - podpůrná knihovna Ray.Rlib
-  \item \emph{Gym} - knihovna pro vytvoření prostředí pro učení
+  \item \emph{Gym} - knihovna sloužící k vytvoření prostředí
   \item \emph{Pygame} - knihovna pro vytváření uživatelského rozhraní
 \end{itemize}
 
 
 \chapter{Shrnutí dosavadního stavu}
 \label{dosavadni-stav}
+Tato kapitola není encyklopedickým výčtem celého tématu bakalářské práce.
+Jedná se avšak o shrnutí nejdůležitějších relevantních informací a pojmů, duležitých pro tuto práci.
 
 \begin{itemize}
   \item \emph {40-50\,\% rozsahu práce}
@@ -78,12 +80,12 @@ Jednotliví hráči využívají prvky veřejné dopravy k pohybu po herní plo�
 \begin{figure}[hbt]
 	\centering
 	\includegraphics[width=0.9\textwidth]{obrazky-figures/scotland_original.png}
-	\caption{Ukázka herní mapy pro hru Scotland Yard.
+	\caption{Ukázka herní mapy hry Scotland Yard.
   Zdroj:\cite{scotland_original_image}}
 \end{figure}
 
 Každému hráči je na začátku hry přidělen pouze určitý počet jízdenek na tyto dopravní prostředky.
-Pro využití dopravy je potřebná právě tato jízdenka.
+K využití dopravy je potřebná právě tato jízdenka.
 Pokud ji hráč nemá, nemůže již tento způsob přepravy použít.
 Hra se dělí na kola, ve kterých se hráči střídají.
 
@@ -93,15 +95,19 @@ To znamená, že policisté musí odhadovat další kroky Pana X aby ho mohli po
 Tímto se ze hry Scotland Yard stává hra s nedokonalou informací, jelikož policisté nevidí přesnou pozici Pana X.
 Tento fakt ji činí vhodnou pro studování a rozvíjení oboru umělé inteligence.
 
-\section{Bayesovské hry: Hry s neúplnou informací}
 
-{\color {red} [PŘEPSAT]}
 
+\section{Další hry s nedokonalou informací}
 V oblasti umělé inteligence hraje důležitou roli modelování a řešení her.
-Hry představují abstraktní formalizaci konfliktních interakcí mezi aktéry, tzv.
-hráči.
+Hry představují abstraktní formalizaci konfliktních interakcí mezi aktéry, tzv. hráči.
 Klasická teorie her se zaměřuje na hry s úplnou informací, kde mají všechny strany v daném okamžiku přístup ke všem relevantním informacím z herního prostředí.
 V praxi se však častěji setkáváme se situacemi kde jednotlivým stranám chybí určité informace.
+
+
+\subsection{Bayesovské hry}
+{\color {red} [PŘEPSAT]}
+
+
 Tyto případy lze modelovat pomocí her s neúplnou informací, kde hráči nemají úplné znalosti o prostředí či soupeřích.
 Neúplnou informaci můžeme sledovat například v:
 \begin{itemize}
@@ -121,9 +127,9 @@ Neúplnou informaci můžeme sledovat například v:
 \item $u_i: A_1 \times \cdots \times A_n \times \theta_1 \times \cdots \times \theta_n \rightarrow \mathbb{R}$ je výplatní funkce hráče $i$.
 \end{itemize}
 \end{definition}
-Bayesovské hry představují formální rámec pro modelování her s nedokonalou informací.
+Bayesovské hry představují formální rámec sloužící k modelování her s nedokonalou informací.
 
-\subsection*{Stratego}
+\subsection{Stratego}
 
 Stratego je desková strategická hra pro dva hráče, která se odehrává na hracím plánu rozděleném do políček a využívá se k ní sada figurek reprezentujících armádu.
 Vychází z dřívějších her, jako je Šachy a Go, a kombinuje strategické plánování, taktické manévry.
@@ -132,8 +138,11 @@ Cílem hry je porazit soupeře nalezením a obsazením jeho vlajky.
 Hráči to dělají tak, že se navzájem utkávají se svými figurkami na herním plánu.
 
 Každý hráč má 40 figur, rozdělených do 11 hodností (generál, plukovník, skaut, atd.).
+Hráči mají k dispozici také bomby, které mohou zničit jakoukoliv figuru, avšak nemohou se hýbat.
+Minu může zničitt pouze horník.
 Figury lze rozeznat jen z jedné strany, proto oponent neví o jakou figuru se jedná.
-Hráči se střídají v tazích, kdy se snaží najít oponentovu vlajku.
+
+
 Hra začíná tím, že každý hráč rozmístí své figury na herní pole.
 Hráči se střídají v tazích, kdy se snaží najít oponentovu vlajku.
 Pokud hráč táhne na pole, kde se nachází oponentova figura, nastává souboj.
@@ -149,9 +158,12 @@ Ve hře Stratego je důležité blafování a odhadování soupeřových tahů.
 \end{figure}
 
 Z pohledu umělé inteligence je Stratego zapeklitý problém.
-Nejenže je hra s nedokonalou informací a je tedy zapotřebí odhadovat oponentovy tahy a blafovat, ale také je hra s velkým prostorem stavů $10^{535}$\cite{Perolat_2022}.
-Až do roku 2022 se AI nepodařilo porazit expertního hráče v této hře.
-To se změnilo příchodem \emph{DeepNash}\cite{Perolat_2022}, kdy se tato metoda umístila mezi 3 nejlepšími hráči světa.
+Nejenže je hra s nedokonalou informací a je tedy zapotřebí odhadovat oponentovy tahy a blafovat.
+Hra ale také má obrovský stavový prostor $10^{535}$\cite{Perolat_2022}.
+Až do roku 2022 nebyla umělá inteligence v tétp hře moc úspěšná nedokázala se rovnat expertnímu hráče.
+To se změnilo příchodem \emph{DeepNash}\cite{Perolat_2022}, kdy se tato metoda umístila mezi třemi nejlepšími hráči světa.
+
+\subsection{Poker}
 
 
 \section{Klíčové koncepty posilovaného učení}
@@ -187,7 +199,7 @@ Snaží se definovat takové chování, které vede k maximální kumulativní o
 Politika může být deterministická nebo stochastická.
 
 
-  \subsubsection{Deterministická politika}
+  \subsubsection*{Deterministická politika}
   
   Deterministická politika přesně definuje cílový stav přechodu pro každý stav.
   Agent tedy pro jeden stav vždy volí stejnou akci.
@@ -196,14 +208,24 @@ Politika může být deterministická nebo stochastická.
   Nemůže se stát aby byla šance, že agent zvolí akci, která teplotu ještě sníží.
   Další výhoda, je že je jednoduchá na interpretaci a implementaci.\cite{Policies}
 
-  \subsubsection{Stochastická politika}
+  Rovnice deterministické politiky je:
+  \begin{equation}
+    \pi(s) = a
+  \end{equation}
+
+  \subsubsection*{Stochastická politika}
   
   Zato stochastická politika definuje pro každý stav pravděpodobnostní rozdělení nad množinou akcí.
   Výsledná akce je tedy náhodná dle rozdělení pravděpodobnosti.
-  Může tedy nastat situace kdy pro jeden stav agent zvolí jinou akci.
-  Tato politika je vhodná pro situace, kdy je potřeba zkoumat různé strategie a kdy agent nemá úplnou informaci o prostředí.
+  Může tedy nastat situace kdy ve stejném stavu agent zvolí vždy jinou akci.
+  Tato politika je vhodná v situacích, kdy je potřeba zkoumat různé strategie a kdy agent nemá úplnou informaci o prostředí.
   Například tam kde by deterministická politika zvolila jasnou akci \textit{A}, stochastická politika by mohla  s malou pravděpodobností zvolit akci \textit{B}.
   Čímž ale může odhalit, že stav \textit{B} je s ohledem na komulativní odměnu lepší než stav \textit{A}.\cite{Policies}
+
+  Rovnice stochastické politiky je:
+  \begin{equation}
+    \pi(a \vert s) = \mathbb{P}_\pi [A=a \vert S=s]
+  \end{equation}
 
   \subsection{Akce}
 
@@ -225,13 +247,14 @@ Politika může být deterministická nebo stochastická.
 
   Existují dva typy hodnotových funkcí:
 
-  \subsubsection{Hodnotová funkce stavu $V(s)$}
+  \subsubsection*{Hodnotová funkce stavu $V(s)$}
 
   Hodnotová funkce stavu \emph{$V(s)$} vyhodnocuje očekávanou komulativní odměnu, pokud se agent nachází v tomto stavu.
   Tato funkce je závislá na politice, kterou se agent řídí.
   Vyhodnocuje tedy jak příznivý je daný stav pro agenta.
 
   \subsubsection*{Hodnotová funkce akce $Q(s, a)$}
+  \label{sec:Q_function}
 
   Hodnotová funkce akce \emph{$Q(s, a)$} vyhodnocuje očekávanou komulativní odměnu, pokud se agent nachází v tomto stavu a zvolí tuto akci.
   Tato funkce je opět závislá na politice, kterou se agent řídí.
@@ -278,7 +301,8 @@ Dociluje toho tak, že rozděluje hodnotovou funkci na dvě části: \emph{okam�
   Q(s, a) = E[R_{t+1} + \gamma E_{a\sim\pi}Q(S_{t+1}, a) | S_t = s, A_t = a]
 \end{equation}
 
-\subsection{Rovnováha mezi explorací a exploatací (exploration-exploitation)}
+\subsection{Rovnováha mezi explorací a exploatací (exploration-exploitation dillemma)}
+\label{sec:exploration-exploitation-dillemma}
 
 \cite[Kompromis mezi potřebou získávat nové znalosti a potřebou použít již nabyté znalosti k vylepšení výkonnosti je jedním z nejzákladnějších kompromisů v přírodě]{Exploitation_Exploration}.
 Explorace a exploatace jsou dvě protichůdné strategie, které se vyskytují jak ve strojovém učení tak i v reálném životě.
@@ -289,28 +313,26 @@ A to z důvodu nedostatečného trénování, či nedostatečného prozkoumává
 
 Tomu opačná metoda \emph{explorace} se snaží prozkoumat možnosti, které nejsou známé a mohly by vést k lepší budoucí odměně.
 
+\subsection{Druhy informací v teorii her}
+V rámci umělé inteligence se potýkáme s různými druhy informací.
+Dělí se na tyto hlavní typy:
 
-
-\subsection*{Druhy informací v teorii her}
-Všechny hry s neúplnou informací se dají považovat za hry s nedokonalou informací.
-
-\emph{Dokonalá informace} znamená, že agent ví o prostředí a o ostatních hračích vše.
+\textbf{\emph{Dokonalá informace}} znamená, že agent ví o prostředí a o ostatních hračích vše.
 Například ve hře šachny.
 Hrač vidí všechny figury na herní ploše, i ty soupeřovy.
 
-\emph{Kompletní informace} značí, že agent je obeznámen se strukturou hry a jsou mu také odhaleny odměnové funkce ostatních hráčů.
+\textbf{\emph{Kompletní informace}} značí, že agent je obeznámen se strukturou hry a jsou mu také odhaleny odměnové funkce ostatních hráčů.
 Hráč tedy ví jakou hru hraje je obeznámen s jejímy pravidly.
 A rozumí jaké jsou podmínky výhry a je obeznámn s taktikou ostatních hráčů.
 
-\emph{Nedokonalá informace} znamená, že agent nemá všechny relevantní informace o prostředí a ostatních hráčích.
+\textbf{\emph{Nedokonalá informace}} znamená, že agent nemá všechny relevantní informace o prostředí a ostatních hráčích.
 Například, tedy všechny hry ve kterých hrají hráči zároveň jsou hry s nedokonalou informací.
 Jelikož hráč v daném okamžiku nezná informaci o tahu ostatních hráčů.
-
 Další příklad je například hra poker, kde hráč nezná rozdané karty ostatních hráčů.
 Také hra Scotland Yard, kde policisté neznají pozici Pana X.
 
-\emph{Neúplná informace} znamená, že hráč nezná strukturu odměn, podstatu hry nebo její pravidla.
-Hráč tedy nezná výchozí informace o hře.
+\textbf{\emph{Neúplná informace}} znamená, že hráč nezná strukturu odměn, podstatu hry nebo její pravidla.
+Hráč tedy nezná výchozí informace o hře. Všechny hry s neúplnou informací se dají považovat za hry s nedokonalou informací.
 
 \emph{Soukromá informace} je informace, která není dostupná ostatním hráčům.
 
@@ -320,25 +342,126 @@ Příklady
 \begin{itemize}
   \item Nedokonalá ale kompletní informace - poker
     Karty ostatních hráču jsou skryté
+    {\color {red} [DODĚLAT PŘÍKLADY]}
+
 
 \end{itemize}
 
 
-\section{Vhodné algoritmy pro řešení her s nedokonalou informací}
+\section{Vhodné algoritmy k řešení her s nedokonalou informací}
 
 Tato kapitola se zaměřuje na algoritmy, které jsou vhodné pro řešení her s nedokonalou informací, s důrazem na metody posilovaného učení a srovnáním s klasickými metodami jako Monte Carlo.
 
-\subsection*{Monte Carlo}
-Metoda Monte Carlo (MC) je pravděpodobnostní metoda, která využívá simulaci hry anásledné odhady hodnoty stavu.
+\subsection{Monte Carlo tree search}
+Metoda Monte Carlo tree search (MCTS) je heruistický algoritmus prohledávání.
+Kombinuje stromové vyhledávání s principy posilovaného učení.
+Je často využíván, je--li stavový prostor řešeného problém příliš velký a složitý na to, aby byl prohledán kompletně jinýmy metodamy, jako například minimax, či alfa-beta prořezávání.
+Tyto \uv{tradiční} algoritmy nelze na mnoho problémů použít, jelikož by byly příliš pomalé a náročné na výpočet.
 
-\subsection*{Q-learning}
-\subsection*{Deep Q-learning}
-\subsection*{Metody gradientu politiky}
+Tato metoda se také potýká s rovnováhou mezi explorací a exploatací (viz. sekce \nameref{sec:exploration-exploitation-dillemma}).
+Explorací se strom rozrůstá do šířky, zatímco exploatací se strom prohlubuje.
+
+MCTS se skládá z několika fází:
+\begin{itemize}
+  \item \emph{Selekce}
+
+  Na základě aktuálního stavu se vybere další stav k prozkoumání.
+  Pro tento výběr se využívají dvě strategie:
+  
+  \emph{Strom s horní mezí spolehlivosti} (Upper confidence bounds applied to trees, UCT) kombinuje průměrnou hodnotu uzlu a odměnu za exploraci.
+
+
+  \emph{Chamtivá strategie $\epsilon$ } vybíra s pravděpodobností $\epsilon$ náhodný uzel, jinak volí uzel s nejvyšší hodnotou.
+  Tato strategie se používá méně čašto než UCT.
+
+  Obě tyto strategie se snaží o rovnováhu mezi explorací a exploatací.
+  \item \textbf{\emph{Expanze}}
+
+  V tomto kroku se vyhledávací strom rozšíří o nový uzel, který je výstupem z předchozího kroku.
+
+  \item \textbf{\emph{Simulace}}
+
+  Po této fázi je provedena náhodná simulace od nového uzlu až do konečného stavu.
+
+  \item \textbf{\emph{Aktualizace}}
+  
+  Díky nově nabitým informacím ze simulace, se zpětnou propagací aktualizují hodnoty uzlů ve stromě.
+
+\end{itemize}
+
+\begin{figure}[hbt]
+	\centering
+	\includegraphics[width=0.9\textwidth]{obrazky-figures/mcts.png}
+	\caption{Diagram jednotlivých fází MCTS.
+  Zdroj:\cite{Monte_Carlo_Tree_Search}}
+\end{figure}
+
+Tento algoritmus se skvěle hodí na hry s nedokonalou či neúplnou informací, jelikož se spoléhá na vzorkování pomocí simulací.
+
+\subsection{Q-learning}
+
+Q-learning je jedním z nejznámějších algoritmů posilovaného učení.
+Učení tohoto algoritmu probíhá bez modelu a mimo politiku.
+
+Jak už název vypovídá, Q-learning se zaměřuje na určení hodnotové funkci akce $Q(s, a)$, viz. \nameref{sec:Q_function}.
+Hlavní myšlenka Q-learningu je, že se agent učí na základě odměn a trestů, které obdrží po vykonání akce.
+Pokud dostane kladnou odměnu po vykonání akce $s$, zvýší se hodnota $Q(s, a)$.
+Naopak, dostane--li po vykonání této akce zápornou odměnu, hodnota $Q(s, a)$ se sníží.
+
+Hlavní nevýhoda tohoto algoritmu je, že se hodnotová funkce ukládá pro každou kombinaci stavu a akce.
+Jeli ale stavový, či akční prostor příliš velký, nebo dokonce nekonečný je tento algoritmus nevhodný, skoro až nepoužitelný.
+Tuto nevýhodu naštěstí řeší algoritmus Deep Q-learning.
+
+\subsection{Deep Q-learning}
+
+Tato metoda je rozšířením algoritmu Q-learning, která využívá hluboké neuronové sítě k aproximaci hodnotové funkce akce $Q(s, a)$.
+Díky této aproximaci je možné použít tento algoritmus na problémy s velkým, či nekonečným stavovým prostorem.
+
+Avšak tímto vzniká nový problém, \emph{nestabilita učení}.
+Ten je řešen dvěma mechanizmy:
+
+\begin{itemize}
+  \item \\emph{Přehrání zkušenosti}
+  
+
+  \item \emph{Periodická aktualizace}
+
+  Síť je naklonována a změny se provádí pouze na duplikátní verzi.
+  Do hlavní originální sítě se změny klonují po určitém počtu kroků.
+
+
+\end{itemize}
+
+\subsection{Gradient politiky}
+Oproti předchozím zmiňovaným algoritmům, které se snaží naučit hodnotovou funkci či prohledávají stavový prostor, algoritmy gradientu politiky se snaží naučit politiku přímo.
+
+V diskrétním prostoru je odměnová funkce definována jako:
+\begin{equation}
+  \mathcal{J}(\theta) = V_{\pi_\theta}(S_1) = \mathbb{E}_{\pi_\theta}[V_1]
+\end{equation}
+
+V spojitém prostoru je odměnová funkce definována jako:
+\begin{equation}
+  \mathcal{J}(\theta) = \sum_{s \in \mathcal{S}} d_{\pi_\theta}(s) V_{\pi_\theta}(s) = \sum_{s \in \mathcal{S}} \Big( d_{\pi_\theta}(s) \sum_{a \in \mathcal{A}} \pi(a \vert s, \theta) Q_\pi(s, a) \Big)
+  \end{equation}
+
 \subsubsection*{Věta o gradientu politiky}
-\section{Proximální optimalizace politiky}
+Výpočet gradientu matematicky je zaznamenán touto rovnicí:
+
+\begin{equation}
+  \frac{\partial \mathcal{J}(\theta)}{\partial \theta_k} \approx \frac{\mathcal{J}(\theta + \epsilon u_k) - \mathcal{J}(\theta)}{\epsilon}
+\end{equation}
+Tento výpočet je velmi pomalý a náročný na výpočet.
+Avšak tento vzorec lze zjednodušit na rovnici zvanou \emph{věta o gradientu politiky}:
+
+\begin{equation}
+  \nabla \mathcal{J}(\theta) = \mathbb{E}_{\pi_\theta} [\nabla \ln \pi(a \vert s, \theta) Q_\pi(s, a)]
+\end{equation}
+
+
+\section{Zkoumaný algoritmus proximální optimalizace politiky}
 \label{sec:proximalni-optimalizace-politiky}
 
-\section{Algoritmus PPO}
 
 \chapter{Zhodnocení současného stavu a plán práce (návrh)}
 \label{navrh}
@@ -361,22 +484,127 @@ Hračí se po těchto polích pohybují ortogonálně i diagonálně, vždy o ma
 Hráč se může rozhodnot nezměnit pozici a zůstat na svém aktuálním poli.
 K pohybu nejsou potřebné žádné jízdenky.
 Toto zjednodušení herní plochy nijak nemění základní podstatu hry, zachovává neurčitost, ale značně zjednodušuje implementaci.
-Hra začíná tím, že se vyberou náhodné možné pozice Pana X a policistů.
+
+Předtím nežli začne hra, že se vyberou náhodné možné pozice Pana X a policistů.
 Z těchto možných pozíc se následně náhodná pozice přidělí jednotlivým hráčům.
-
-
+Poté začíná hra.
+Hra se dělí na jednotlivá kola, ve kterých se hráči střídají.
+Pro hru byli zvoleni 3 policisté z toho důvodu, že je herní pole velmi velké a 2 policisté by nemuseli mít možnost ho celé pokrýt.
+V kole hraje jako první Pan X a poté policisté, již podle jejich očíslení, které jim bylo přiděleno při vytváření.
+Hra končí v okamžiku, kdy policisté chytí Pana X nebo když Pan X zůstane nepolapen až do konce.
 
 \section*{Implementace umělé inteligence do hry Scotland Yard pomocí algoritmu PPO}
 \label{implementace}
 
-\subsection*{Vizuální stránka}
+\subsection{Použité technologie}
+K učení politiky pro hru Scotland Yard byla využit open-source framework \emph{Ray} \cite{Ray}.
+Konkrétně byla využita knihovna \emph{Ray.Rllib}.
+Tato knihovna poskytuje nástroje pro posilované učení a samotné implementace jednotlivých algoritmů, včetně zkoupameného algoritmu \emph{PPO}.
+Rllib dokáže využívat obě populární knihovny pro strojové učení \emph{Tensorflow} a \emph{Pytorch}.
+Pro tuto práci byla vybrána knihovna \emph{Pytorch}.
 
-\subsection*{Prostředí}
+Před finálním rozhodnutím pro využití frameworku Ray byly zkoumány i další možnosti.
+{\color{red}[Dopsat]}
+Knihovna Stable Baselines 3.
+Knihovna byla zavrhnuta, jelikož neumožňuje učení více politik se hraním agentů proti sobě.
 
-\subsection*{Učení}
+\subsection{Implementace uživatelského rozraní a herních mechanizmů}
 
-//zmínit, že ray rlib neumí action mapping, takže nejde zamezit zvolení jistých akcí.
-Proto jsou možné i nevalidní akce. Ale jsou velmi penalizovány.
+Uživatelské rozhraní bylo vytvářeno pomocí knihovny \emph{Pygame}.
+Hra začíná v menu, kde je momentálně možné vybrat pouze možnost sledování hry mezi dvoumy agenty.
+Je zde ale možnost vybrat jaký algoritmus rozhodování je použit, jestli algoritmus PPO či náhodné chování.
+
+Samotný kód hry je rozdělena na 3 částí.
+
+\begin{itemize}
+  \item \emph{GameController} \cite{GameSceneController}
+  
+  Tato třída je zodpovědná za řízení hry.
+  Je zde spuštěna univerzální herní smyčka která zpracovává uživatelské vstupy.
+  A následně provádí aktualizaci stavu aktuální scény a překreslení dané scény.
+  \item \emph{Scény} \cite{GameSceneController}
+  
+  Jednotlivé scény následně definují své chování při aktualizaci a překreslení.
+  Manipulace a přepínání mezi nimy je zajištěno pomocí zásobníků scén.
+  Do tohoto zásobníku se ukládájí nově otevřené scény a obsluhována je vždy ta nejnovější.
+
+  \item \emph{Hra}
+    Samotná hra je následovně rozdělena na 2 podčástí která každá zpracovává jinou stránku hry.
+    \begin{itemize}
+      \item \emph{Herní logika} src/game/scotland\_yard\_game\_logic.py
+      Zpracovává herní mechanizmy, jako je pohyb, zpracování výherních podmínek, atd.
+      Zprostředkovává informace pro prostředí a to poté pro učící se agenty.
+
+      \item \emph{Herní vizualizace}  src/game/scotland\_yard\_game\_visual.py
+      Vykreslování herních elementů (herní pole, figury, atd.).
+    \end{itemize}
+\end{itemize}
+
+\textit{Použití herní smyčky, která obsluhuje aktuální scénu byl inspirován tutoriálovým projektem z platformy GitHub \cite{GameSceneController}.
+Kód byl avšak značne upraven a vylepšen aby vyhovoval integrování do této práce.}
+
+Jednotlivé vrstvy hry jsou tak izolovány a mohou být snadno vyměněny za jiné implementace.
+
+\subsection{Prostředí}
+Vytvořit prostředí pro platformu Ray.Rlib byl velký oříšek.
+Dokumentace vytváření prostředí není příliš komplexní, byl tedy problém zajistit správnou komunikaci prostředí a agentů.
+Prostředí je komplikovanější, jelikož zde figuruje více agentů a dvě rozdílne strategie (politiky).
+
+\subsubsection*{Řešení zvolení nevalidních akcí}
+
+Hra Scotland Yard má omezené herní pole.
+Tím pádem je jasné, že pokud jsou hráči na okraji herního pole, nemohou zvolit takovou akci, která by je posunula mimo herní pole.
+K vyřešení tohoto problému se využívá tzv. maska akcí (\emph{Action mask}).
+Framework Ray tuto možnost v omezené míře podporuje.
+Je avšak potřeba vytvořené prostředí obalit v obalové třídě, která tuto funkcionalitu zprostředkuje.
+Avšak nepodařilo se mi tuto funkcionalitu zkloubit s dalšímy požadavky systému.
+Mezi těmito požadavky je fungování více aktérů s různými politikami v jednom prostředí a různé pozorovací prostory agentů.
+
+Politika, tedy může zvolit nevalidní akci, ale je velmi penalizována.
+Agenti ji tedy zvolí opravdu zřídka.
+Pokud se tak stane, je ve hře implementovaná funkcionalita, která se pokusi znovy vygenerovat akci, dokud není validní.
+Aby se zamezilo nekonečnému cyklu čekání na validní akci, je po 100 pokusech vygenerována náhodná validní akce.
+Takto uměle generovaná akce, nebyla za celou dobu testování potřeba.
+
+\subsubsection*{Systém odměn}
+
+Jednotlivým agentům jsou udělovány odměny na základě jejich chování.
+Jelikož policisté a Pan X mají odlišné protichůdné i jejich odměny jsou odlišné.
+
+\begin{equation}
+  R_{\rho_p} = \sum_{i=1}^{3}[(\rho_{p_i} - \rho_{pref}) \div 3]
+\end{equation}
+  \begin{equation}
+  R_{\rho_l} = \rho_l * 0.2
+\end{equation}
+  \begin{equation}
+  R = R_{\rho_p} + R_{\rho_l}
+\end{equation}
+
+\begin{itemize}
+  \item $R_{\rho_p}$ - odměna za vzdálenost od policistů
+  \item $R_{\rho_l}$ - odměna za vzdálenost Pana X od jeho poslední známé pozice
+  \item $R$ - celková odměna
+  \item $\rho_l$ - vzdálenost Pana X od jeho poslední známé pozice
+  \item $\rho_{p_i}$ - vzdálenost policisty $i$ od Pana X
+  \item $\rho_{pref}$ - pomezí mezi kladnou a zápornou odměnnou.
+  Pokud je vzádelenost od policisty menší než tato hodnota, Pan X obdrží záporno odměnu a naopak kladnou.
+\end{itemize}
+
+Výpočet odměny policistů je složitější.
+Policisté znají poslední odhalenou pozici Pana X.
+Okolo tohoto bodu je vytvořená oblast, ve které se Pan X může nacházet.
+Policisté znají nejbližší bod této oblasti.
+Pokud je policista v této oblasti dostáva odměnu.
+Pokud je mimo tuto oblast zájmu, je penalizován.
+Čím blíže je policista k této oblasti tím menší penalizaci obdrží.
+
+Tento styl odměnování policistů se ukázal jako velmi efektivní.
+Další varianta byla přidat do pozorování policistů pozice všech políček, kde se může Pan X nacházet.
+Toto by ale bylo velmi neefektivní, jelikož by se pozorovací prostor několikanásobně zvětšil.
+Tím by se zvýšila náročnost výpočtů a zpomalilo by se učení.
+
+\subsubsection*{Pozorování agentů}
 
 \chapter{Experimenty}
 \label{experimenty}

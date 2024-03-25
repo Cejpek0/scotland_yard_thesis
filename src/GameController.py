@@ -1,8 +1,17 @@
+"""
+File description: This file contains the GameController class, which is the main class of the game. It is 
+responsible for running the game loop, handling user input, and managing the game's scenes.
+
+Author: Michal Cejpek(xcejpe05@stud.fit.vutbr.cz)
+
+This code was inspired by the following source: https://github.com/ChristianD37/YoutubeTutorials/tree/master/Game%20States
+Idea has been adopted, changed and expanded to fit the needs of the project.
+"""
+
 import os, time, pygame
 from enum import Enum
 
 from src.GuiController import GuiController
-
 
 
 # Enumerations
@@ -22,14 +31,14 @@ class UserActions(Enum):
 class GameController():
     def __init__(self):
         self.gui_controller = GuiController()
-        self.assets_dir = os.path.join("assets")
-        self.sprite_dir = os.path.join(self.assets_dir, "sprites")
 
         from src.scene_stack import SceneStack
         self.scene_stack = SceneStack()
+
         from src.scenes.title import Title
         self.title_screen = Title(self, self.gui_controller)
         self.scene_stack.push(self.title_screen)
+
         pygame.init()
 
         self.running, self.playing = True, False

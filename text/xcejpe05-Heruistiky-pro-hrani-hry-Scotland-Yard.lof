@@ -1,9 +1,10 @@
 \babel@toc {czech}{}\relax 
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {2.1}{\ignorespaces Ukázka herní mapy pro hru Scotland Yard. Zdroj:\cite {scotland_original_image}}}{5}{figure.2.1}%
-\contentsline {figure}{\numberline {2.2}{\ignorespaces Ukázka rozestavěných figur ve hře Stratego. Zdroj:\cite {Stratego_image}}}{6}{figure.2.2}%
+\contentsline {figure}{\numberline {2.1}{\ignorespaces Ukázka herní mapy hry Scotland Yard. Zdroj:\cite {scotland_original_image}}}{5}{figure.2.1}%
+\contentsline {figure}{\numberline {2.2}{\ignorespaces Ukázka rozestavěných figur ve hře Stratego. Zdroj:\cite {Stratego_image}}}{7}{figure.2.2}%
 \contentsline {figure}{\numberline {2.3}{\ignorespaces Interakce mezi prostředím a agentem podle Markova rozhodovacího procesu. Zdroj:\cite {RL_basics}}}{9}{figure.2.3}%
+\contentsline {figure}{\numberline {2.4}{\ignorespaces Diagram jednotlivých fází MCTS. Zdroj:\cite {Monte_Carlo_Tree_Search}}}{11}{figure.2.4}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
