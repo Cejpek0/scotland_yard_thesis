@@ -77,7 +77,7 @@ Jednotliví hráči využívají prvky veřejné dopravy k pohybu po herní plo�
   \item \emph{Trajekt}
 \end{itemize}
 
-\begin{figure}[hbt]
+\begin{figure}[h]
 	\centering
 	\includegraphics[width=0.9\textwidth]{obrazky-figures/scotland_original.png}
 	\caption{Ukázka herní mapy hry Scotland Yard.
@@ -150,7 +150,7 @@ Souboj spočívá v odkrytí obou figur a vyhrává ta s vyšší hodností.
 Figura, která vyhrála zůstává, poražená figura je odstraněna z hry.
 Ve hře Stratego je důležité blafování a odhadování soupeřových tahů.
 
-\begin{figure}[hbt]
+\begin{figure}[h]
 	\centering
 	\includegraphics[width=0.6\textwidth]{obrazky-figures/stratego.png}
 	\caption{Ukázka rozestavěných figur ve hře Stratego.
@@ -267,7 +267,7 @@ Teměř všechny problémy, řešené posilovaným učením, mohou být označen
 Tato abstrakce je základním kamenem pro modelování algoritmů posilovaného učení.
 Markovský rozhodovací proces značí, že následující stav není závislý na stavech minulých, nýbrž pouze na aktuálním stavu.
 
-\begin{figure}[hbt]
+\begin{figure}[h]
 	\centering
 	\includegraphics[width=0.6\textwidth]{obrazky-figures/RL_basics.png}
 	\caption{Interakce mezi prostředím a agentem podle Markova rozhodovacího procesu.
@@ -370,8 +370,8 @@ MCTS se skládá z několika fází:
   
   \emph{Strom s horní mezí spolehlivosti} (Upper confidence bounds applied to trees, UCT) kombinuje průměrnou hodnotu uzlu a odměnu za exploraci.
 
-
-  \emph{Chamtivá strategie $\epsilon$ } vybíra s pravděpodobností $\epsilon$ náhodný uzel, jinak volí uzel s nejvyšší hodnotou.
+  \label{epsilon_greedy}
+  \emph{Chamtivá strategie $\epsilon$ } ($\epsilon--greedy strategy$) vybíra s pravděpodobností $\epsilon$ náhodný uzel, jinak volí uzel s nejvyšší hodnotou.
   Tato strategie se používá méně čašto než UCT.
 
   Obě tyto strategie se snaží o rovnováhu mezi explorací a exploatací.
@@ -389,7 +389,7 @@ MCTS se skládá z několika fází:
 
 \end{itemize}
 
-\begin{figure}[hbt]
+\begin{figure}[h]
 	\centering
 	\includegraphics[width=0.9\textwidth]{obrazky-figures/mcts.png}
 	\caption{Diagram jednotlivých fází MCTS.
@@ -403,25 +403,32 @@ Tento algoritmus se skvěle hodí na hry s nedokonalou či neúplnou informací,
 Q-learning je jedním z nejznámějších algoritmů posilovaného učení.
 Učení tohoto algoritmu probíhá bez modelu a mimo politiku.
 
-Jak už název vypovídá, Q-learning se zaměřuje na určení hodnotové funkci akce $Q(s, a)$, viz. \nameref{sec:Q_function}.
-Hlavní myšlenka Q-learningu je, že se agent učí na základě odměn a trestů, které obdrží po vykonání akce.
+Jak už název vypovídá, Q-learning se zaměřuje na určení hodnoty hodnotové funkci akce $Q(s, a)$, viz. \nameref{sec:Q_function}.
 Pokud dostane kladnou odměnu po vykonání akce $s$, zvýší se hodnota $Q(s, a)$.
 Naopak, dostane--li po vykonání této akce zápornou odměnu, hodnota $Q(s, a)$ se sníží.
+Hlavním prvkem tohoto algoritmu je Q--tabulka, která na každou kompbinaci stavu a akce uchovává hodnotu $Q(s, a)$.
+Řádky jsou tedy stavy a sloupce akce.
+Na začátku jsou všechny $Q$ hodnoty v tabulce inicializovány na nulu.
+Následně jsou tyto hodnoty iterativně aktualizovány dle zpětné vazby udělené od prostředí ve formě odměny.
 
-Hlavní nevýhoda tohoto algoritmu je, že se hodnotová funkce ukládá pro každou kombinaci stavu a akce.
-Jeli ale stavový, či akční prostor příliš velký, nebo dokonce nekonečný je tento algoritmus nevhodný, skoro až nepoužitelný.
-Tuto nevýhodu naštěstí řeší algoritmus Deep Q-learning.
+Jako u většiny algoritmů je zde potřeba dohlédnout na rovnováhu mezi explorací a exploatací.
+K tomuto se využívá $\epsilon$--greedy strategie viz. \nameref*{epsilon_greedy}.
+
+Protože tato metoda mapuje $Q$ hodnoty pro každou kombinaci stavu a akce nastává zde problém.
+Je--li stavový, či akční prostor příliš velký, nebo dokonce nekonečný je tento algoritmus nevhodný, skoro až nepoužitelný.
+Jako řešení byl navrhnut algoritmus Deep Q-learning.
 
 \subsection{Deep Q-learning}
 
-Tato metoda je rozšířením algoritmu Q-learning, která využívá hluboké neuronové sítě k aproximaci hodnotové funkce akce $Q(s, a)$.
+Tato metoda je rozšířením algoritmu Q-learning.
+Místo mapovací $Q$--tabulky využívá hluboké neuronové sítě k aproximaci hodnotové funkce akce $Q(s, a)$.
 Díky této aproximaci je možné použít tento algoritmus na problémy s velkým, či nekonečným stavovým prostorem.
 
 Avšak tímto vzniká nový problém, \emph{nestabilita učení}.
 Ten je řešen dvěma mechanizmy:
 
 \begin{itemize}
-  \item \\emph{Přehrání zkušenosti}
+  \item \textbf{\emph{Přehrání zkušenosti (experience replay)}}
   
 
   \item \emph{Periodická aktualizace}

@@ -1,13 +1,13 @@
 # Fdb version 4
 ["bibtex xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard"] 0 "xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard.aux" "xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard.bbl" "xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard" 0 -1
   "./bib-styles/Pysny/czplain.bst" 1676017595 72235 022265e7f0ee71b91df1e4ed82b3fc6f ""
-  "./projekt-20-literatura-bibliography.bib" 1711362398 7770 0771014939ca9f81fb29655c232fa7ed ""
-  "xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard.aux" 1711370018 7753 8b560d116f6f8136ef93e0e5559729ca "pdflatex"
+  "./projekt-20-literatura-bibliography.bib" 1711542123 7958 0771014939ca9f81fb29655c232fa7ed ""
+  "xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard.aux" 1711542181 7837 6b1864885583370837670c68283ad2cd "pdflatex"
   (generated)
   "xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard.bbl"
   "xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard.blg"
   (rewritten before read)
-["pdflatex"] 1711370014.94838 "c:/Users/cmich/Documents/Projects/school/scotland_yard_thesis/text/xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard.tex" "xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard.pdf" "xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard" 1711370020.3603 2
+["pdflatex"] 1711542175.35538 "c:/Users/cmich/Documents/Projects/school/scotland_yard_thesis/text/xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard.tex" "xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard.pdf" "xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard" 1711542185.56637 2
   "c:/Users/cmich/Documents/Projects/school/scotland_yard_thesis/text/xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard.tex" 1710931339 19713 6b0eaf9fe40d44c8025c54e0f1e256b3 ""
   "c:/texlive/2023/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc" 1708939585 2375 baa924870cfb487815765f9094cf3728 ""
   "c:/texlive/2023/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc" 1708939585 3031 6c4d3515bf7115d8518af1c9ab97ca44 ""
@@ -189,18 +189,18 @@
   "c:/texlive/2023/texmf.cnf" 1708942266 713 e69b156964470283e0530f5060668171 ""
   "fitthesis.cls" 1668601160 45242 088e91ac632986badf369b7785b5dc02 ""
   "obrazky-figures/RL_basics.png" 1710940485 33772 fb40107bbc342b97daa702795a8cf806 ""
-  "obrazky-figures/mcts.png" 1711361068 101948 b3107b020c7af14e8c9a2fc529c180c5 ""
+  "obrazky-figures/mcts.png" 1711542123 101948 b3107b020c7af14e8c9a2fc529c180c5 ""
   "obrazky-figures/scotland_original.png" 1710932490 71562 a73e90c8e04ac5ed6fd9f32e1c21fd25 ""
   "obrazky-figures/stratego.png" 1710930324 1052053 531011f29a6fc33925f4ac962a55bb13 ""
-  "projekt-01-kapitoly-chapters.tex" 1711370012 32019 c44a64c6e4a0daac8a6f8be11deaef8e ""
+  "projekt-01-kapitoly-chapters.tex" 1711542160 33152 b929a9af126d49a2290914e9c83fa3cb ""
   "projekt-30-prilohy-appendices.tex" 1710950423 595 ffd654a7284e53fcf7f28b6f5a922fe3 ""
   "template-fig/VUT_symbol_barevne_CMYK_CZ.pdf" 1668438768 309809 3d9319b4bd962ff4073083769c15c93d ""
-  "xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard.aux" 1711370018 7753 8b560d116f6f8136ef93e0e5559729ca "pdflatex"
-  "xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard.bbl" 1711366292 4623 4ab533276e59a120bf303a4779bc1734 "bibtex xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard"
-  "xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard.lof" 1711370018 785 a81797c80fdf7a40368791066ce6e15f "pdflatex"
-  "xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard.out" 1711370018 5633 36bf2ccbe828b877c2d27e3af0bbd288 "pdflatex"
+  "xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard.aux" 1711542181 7837 6b1864885583370837670c68283ad2cd "pdflatex"
+  "xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard.bbl" 1711542126 4623 4ab533276e59a120bf303a4779bc1734 "bibtex xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard"
+  "xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard.lof" 1711542181 785 a81797c80fdf7a40368791066ce6e15f "pdflatex"
+  "xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard.out" 1711542181 5633 36bf2ccbe828b877c2d27e3af0bbd288 "pdflatex"
   "xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard.tex" 1710931339 19713 6b0eaf9fe40d44c8025c54e0f1e256b3 ""
-  "xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard.toc" 1711370018 2948 729748f3aaf04589f31c095b9c26a776 "pdflatex"
+  "xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard.toc" 1711542181 2948 729748f3aaf04589f31c095b9c26a776 "pdflatex"
   "zadani.pdf" 1710144171 31202 e8b2b0975c0b748f3958e94f39b3909d ""
   (generated)
   "xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard.aux"
