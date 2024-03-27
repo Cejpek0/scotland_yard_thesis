@@ -4,61 +4,74 @@
 
 \bibitem{Manille}
 {\sc\bgroup}Baes{\egroup}, J.
-\newblock {\em Application of Reinforcement Learning Algorithms to the Card Game Manille}.
+\newblock {\em Application of Reinforcement Learning Algorithms to the Card
+  Game Manille}.
 \newblock 2022.
 \newblock Diplomová práce.
 \newblock UGent. Faculteit Ingenieurswetenschappen en Architectuur.
 
 \bibitem{PPO_Hide_Seek}
-{\sc\bgroup}Baker{\egroup}, B., {\sc\bgroup}Kanitscheider{\egroup}, I., {\sc\bgroup}Markov{\egroup}, T., {\sc\bgroup}Wu{\egroup}, Y., {\sc\bgroup}Powell{\egroup}, G. et~al.
+{\sc\bgroup}Baker{\egroup}, B., {\sc\bgroup}Kanitscheider{\egroup}, I.,
+  {\sc\bgroup}Markov{\egroup}, T., {\sc\bgroup}Wu{\egroup}, Y.,
+  {\sc\bgroup}Powell{\egroup}, G. et~al.
 \newblock {\em Emergent Tool Use From Multi-Agent Autocurricula}.
 \newblock 2020.
 
 \bibitem{Exploitation_Exploration}
-{\sc\bgroup}Berger Tal{\egroup}, O., {\sc\bgroup}Nathan{\egroup}, J., {\sc\bgroup}Meron{\egroup}, E. a~{\sc\bgroup}Saltz{\egroup}, D.
+{\sc\bgroup}Berger Tal{\egroup}, O., {\sc\bgroup}Nathan{\egroup}, J.,
+  {\sc\bgroup}Meron{\egroup}, E. a~{\sc\bgroup}Saltz{\egroup}, D.
 \newblock The Exploration-Exploitation Dilemma: A Multidisciplinary Framework.
 \newblock {\em PLOS ONE}.
 \newblock 1. vyd.
 \newblock Public Library of Science.
 \newblock Duben 2014, sv.~9, č.~4, s.~1--8.
 \newblock DOI: 10.1371/journal.pone.0095693.
-\newblock Dostupn{\'{e}} z: ~{\small\url{https://doi.org/10.1371/journal.pone.0095693}}.
+\newblock Dostupn{\'{e}} z:
+  ~{\small\url{https://doi.org/10.1371/journal.pone.0095693}}.
 
 \bibitem{AlphaGo}
 {\sc\bgroup}Borowiec{\egroup}, S.
-\newblock {\em AlphaGo seals 4-1 victory over Go grandmaster Lee Sedol} [online].
+\newblock {\em AlphaGo seals 4-1 victory over Go grandmaster Lee Sedol}
+  [online].
 \newblock 2019 {\small [cit. 2024-03-18]}.
-\newblock Dostupn{\'{e}} z: ~{\small\url{https://www.theguardian.com/technology/2016/mar/15/googles-alphago-seals-4-1-victory-over-grandmaster-lee-sedol}}.
+\newblock Dostupn{\'{e}} z:
+  ~{\small\url{https://www.theguardian.com/technology/2016/mar/15/googles-alphago-seals-4-1-victory-over-grandmaster-lee-sedol}}.
 
 \bibitem{Policies}
 {\sc\bgroup}Carr{\egroup}, T.
 \newblock {\em Policies in Reinforcement Learning} [online].
 \newblock March 2024 {\small [cit. 2024-03-20]}.
-\newblock Dostupn{\'{e}} z: ~{\small\url{https://www.baeldung.com/cs/rl-deterministic-vs-stochastic-policies}}.
+\newblock Dostupn{\'{e}} z:
+  ~{\small\url{https://www.baeldung.com/cs/rl-deterministic-vs-stochastic-policies}}.
 
 \bibitem{GameSceneController}
 {\sc\bgroup}CDcodes){\egroup}, C.~Y. channel:.
 \newblock {\em Game states} [online].
 \newblock June 2021 {\small [cit. 2024-03-20]}.
-\newblock Dostupn{\'{e}} z: ~{\small\url{https://github.com/ChristianD37/YoutubeTutorials/tree/master}}.
+\newblock Dostupn{\'{e}} z:
+  ~{\small\url{https://github.com/ChristianD37/YoutubeTutorials/tree/master}}.
 
 \bibitem{Stratego_image}
 {\sc\bgroup}Guinness{\egroup}, H.
-\newblock {\em Here’s how a new AI mastered the tricky game of Stratego} [online].
+\newblock {\em Here’s how a new AI mastered the tricky game of Stratego}
+  [online].
 \newblock 2022 {\small [cit. 2024-03-20]}.
-\newblock Dostupn{\'{e}} z: ~{\small\url{https://www.popsci.com/technology/ai-stratego/}}.
+\newblock Dostupn{\'{e}} z:
+  ~{\small\url{https://www.popsci.com/technology/ai-stratego/}}.
 
 \bibitem{scotland_original_image}
 {\sc\bgroup}Mliu92{\egroup}.
 \newblock {\em Scotland Yard schematic} [online].
 \newblock 2023 {\small [cit. 2024-03-20]}.
-\newblock Dostupn{\'{e}} z: ~{\small\url{https://commons.wikimedia.org/wiki/File:Scotland_Yard_schematic.svg}}.
+\newblock Dostupn{\'{e}} z:
+  ~{\small\url{https://commons.wikimedia.org/wiki/File:Scotland_Yard_schematic.svg}}.
 
 \bibitem{Y_Narahari}
 {\sc\bgroup}Narahari{\egroup}, Y.
 \newblock {\em Game Theory} [online].
 \newblock 2012 {\small [cit. 2024-03-19]}.
-\newblock Dostupn{\'{e}} z: ~{\small\url{https://gtl.csa.iisc.ac.in/gametheory/ln/web-ncp13-bayesian.pdf}}.
+\newblock Dostupn{\'{e}} z:
+  ~{\small\url{https://gtl.csa.iisc.ac.in/gametheory/ln/web-ncp13-bayesian.pdf}}.
 
 \bibitem{DeepBlue}
 {\sc\bgroup}Newborn{\egroup}, M.
@@ -71,24 +84,23 @@
 {\sc\bgroup}OpenAI{\egroup}.
 \newblock {\em OpenAI Five defeats Dota 2 world champions} [online].
 \newblock 2019 {\small [cit. 2024-03-18]}.
-\newblock Dostupn{\'{e}} z: ~{\small\url{https://en.wikipedia.org/wiki/Deep_Blue_(chess_computer)}}.
+\newblock Dostupn{\'{e}} z:
+  ~{\small\url{https://en.wikipedia.org/wiki/Deep_Blue_(chess_computer)}}.
 
 \bibitem{Perolat_2022}
-{\sc\bgroup}Perolat{\egroup}, J., {\sc\bgroup}De Vylder{\egroup}, B., {\sc\bgroup}Hennes{\egroup}, D., {\sc\bgroup}Tarassov{\egroup}, E., {\sc\bgroup}Strub{\egroup}, F. et~al.
-\newblock Mastering the game of Stratego with model-free multiagent reinforcement learning.
+{\sc\bgroup}Perolat{\egroup}, J., {\sc\bgroup}De Vylder{\egroup}, B.,
+  {\sc\bgroup}Hennes{\egroup}, D., {\sc\bgroup}Tarassov{\egroup}, E.,
+  {\sc\bgroup}Strub{\egroup}, F. et~al.
+\newblock Mastering the game of Stratego with model-free multiagent
+  reinforcement learning.
 \newblock {\em Science}.
 \newblock 1. vyd.
 \newblock American Association for the Advancement of Science (AAAS).
 \newblock prosinec 2022, sv.~378, č.~6623, s.~990–996.
 \newblock DOI: 10.1126/science.add4679.
 \newblock ISSN 1095-9203.
-\newblock Dostupn{\'{e}} z: ~{\small\url{http://dx.doi.org/10.1126/science.add4679}}.
-
-\bibitem{Monte_Carlo_Tree_Search}
-{\sc\bgroup}Rahul_Roy{\egroup}.
-\newblock {\em ML | Monte Carlo Tree Search (MCTS)} [online].
-\newblock May 2023 {\small [cit. 2024-03-25]}.
-\newblock Dostupn{\'{e}} z: ~{\small\url{https://www.geeksforgeeks.org/ml-monte-carlo-tree-search-mcts/}}.
+\newblock Dostupn{\'{e}} z:
+  ~{\small\url{http://dx.doi.org/10.1126/science.add4679}}.
 
 \bibitem{Ray}
 {\sc\bgroup}Team{\egroup}, T.~R.
@@ -100,6 +112,7 @@
 {\sc\bgroup}Weng{\egroup}, L.
 \newblock {\em A (Long) Peek into Reinforcement Learning} [online].
 \newblock February 2018 {\small [cit. 2024-03-20]}.
-\newblock Dostupn{\'{e}} z: ~{\small\url{https://lilianweng.github.io/posts/2018-02-19-rl-overview/#key-concepts}}.
+\newblock Dostupn{\'{e}} z:
+  ~{\small\url{https://lilianweng.github.io/posts/2018-02-19-rl-overview/#key-concepts}}.
 
 \end{thebibliography}

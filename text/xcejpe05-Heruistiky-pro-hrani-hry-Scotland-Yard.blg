@@ -1,0 +1,56 @@
+This is BibTeX, Version 0.99d (TeX Live 2019/Debian)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: xcejpe05-Heruistiky-pro-hrani-hry-Scotland-Yard.aux
+The style file: bib-styles/Pysny/czplain.bst
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Database file #1: projekt-20-literatura-bibliography.bib
+Warning--entry type for "Monte_Carlo_Tree_Search" isn't style-file defined
+--line 355 of file projekt-20-literatura-bibliography.bib
+You've used 15 entries,
+            3945 wiz_defined-function locations,
+            918 strings with 8456 characters,
+and the built_in function-call counts, 7135 in all, are:
+= -- 546
+> -- 285
+< -- 34
++ -- 121
+- -- 102
+* -- 407
+:= -- 929
+add.period$ -- 52
+call.type$ -- 15
+change.case$ -- 133
+chr.to.int$ -- 38
+cite$ -- 14
+duplicate$ -- 416
+empty$ -- 854
+format.name$ -- 82
+if$ -- 1686
+int.to.chr$ -- 0
+int.to.str$ -- 15
+missing$ -- 0
+newline$ -- 99
+num.names$ -- 29
+pop$ -- 257
+preamble$ -- 1
+purify$ -- 88
+quote$ -- 0
+skip$ -- 311
+stack$ -- 0
+substring$ -- 219
+swap$ -- 90
+text.length$ -- 24
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 31
+warning$ -- 0
+while$ -- 46
+width$ -- 17
+write$ -- 194
+(There was 1 warning)

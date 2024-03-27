@@ -1,35 +1,35 @@
-\babel@toc {czech}{}\relax 
-\contentsline {chapter}{\numberline {1}Úvod}{3}{chapter.1}%
-\contentsline {chapter}{\numberline {2}Shrnutí dosavadního stavu}{4}{chapter.2}%
-\contentsline {section}{\numberline {2.1}Desková hra Scotland Yard}{4}{section.2.1}%
-\contentsline {section}{\numberline {2.2}Další hry s nedokonalou informací}{5}{section.2.2}%
-\contentsline {subsection}{\numberline {2.2.1}Bayesovské hry}{5}{subsection.2.2.1}%
-\contentsline {subsection}{\numberline {2.2.2}Stratego}{6}{subsection.2.2.2}%
-\contentsline {subsection}{\numberline {2.2.3}Poker}{6}{subsection.2.2.3}%
-\contentsline {section}{\numberline {2.3}Klíčové koncepty posilovaného učení}{6}{section.2.3}%
-\contentsline {subsection}{\numberline {2.3.1}Agent}{7}{subsection.2.3.1}%
-\contentsline {subsection}{\numberline {2.3.2}Prostředí}{7}{subsection.2.3.2}%
-\contentsline {subsection}{\numberline {2.3.3}Model}{7}{subsection.2.3.3}%
-\contentsline {subsection}{\numberline {2.3.4}Politika}{7}{subsection.2.3.4}%
-\contentsline {subsection}{\numberline {2.3.5}Akce}{8}{subsection.2.3.5}%
-\contentsline {subsection}{\numberline {2.3.6}Odměna}{8}{subsection.2.3.6}%
-\contentsline {subsection}{\numberline {2.3.7}Hodnotová funkce}{8}{subsection.2.3.7}%
-\contentsline {subsection}{\numberline {2.3.8}Markovský rozhodovací proces}{9}{subsection.2.3.8}%
-\contentsline {subsection}{\numberline {2.3.9}Bellmanova rovnice}{9}{subsection.2.3.9}%
-\contentsline {subsection}{\numberline {2.3.10}Rovnováha mezi explorací a exploatací (exploration-exploitation dillemma)}{10}{subsection.2.3.10}%
-\contentsline {subsection}{\numberline {2.3.11}Druhy informací v teorii her}{10}{subsection.2.3.11}%
-\contentsline {section}{\numberline {2.4}Vhodné algoritmy k řešení her s nedokonalou informací}{10}{section.2.4}%
-\contentsline {subsection}{\numberline {2.4.1}Monte Carlo tree search}{10}{subsection.2.4.1}%
-\contentsline {subsection}{\numberline {2.4.2}Q-learning}{12}{subsection.2.4.2}%
-\contentsline {subsection}{\numberline {2.4.3}Deep Q-learninggg}{12}{subsection.2.4.3}%
-\contentsline {subsection}{\numberline {2.4.4}Gradient politiky}{12}{subsection.2.4.4}%
-\contentsline {section}{\numberline {2.5}Zkoumaný algoritmus proximální optimalizace politiky}{13}{section.2.5}%
-\contentsline {chapter}{\numberline {3}Zhodnocení současného stavu a plán práce (návrh)}{14}{chapter.3}%
-\contentsline {subsection}{\numberline {3.0.1}Použité technologie}{15}{subsection.3.0.1}%
-\contentsline {subsection}{\numberline {3.0.2}Implementace uživatelského rozraní a herních mechanizmů}{15}{subsection.3.0.2}%
-\contentsline {subsection}{\numberline {3.0.3}Prostředí}{16}{subsection.3.0.3}%
-\contentsline {chapter}{\numberline {4}Experimenty}{18}{chapter.4}%
-\contentsline {chapter}{\numberline {5}Závěr}{19}{chapter.5}%
-\contentsline {chapter}{\numberline {6}Přílohy}{20}{chapter.6}%
-\contentsline {chapter}{Literatura}{21}{chapter*.16}%
+\babel@toc {czech}{}
+\contentsline {chapter}{\numberline {1}Úvod}{4}{chapter.1}%
+\contentsline {chapter}{\numberline {2}Shrnutí dosavadního stavu}{5}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Desková hra Scotland Yard}{5}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Další hry s nedokonalou informací}{6}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Bayesovské hry}{6}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}Stratego}{7}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}Poker}{7}{subsection.2.2.3}%
+\contentsline {section}{\numberline {2.3}Klíčové koncepty posilovaného učení}{7}{section.2.3}%
+\contentsline {subsection}{\numberline {2.3.1}Agent}{8}{subsection.2.3.1}%
+\contentsline {subsection}{\numberline {2.3.2}Prostředí}{8}{subsection.2.3.2}%
+\contentsline {subsection}{\numberline {2.3.3}Model}{8}{subsection.2.3.3}%
+\contentsline {subsection}{\numberline {2.3.4}Politika}{8}{subsection.2.3.4}%
+\contentsline {subsection}{\numberline {2.3.5}Akce}{9}{subsection.2.3.5}%
+\contentsline {subsection}{\numberline {2.3.6}Odměna}{9}{subsection.2.3.6}%
+\contentsline {subsection}{\numberline {2.3.7}Hodnotová funkce}{9}{subsection.2.3.7}%
+\contentsline {subsection}{\numberline {2.3.8}Markovský rozhodovací proces}{10}{subsection.2.3.8}%
+\contentsline {subsection}{\numberline {2.3.9}Bellmanova rovnice}{10}{subsection.2.3.9}%
+\contentsline {subsection}{\numberline {2.3.10}Rovnováha mezi explorací a exploatací (exploration-exploitation dillemma)}{11}{subsection.2.3.10}%
+\contentsline {subsection}{\numberline {2.3.11}Druhy informací v teorii her}{11}{subsection.2.3.11}%
+\contentsline {section}{\numberline {2.4}Vhodné algoritmy k řešení her s nedokonalou informací}{11}{section.2.4}%
+\contentsline {subsection}{\numberline {2.4.1}Monte Carlo tree search}{11}{subsection.2.4.1}%
+\contentsline {subsection}{\numberline {2.4.2}Q-learning}{13}{subsection.2.4.2}%
+\contentsline {subsection}{\numberline {2.4.3}Deep Q-learninggg}{13}{subsection.2.4.3}%
+\contentsline {subsection}{\numberline {2.4.4}Gradient politiky}{13}{subsection.2.4.4}%
+\contentsline {section}{\numberline {2.5}Zkoumaný algoritmus proximální optimalizace politiky}{14}{section.2.5}%
+\contentsline {chapter}{\numberline {3}Zhodnocení současného stavu a plán práce (návrh)}{15}{chapter.3}%
+\contentsline {subsection}{\numberline {3.0.1}Použité technologie}{16}{subsection.3.0.1}%
+\contentsline {subsection}{\numberline {3.0.2}Implementace uživatelského rozraní a herních mechanizmů}{16}{subsection.3.0.2}%
+\contentsline {subsection}{\numberline {3.0.3}Prostředí}{17}{subsection.3.0.3}%
+\contentsline {chapter}{\numberline {4}Experimenty}{19}{chapter.4}%
+\contentsline {chapter}{\numberline {5}Závěr}{20}{chapter.5}%
+\contentsline {chapter}{\numberline {6}Přílohy}{21}{chapter.6}%
+\contentsline {chapter}{Literatura}{22}{chapter*.16}%
 \contentsfinish 
