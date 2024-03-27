@@ -29,11 +29,13 @@ Scotland Yard je ideální hrou ke studování umělé inteligence, protože se 
 
 Zaměření této práce jsem si vybral jelikož mi vždy byla umělá inteligence blízká a vždy jsem chtěl začít tomuto odvětví více věnovat i po praktické stránce.
 
-Tato práce blíže zkoumá algoritmy posilovaného učení, konkrétně algoritmu PPO (Proximal Policy Optimization) a jejich použití na hry s neurčitostí.
+Tato práce blíže zkoumá algoritmy posilovaného učení, konkrétně algoritmus proximální optimalizace politiky (Proximal Policy Optimization - PPO) a jejich použití na hry s neurčitostí.
 Algoritmus PPO je často používán k řešení problémů se spojitými veličinamy a ve 3D prostoru.
-Často se využívá ve hrách.
-Dle provedených studií je vhodný k řešení problémů s nedokonalou informací~\cite{Manille} a je vhodný pro hry na schování a hledání~\cite{PPO_Hide_Seek}.
-Proto je pro mě zajímavý a zkušenost s tímto algoritmém by se dala využít v mém pracovním životě.
+Důvod proč byl algoritmus PPO vybrán, byla hlavně experiment OpenAI \cite{PPO_Hide_Seek_page},podrobně popsán zde\cite{PPO_Hide_Seek_paper}.
+V tomto experimentu byla proximální optimalizace politiky použita pro učení politiky ve hře typu schováváná s několika agenty a neúplnou informací.
+Jelikož tento typ hry přesně odpovídá i hře Scotland Yard, zdá se být vhodný i pro řešení této hry.
+Také další studie \cite{Manille} tento výrok dále podporuje.
+Algoritmus je pro mě zajímavý a zkušenost s tímto algoritmém by se dala využít v mém dalším pracovním životě.
 
 Pro zpracování práce byly využity tyto hlavní knihovny:
 \begin{itemize}
@@ -78,7 +80,7 @@ Jednotliví hráči využívají prvky veřejné dopravy k pohybu po herní plo�
   \item \emph{Trajekt}
 \end{itemize}
 
-\begin{figure}[!h]
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{obrazky-figures/scotland_original}
 	\caption{Ukázka herní mapy hry Scotland Yard.
@@ -151,7 +153,7 @@ Souboj spočívá v odkrytí obou figur a vyhrává ta s vyšší hodností.
 Figura, která vyhrála zůstává, poražená figura je odstraněna z hry.
 Ve hře Stratego je důležité blafování a odhadování soupeřových tahů.
 
-\begin{figure}[!h]
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.6\textwidth]{obrazky-figures/stratego}
 	\caption{Ukázka rozestavěných figur ve hře Stratego.
@@ -268,7 +270,7 @@ Teměř všechny problémy, řešené posilovaným učením, mohou být označen
 Tato abstrakce je základním kamenem pro modelování algoritmů posilovaného učení.
 Markovský rozhodovací proces značí, že následující stav není závislý na stavech minulých, nýbrž pouze na aktuálním stavu.
 
-\begin{figure}[!h]
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.6\textwidth]{obrazky-figures/RL_basics}
 	\caption{Interakce mezi prostředím a agentem podle Markova rozhodovacího procesu.
@@ -389,7 +391,7 @@ MCTS se skládá z několika fází:
 
 \end{itemize}
 
-\begin{figure}[!h]
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{obrazky-figures/mcts}
 	\caption{Diagram jednotlivých fází MCTS.
@@ -404,25 +406,30 @@ Q-learning je jedním z nejznámějších algoritmů posilovaného učení.
 Učení tohoto algoritmu probíhá bez modelu a mimo politiku.
 
 Jak už název vypovídá, Q-learning se zaměřuje na určení hodnoty hodnotové funkci akce $Q(s, a)$, viz. \nameref{subsubsec:q_function}.
-Pokud dostane kladnou odměnu po vykonání akce $s$, zvýší se hodnota $Q(s, a)$.
+Tyto hodnoty se uchovávají v Q--tabulce, která na každou kompbinaci stavu a akce uchovává hodnotu $Q(s, a)$.
+Hodnoty v Q--tabulce se iterativně aktualizují na základě získahých odměn.
+Kladná odměna po vykonání akce $s$, zvýší se hodnota $Q(s, a)$.
 Naopak, dostane--li po vykonání této akce zápornou odměnu, hodnota $Q(s, a)$ se sníží.
-Hlavním prvkem tohoto algoritmu je Q--tabulka, která na každou kompbinaci stavu a akce uchovává hodnotu $Q(s, a)$.
-Řádky jsou tedy stavy a sloupce akce.
-Na začátku jsou všechny $Q$ hodnoty v tabulce inicializovány na nulu.
+
+Řádky Q-tabulky tedy reprezentují stavy a sloupce akce.
+Po vytvoření jsou všechny $Q$ hodnoty v tabulce inicializovány na nulu.
 Následně jsou tyto hodnoty iterativně aktualizovány dle zpětné vazby udělené od prostředí ve formě odměny.
 
 Jako u většiny algoritmů je zde potřeba dohlédnout na rovnováhu mezi explorací a exploatací.
 K tomuto se využívá $\epsilon$--greedy strategie viz. \nameref*{epsilon_greedy}.
 
-Protože tato metoda mapuje $Q$ hodnoty pro každou kombinaci stavu a akce nastává zde problém.
-Je--li stavový, či akční prostor příliš velký, nebo dokonce nekonečný je tento algoritmus nevhodný, skoro až nepoužitelný.
+Hlavní nevýhodou tohoto algoritmu je právě jeho závislost na Q--tabulce.
+Tabulka mapuje hodnoty pro každou kombinaci stavu a akce,
+Je--li avšak stavový, či akční prostor příliš velký, nebo dokonce nekonečný je tento algoritmus nevhodný, skoro až nepoužitelný.
+Výsledná Q--tabulka by byla neefektivní kvůli své velikosti.
+Mohlo by se stát, že s nekonečným množstvím kombinací by velikost tabulky rostla do \uv{nekonečna}.
 Jako řešení byl navrhnut algoritmus Deep Q-learning.
 
-\subsection{Deep Q-learninggg}\label{subsec:deep-q-learninggg}
+\subsection{Deep Q-learning (DQN)}\label{subsec:deep-q-learning}
 
-Tato metoda je rozšířením algoritmu Q-learning.
-Místo mapovací $Q$--tabulky využívá hluboké neuronové sítě k aproximaci hodnotové funkce akce $Q(s, a)$.
-Díky této aproximaci je možné použít tento algoritmus na problémy s velkým, či nekonečným stavovým prostorem.
+Tato metoda je rozšířením algoritmu Q-learning které,
+nahrazuje $Q$--tabulku neuronovou síťí určených k aproximaci hodnotové funkce akce $Q(s, a)$.
+Díky této aproximaci je možné použít tento algoritmus na problémy s velkým, či nekonečným množstvím kombinací akcí a stavů.
 
 Avšak tímto vzniká nový problém, \emph{nestabilita učení}.
 Ten je řešen dvěma mechanizmy:
@@ -430,14 +437,21 @@ Ten je řešen dvěma mechanizmy:
 \begin{itemize}
   \item \textbf{\emph{Přehrání zkušenosti (experience replay)}}
   
+  Během trénování se ukládají všechny zkušenosti do paměti.
+  Ať už to jsou akce, stavy, odměny, atd.
+  Při trénování se poté náhodně vybírají náhodně zkušenosti z této paměti a aktualizují se podle nich váhy sítě.
+  Tímto se snižuje rozdíl mezi jednotlivými aktualizacemi a tím pádem se zvyšuje stabilita učení.
+  
 
-  \item \emph{Periodická aktualizace}
+  \item \textbf{\emph{Periodická aktualizace}}
 
+  {\color{red}[DOPSAT!]}
   Síť je naklonována a změny se provádí pouze na duplikátní verzi.
   Do hlavní originální sítě se změny klonují po určitém počtu kroků.
 
-
 \end{itemize}
+
+Při vytváření neuronové síťe jsou vahy inicializovány náhodně.
 
 \subsection{Gradient politiky}\label{subsec:gradient-politiky}
 Oproti předchozím zmiňovaným algoritmům, které se snaží naučit hodnotovou funkci či prohledávají stavový prostor, algoritmy gradientu politiky se snaží naučit politiku přímo.
@@ -473,6 +487,27 @@ Avšak tento vzorec lze zjednodušit na rovnici zvanou \emph{věta o gradientu p
 \section{Zkoumaný algoritmus proximální optimalizace politiky}
 \label{sec:proximalni-optimalizace-politiky}
 
+Proximální optimalizace politiky (Proximal policy optimization - PPO) byl představen roku 2017\cite{PPO_paper}.
+
+\subsection{Experiment OpenAI}
+Důležitým zdrojem pro tuto práci byla studie studie \cite{PPO_Hide_Seek_paper}, od společnosti OpenAI, vyplývá, že algoritmus je vhodný pro řešení problémů s nedokonalou informací.
+V dané studii byl algoritmus implementován na komplexní hru schovávané.
+Ve hre proti sobě hrají dva typy hráčů.
+Modří hráči se snaží schovat a utéct před červenýmy.
+Po herní ploše byly rozestavěny objekty, se kterými hráči mohou interagovat.
+Mohou je přesouvat a následně \uv{zamrazit} na místě, takže s objektem nelze pohybovat.
+Modří hráči se na začátku hry objevují ve své pevnosti, která má několik děr.
+Červeným hráčům je na záčátku hry znemožněn pohyb, což dává modrým hráčům čas připravit se na jejich útok.
+
+Po přes 8 miliónů epizod učení se modří hráči naučili efektivně blokovat vstup do jejich pevnosti, takže je červení hráči nebyli schopni dostihnout.
+Pote se avšak červení hráči adaptovali, naučili se totiž využívat rampy a přelézt opevnění modrých hráčů.
+Jako finální, a ultimátní strategii se modří naučili po 43 miliónech epizod.
+Modří hráči na začátku kola ukradli červeným všechny rampy, a zabarikádovali se i s nimy v pevnosti.
+Červení hráči tak neměli žádnou šanci na výhru.
+
+Dokonce se objevili i fascinující strategie které zneužívaly prostřed.
+Například, v kódu kolize byla chyba, která způsobovala, že při najetí rampy na zeď arény, pod určitým úhlem, byla rampa rapidní rychlostí vymrštěna do vzduchu.
+Toho červení hráči zneužili a za pomocí této chyby se vymršťovali do vzduchu aby překonali zdi pevnosti modrých.
 
 \chapter{Zhodnocení současného stavu a plán práce (návrh)}
 \label{ch:navrh}
