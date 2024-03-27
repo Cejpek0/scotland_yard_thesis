@@ -15,10 +15,10 @@ Umělá inteligence je obor, který nás postupem let všechny obkopuje čím d�
 Dokonce je navždy spjata i s naším českým národem, když Karel Čapek dal zrodu slova robot.
 
 Pokrok umělé inteligence je často měřen aplikací v oblasti her.
-Hry jsou vhodným ukazatelem pokroku v oblasti umělé inteligence, protože mají jasná pravidla, výkon je snadno měřitelný a pokrok dokáže vidět i lajk.
+A to proto, že mají jasná pravidla, výkon je snadno měřitelný a pokrok dokáže vidět i lajk.
 Umělá inteligence již dokázala porazit nejlepší hráče v šachu~\cite{DeepBlue}, Dota 2~\cite{Dota2} a Go~\cite{AlphaGo}.
 
-Hra studovaná v této práci je hra Scotland Yard.
+Hra studovaná v této práci se jmenuje Scotland Yard.
 Je to hra pro tři až šest hráčů.
 V této hře obvykle hraje jeden hráč jako Pan X, který se snaží uniknout policistům, ovládanými ostatními hráči.
 Policisté avšak nevědí, kde na herním poli se Pan X nachází.
@@ -179,6 +179,17 @@ Je komplexní entita, která interaguje s prostředím.
 Prostředí poskytuje agentovi informace o stavu a agent na základě těchto pozorování vykonává akce.
 Tyto akce mohou ovlivnit stav prostředí a agent obdrží odměnu na základě odměnové funkce.
 Agent volí takové akce aby maximalizoval kumulativní odměnu.
+
+\subsection{Diskrétní a spojitý prostor}
+
+Pokud se bavíme o \textbf{diskrétním prostoru} v oblasti umělé inteligence, bavíme se o prostoru kde jeho hodnoty mohou nabývat pouze celočíselných hodnot.
+Například, pokud máme prostor kde se agent může hýbat pouze 4 směry (nahoru, dolů, doleva a doprava) jedná se o diskrétní akční prostor.
+
+\bigskip
+
+Uvažujme však 3D hru kde se agent může hýbat za pomocí aplikování silového vektoru o různých velikostech.
+Může tím tedy měnit rychlost a směr pohybu.
+V tomto případě se jedná o \textbf{spojitý akční prostor}.
 
 \subsection{Prostředí}\label{subsec:prostredi2}
 
@@ -416,7 +427,7 @@ Po vytvoření jsou všechny $Q$ hodnoty v tabulce inicializovány na nulu.
 Následně jsou tyto hodnoty iterativně aktualizovány dle zpětné vazby udělené od prostředí ve formě odměny.
 
 Jako u většiny algoritmů je zde potřeba dohlédnout na rovnováhu mezi explorací a exploatací.
-K tomuto se využívá $\epsilon$--greedy strategie viz. \nameref*{epsilon_greedy}.
+K tomuto se využívá $\epsilon$--greedy strategie viz. \nameref{epsilon_greedy}.
 
 Hlavní nevýhodou tohoto algoritmu je právě jeho závislost na Q--tabulce.
 Tabulka mapuje hodnoty pro každou kombinaci stavu a akce,
@@ -483,11 +494,45 @@ Avšak tento vzorec lze zjednodušit na rovnici zvanou \emph{věta o gradientu p
   \nabla \mathcal{J}(\theta) = \mathbb{E}_{\pi_\theta} [\nabla \ln \pi(a \vert s, \theta) Q_\pi(s, a)]
 \end{equation}
 
+\section{Trust Region Policy Optimization (TRPO)}\label{sec:trust-region-policy-optimization}
+Trénované politiky jsou často velmi náchylné na změny.
+Kde i malá náhlá změna v jednom kroku může způsobit velké změny v chování agenta a zamezit dalšímu učení správné strategie.
+Během učení totiž chceme aby učení probýhalo plynule a ne skokově.
+Pokud se politika změní příliš rychle protože následovala nějvětší růst, může se stát, že mine cestu vedoucí k optimální strategii.
+Zasekne se tedy v lokálním optimu.
+
+TRPO je optimalizační algoritmus, který se snaží tento problém řešit tím, že definuje omezení rozdílu mezi novou aktualizovanou politikou a starou politikou z předešlého kroku.
+Tento rozdíl mezi dvěma pravděpodobnostními rozděleními je definován jako Kullback-Leiblerova divergence (K-L divergence)\cite{KL_divergence}.
+Vzniká tak region důvěry, ve kterém musí nová politika setrvat.
+Politika se tedy nemůže skokově měnit a pouze následuje směr lokálního maxima.
+
+K tomu využívá Hesenská matice.
+Kdy pomocí těchto matic hleda optimální směr změny politiky.
+Tím, že se hledá lokální maximum pouze v oblasti důvěry, se zaseknutím v těchto lokálních optimech.
+
+Díky tomuto řešení se učení stává robustním a stabilním.
+Avšak výměnou za to, je náročnost aproximace pomocí Hesenských matic a s tím související náročnost na implementaci.
 
 \section{Zkoumaný algoritmus proximální optimalizace politiky}
 \label{sec:proximalni-optimalizace-politiky}
 
+%\textsuperscript {\ref{sec:trust-region-policy-optimization}}
+
 Proximální optimalizace politiky (Proximal policy optimization - PPO) byl představen roku 2017\cite{PPO_paper}.
+Tato metoda je vylepšeným následník algoritmu TRPO, popsaný v předchozí sekci~\nameref{sec:trust-region-policy-optimization}.
+
+Co výrazné odlišuje tuto metodu, je její jednoduchost a efektivita.
+Zatímco má srovnatelné výsledky s metodou ACER, je mnohem jednodušší na implementaci a pochopení\cite{PPO_paper}.
+
+K dosažení těchto výsledků, využívá PPO techniku ořezávání náhradních cílů vloženou do algoritmu TRPO.
+Vynucuje aby K-L divergence mezi novou a starou politikou byla v rozmezí $[1-\epsilon, 1+\epsilon]$ kde $\epsilon$ je hyperparametr.
+
+PPO má však i své nedostatky.
+Dle studie \cite{PPO_weakness} se ukázalo, že PPO nefunguje optimálně za 3 podmínek.
+
+\begin{itemize}
+  \item  V prostředí se spojitým prostorem akcí.
+\end{itemize}
 
 \subsection{Experiment OpenAI}
 Důležitým zdrojem pro tuto práci byla studie studie \cite{PPO_Hide_Seek_paper}, od společnosti OpenAI, vyplývá, že algoritmus je vhodný pro řešení problémů s nedokonalou informací.
@@ -647,6 +692,9 @@ Policisté znají nejbližší bod této oblasti.
 Pokud je policista v této oblasti dostáva odměnu.
 Pokud je mimo tuto oblast zájmu, je penalizován.
 Čím blíže je policista k této oblasti tím menší penalizaci obdrží.
+Tento postup byl zvolen, jelikož PPO algoritmus může začít v prostředích s diskrétními akcemi volit velmi neoptimální akce.
+Toto nastává pokud má příliš málo podstatných odměn\cite{PPO_weakness}. 
+
 
 Tento styl odměnování policistů se ukázal jako velmi efektivní.
 Další varianta byla přidat do pozorování policistů pozice všech políček, kde se může Pan X nacházet.

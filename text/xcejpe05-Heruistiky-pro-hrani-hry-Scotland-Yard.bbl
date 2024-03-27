@@ -10,7 +10,7 @@
 \newblock Diplomová práce.
 \newblock UGent. Faculteit Ingenieurswetenschappen en Architectuur.
 
-\bibitem{PPO_Hide_Seek}
+\bibitem{PPO_Hide_Seek_paper}
 {\sc\bgroup}Baker{\egroup}, B., {\sc\bgroup}Kanitscheider{\egroup}, I.,
   {\sc\bgroup}Markov{\egroup}, T., {\sc\bgroup}Wu{\egroup}, Y.,
   {\sc\bgroup}Powell{\egroup}, G. et~al.
@@ -24,7 +24,7 @@
 \newblock {\em PLOS ONE}.
 \newblock 1. vyd.
 \newblock Public Library of Science.
-\newblock Duben 2014, sv.~9, č.~4, s.~1--8.
+\newblock Duben 2014, sv.~9, č.~4, s.~1--8, [cit. 2024-03-25].
 \newblock DOI: 10.1371/journal.pone.0095693.
 \newblock Dostupn{\'{e}} z:
   ~{\small\url{https://doi.org/10.1371/journal.pone.0095693}}.
@@ -59,6 +59,12 @@
 \newblock Dostupn{\'{e}} z:
   ~{\small\url{https://www.popsci.com/technology/ai-stratego/}}.
 
+\bibitem{PPO_weakness}
+{\sc\bgroup}Hsu{\egroup}, C. C.-Y., {\sc\bgroup}Mendler Dünner{\egroup}, C.
+  a~{\sc\bgroup}Hardt{\egroup}, M.
+\newblock {\em Revisiting Design Choices in Proximal Policy Optimization}.
+\newblock 2020 {\small [cit. 2024-03-25]}.
+
 \bibitem{scotland_original_image}
 {\sc\bgroup}Mliu92{\egroup}.
 \newblock {\em Scotland Yard schematic} [online].
@@ -79,6 +85,14 @@
 \newblock 1. vyd.
 \newblock Springer-VerlagBerlin, Heidelberg, 1996.
 \newblock ISBN 978-0-387-94820-1.
+
+\bibitem{PPO_Hide_Seek_page}
+{\sc\bgroup}OpenAI{\egroup}.
+\newblock Emergent tool use from multi-agent interaction.
+\newblock [online].
+\newblock September 2019, [cit. 2024-03-27].
+\newblock Dostupn{\'{e}} z:
+  ~{\small\url{https://openai.com/research/emergent-tool-use}}.
 
 \bibitem{Dota2}
 {\sc\bgroup}OpenAI{\egroup}.
@@ -102,11 +116,25 @@
 \newblock Dostupn{\'{e}} z:
   ~{\small\url{http://dx.doi.org/10.1126/science.add4679}}.
 
+\bibitem{PPO_paper}
+{\sc\bgroup}Schulman{\egroup}, J., {\sc\bgroup}Wolski{\egroup}, F.,
+  {\sc\bgroup}Dhariwal{\egroup}, P., {\sc\bgroup}Radford{\egroup}, A.
+  a~{\sc\bgroup}Klimov{\egroup}, O.
+\newblock {\em Proximal Policy Optimization Algorithms}.
+\newblock 2017 {\small [cit. 2024-03-25]}.
+
 \bibitem{Ray}
 {\sc\bgroup}Team{\egroup}, T.~R.
 \newblock {\em Ray Documentation}.
-\newblock 2024.
+\newblock 2024 {\small [cit. 2024-03-25]}.
 \newblock Dostupn{\'{e}} z: ~{\small\url{https://docs.ray.io}}.
+
+\bibitem{KL_divergence}
+{\sc\bgroup}Weng{\egroup}, L.
+\newblock {\em From GAN to WGAN}.
+\newblock 2017 {\small [cit. 2024-03-25]}.
+\newblock Dostupn{\'{e}} z:
+  ~{\small\url{https://lilianweng.github.io/posts/2017-08-20-gan/#kullbackleibler-and-jensenshannon-divergence}}.
 
 \bibitem{RL_basics}
 {\sc\bgroup}Weng{\egroup}, L.

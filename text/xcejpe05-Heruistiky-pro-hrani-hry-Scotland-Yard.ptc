@@ -5,32 +5,35 @@
 \contentsline {section}{\numberline {2.2}Další hry s nedokonalou informací}{6}{section.2.2}%
 \contentsline {subsection}{\numberline {2.2.1}Bayesovské hry}{6}{subsection.2.2.1}%
 \contentsline {subsection}{\numberline {2.2.2}Stratego}{7}{subsection.2.2.2}%
-\contentsline {subsection}{\numberline {2.2.3}Poker}{7}{subsection.2.2.3}%
-\contentsline {section}{\numberline {2.3}Klíčové koncepty posilovaného učení}{7}{section.2.3}%
+\contentsline {subsection}{\numberline {2.2.3}Poker}{8}{subsection.2.2.3}%
+\contentsline {section}{\numberline {2.3}Klíčové koncepty posilovaného učení}{8}{section.2.3}%
 \contentsline {subsection}{\numberline {2.3.1}Agent}{8}{subsection.2.3.1}%
-\contentsline {subsection}{\numberline {2.3.2}Prostředí}{8}{subsection.2.3.2}%
-\contentsline {subsection}{\numberline {2.3.3}Model}{8}{subsection.2.3.3}%
-\contentsline {subsection}{\numberline {2.3.4}Politika}{8}{subsection.2.3.4}%
-\contentsline {subsection}{\numberline {2.3.5}Akce}{9}{subsection.2.3.5}%
-\contentsline {subsection}{\numberline {2.3.6}Odměna}{9}{subsection.2.3.6}%
-\contentsline {subsection}{\numberline {2.3.7}Hodnotová funkce}{9}{subsection.2.3.7}%
-\contentsline {subsection}{\numberline {2.3.8}Markovský rozhodovací proces}{10}{subsection.2.3.8}%
-\contentsline {subsection}{\numberline {2.3.9}Bellmanova rovnice}{10}{subsection.2.3.9}%
-\contentsline {subsection}{\numberline {2.3.10}Rovnováha mezi explorací a exploatací (exploration-exploitation dillemma)}{11}{subsection.2.3.10}%
-\contentsline {subsection}{\numberline {2.3.11}Druhy informací v teorii her}{11}{subsection.2.3.11}%
-\contentsline {section}{\numberline {2.4}Vhodné algoritmy k řešení her s nedokonalou informací}{11}{section.2.4}%
-\contentsline {subsection}{\numberline {2.4.1}Monte Carlo tree search}{11}{subsection.2.4.1}%
+\contentsline {subsection}{\numberline {2.3.2}Diskrétní a spojitý prostor}{8}{subsection.2.3.2}%
+\contentsline {subsection}{\numberline {2.3.3}Prostředí}{9}{subsection.2.3.3}%
+\contentsline {subsection}{\numberline {2.3.4}Model}{9}{subsection.2.3.4}%
+\contentsline {subsection}{\numberline {2.3.5}Politika}{9}{subsection.2.3.5}%
+\contentsline {subsection}{\numberline {2.3.6}Akce}{9}{subsection.2.3.6}%
+\contentsline {subsection}{\numberline {2.3.7}Odměna}{10}{subsection.2.3.7}%
+\contentsline {subsection}{\numberline {2.3.8}Hodnotová funkce}{10}{subsection.2.3.8}%
+\contentsline {subsection}{\numberline {2.3.9}Markovský rozhodovací proces}{10}{subsection.2.3.9}%
+\contentsline {subsection}{\numberline {2.3.10}Bellmanova rovnice}{11}{subsection.2.3.10}%
+\contentsline {subsection}{\numberline {2.3.11}Rovnováha mezi explorací a exploatací (exploration-exploitation dillemma)}{11}{subsection.2.3.11}%
+\contentsline {subsection}{\numberline {2.3.12}Druhy informací v teorii her}{11}{subsection.2.3.12}%
+\contentsline {section}{\numberline {2.4}Vhodné algoritmy k řešení her s nedokonalou informací}{12}{section.2.4}%
+\contentsline {subsection}{\numberline {2.4.1}Monte Carlo tree search}{12}{subsection.2.4.1}%
 \contentsline {subsection}{\numberline {2.4.2}Q-learning}{13}{subsection.2.4.2}%
-\contentsline {subsection}{\numberline {2.4.3}Deep Q-learninggg}{13}{subsection.2.4.3}%
-\contentsline {subsection}{\numberline {2.4.4}Gradient politiky}{13}{subsection.2.4.4}%
-\contentsline {section}{\numberline {2.5}Zkoumaný algoritmus proximální optimalizace politiky}{14}{section.2.5}%
-\contentsline {chapter}{\numberline {3}Zhodnocení současného stavu a plán práce (návrh)}{15}{chapter.3}%
-\contentsline {subsection}{\numberline {3.0.1}Použité technologie}{16}{subsection.3.0.1}%
-\contentsline {subsection}{\numberline {3.0.2}Implementace uživatelského rozraní a herních mechanizmů}{16}{subsection.3.0.2}%
-\contentsline {subsection}{\numberline {3.0.3}Prostředí}{17}{subsection.3.0.3}%
-\contentsline {chapter}{\numberline {4}Experimenty}{19}{chapter.4}%
-\contentsline {chapter}{\numberline {5}Závěr}{20}{chapter.5}%
-\contentsline {chapter}{\numberline {6}Přílohy}{21}{chapter.6}%
-\contentsline {chapter}{Literatura}{22}{chapter*.16}%
+\contentsline {subsection}{\numberline {2.4.3}Deep Q-learning (DQN)}{13}{subsection.2.4.3}%
+\contentsline {subsection}{\numberline {2.4.4}Gradient politiky}{14}{subsection.2.4.4}%
+\contentsline {section}{\numberline {2.5}Trust Region Policy Optimization (TRPO)}{14}{section.2.5}%
+\contentsline {section}{\numberline {2.6}Zkoumaný algoritmus proximální optimalizace politiky}{15}{section.2.6}%
+\contentsline {subsection}{\numberline {2.6.1}Experiment OpenAI}{15}{subsection.2.6.1}%
+\contentsline {chapter}{\numberline {3}Zhodnocení současného stavu a plán práce (návrh)}{16}{chapter.3}%
+\contentsline {subsection}{\numberline {3.0.1}Použité technologie}{17}{subsection.3.0.1}%
+\contentsline {subsection}{\numberline {3.0.2}Implementace uživatelského rozraní a herních mechanizmů}{17}{subsection.3.0.2}%
+\contentsline {subsection}{\numberline {3.0.3}Prostředí}{18}{subsection.3.0.3}%
+\contentsline {chapter}{\numberline {4}Experimenty}{20}{chapter.4}%
+\contentsline {chapter}{\numberline {5}Závěr}{21}{chapter.5}%
+\contentsline {chapter}{\numberline {6}Přílohy}{22}{chapter.6}%
+\contentsline {chapter}{Literatura}{23}{chapter*.16}%
 \ttl@starttoc {chapters@1}
 \contentsfinish 
