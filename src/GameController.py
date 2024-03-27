@@ -30,6 +30,7 @@ class UserActions(Enum):
 
 class GameController():
     def __init__(self):
+        self.font = None
         self.gui_controller = GuiController()
 
         from src.scene_stack import SceneStack

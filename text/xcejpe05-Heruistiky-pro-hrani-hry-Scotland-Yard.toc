@@ -21,7 +21,7 @@
 \contentsline {section}{\numberline {2.4}Vhodné algoritmy k řešení her s nedokonalou informací}{10}{section.2.4}%
 \contentsline {subsection}{\numberline {2.4.1}Monte Carlo tree search}{10}{subsection.2.4.1}%
 \contentsline {subsection}{\numberline {2.4.2}Q-learning}{12}{subsection.2.4.2}%
-\contentsline {subsection}{\numberline {2.4.3}Deep Q-learning}{12}{subsection.2.4.3}%
+\contentsline {subsection}{\numberline {2.4.3}Deep Q-learninggg}{12}{subsection.2.4.3}%
 \contentsline {subsection}{\numberline {2.4.4}Gradient politiky}{12}{subsection.2.4.4}%
 \contentsline {section}{\numberline {2.5}Zkoumaný algoritmus proximální optimalizace politiky}{13}{section.2.5}%
 \contentsline {chapter}{\numberline {3}Zhodnocení současného stavu a plán práce (návrh)}{14}{chapter.3}%

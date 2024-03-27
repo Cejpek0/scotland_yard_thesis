@@ -42,7 +42,7 @@ class ScotlandYardEnvironment(MultiAgentEnv):
         # check if actions of all agents are valid
 
         if len(action_dict) == 0:
-            exit(1, "No actions provided")
+            exit(1)
         agent_id = next(iter(action_dict.keys()))
         action = next(iter(action_dict.values()))
 
