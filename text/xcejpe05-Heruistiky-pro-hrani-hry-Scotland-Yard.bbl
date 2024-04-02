@@ -51,6 +51,12 @@
 \newblock Dostupn{\'{e}} z:
   ~{\small\url{https://github.com/ChristianD37/YoutubeTutorials/tree/master}}.
 
+\bibitem{Gymnasium}
+{\sc\bgroup}Foundation{\egroup}, F.
+\newblock {\em Gymnasium}.
+\newblock 2024 {\small [cit. 2024-03-25]}.
+\newblock Dostupn{\'{e}} z: ~{\small\url{https://gymnasium.farama.org/}}.
+
 \bibitem{Stratego_image}
 {\sc\bgroup}Guinness{\egroup}, H.
 \newblock {\em Here’s how a new AI mastered the tricky game of Stratego}

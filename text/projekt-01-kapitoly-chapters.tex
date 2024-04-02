@@ -31,10 +31,10 @@ Zaměření této práce jsem si vybral jelikož mi vždy byla umělá inteligen
 
 Tato práce blíže zkoumá algoritmy posilovaného učení, konkrétně algoritmus proximální optimalizace politiky (Proximal Policy Optimization - PPO) a jejich použití na hry s neurčitostí.
 Algoritmus PPO je často používán k řešení problémů se spojitými veličinamy a ve 3D prostoru.
-Důvod proč byl algoritmus PPO vybrán, byla hlavně experiment OpenAI \cite{PPO_Hide_Seek_page},podrobně popsán zde\cite{PPO_Hide_Seek_paper}.
+Důvod proč byl algoritmus PPO vybrán, byla hlavně experiment OpenAI~\cite{PPO_Hide_Seek_page},podrobně popsán zde\cite{PPO_Hide_Seek_paper}.
 V tomto experimentu byla proximální optimalizace politiky použita pro učení politiky ve hře typu schováváná s několika agenty a neúplnou informací.
 Jelikož tento typ hry přesně odpovídá i hře Scotland Yard, zdá se být vhodný i pro řešení této hry.
-Také další studie \cite{Manille} tento výrok dále podporuje.
+Také další studie~\cite{Manille} tento výrok dále podporuje.
 Algoritmus je pro mě zajímavý a zkušenost s tímto algoritmém by se dala využít v mém dalším pracovním životě.
 
 Pro zpracování práce byly využity tyto hlavní knihovny:
@@ -179,6 +179,31 @@ Je komplexní entita, která interaguje s prostředím.
 Prostředí poskytuje agentovi informace o stavu a agent na základě těchto pozorování vykonává akce.
 Tyto akce mohou ovlivnit stav prostředí a agent obdrží odměnu na základě odměnové funkce.
 Agent volí takové akce aby maximalizoval kumulativní odměnu.
+
+\subsection{Pozorovací a akční prostor}
+\label{subsec:prostory}
+
+\textbf{Pozorovací prostor} je jednou z nejdůležitějších součastí posilovaného učení.
+Bez jeho vhoného zvolení, je dosažení politiky s dobrými výsledky velmi obtížné.
+Pozorovací prostor je množina všech možných pozorování, které může agent získat z prostředí.
+Je to tedy forma jak prostředí předává informace agentovi.
+Velmi často se aktuální stav pozorovacího prostoru využívá jako stav.
+Při vytváření prostředí je nutné definovat typ, tvar prostoru a jaké hodnoty může nabývat.
+
+Pro jeho podoby je vhodné zvolit standard z knihovny \emph{Gymnasium}\cite{Gymnasium}.
+Gymnasium je pokračování knihovny \textit{Gym} od společnosti OpenAI.
+Tyto knihovny nastavily standard vytváření prostředí pro posilované učení.
+Dodržování těchto standardů umožňuje použití libovolného algoritmu na jedno prostředí.
+
+\bigskip
+
+\textbf{Akční prostor} je, jak název vypovýdá, množina všech možných akcí, ze kterých může politika volit.
+Často se jedná o množinu celočíselných hodnot, které reprezentují různé akce.
+Samozřejmě může být akčí prostor i spojitého typu (blíže popsáno v další sekci).
+
+V herním prostředí mohou nastat situace kdy se nějaká akce stane nevalidní, jelikož by její provedení vyústilo v nevalidní stav herního prostředí.
+V takovém případě je vhodné zvolení této akce zamezit, nejlépe pomocí akční masky.
+Ta definuje, které akce jsou v momentálním stavu prostředí validní.
 
 \subsection{Diskrétní a spojitý prostor}
 
@@ -504,11 +529,11 @@ Zasekne se tedy v lokálním optimu.
 TRPO je optimalizační algoritmus, který se snaží tento problém řešit tím, že definuje omezení rozdílu mezi novou aktualizovanou politikou a starou politikou z předešlého kroku.
 Tento rozdíl mezi dvěma pravděpodobnostními rozděleními je definován jako Kullback-Leiblerova divergence (K-L divergence)\cite{KL_divergence}.
 Vzniká tak region důvěry, ve kterém musí nová politika setrvat.
-Politika se tedy nemůže skokově měnit a pouze následuje směr lokálního maxima.
+Politika se tedy nemůže skokově měnit na lokální maximum, ale pouze následuje směr lokálního maxima.
 
 K tomu využívá Hesenská matice.
 Kdy pomocí těchto matic hleda optimální směr změny politiky.
-Tím, že se hledá lokální maximum pouze v oblasti důvěry, se zaseknutím v těchto lokálních optimech.
+Tím, že se hledá lokální maximum pouze v oblasti důvěry, řeší problé se zaseknutím v těchto lokálních optimech.
 
 Díky tomuto řešení se učení stává robustním a stabilním.
 Avšak výměnou za to, je náročnost aproximace pomocí Hesenských matic a s tím související náročnost na implementaci.
@@ -518,24 +543,31 @@ Avšak výměnou za to, je náročnost aproximace pomocí Hesenských matic a s 
 
 %\textsuperscript {\ref{sec:trust-region-policy-optimization}}
 
-Proximální optimalizace politiky (Proximal policy optimization - PPO) byl představen roku 2017\cite{PPO_paper}.
-Tato metoda je vylepšeným následník algoritmu TRPO, popsaný v předchozí sekci~\nameref{sec:trust-region-policy-optimization}.
+Metoda proximální optimalizace politiky (Proximal policy optimization - PPO) byla představen roku 2017\cite{PPO_paper}.
+Tato metoda je vylepšeným následník algoritmu TRPO, popsaný v předchozí sekci~\ref{sec:trust-region-policy-optimization}.
 
-Co výrazné odlišuje tuto metodu, je její jednoduchost a efektivita.
-Zatímco má srovnatelné výsledky s metodou ACER, je mnohem jednodušší na implementaci a pochopení\cite{PPO_paper}.
+Co výrazné odlišuje tuto metodu od předchůdců, je její jednoduchost a efektivita.
+Dosahuje lepších výsledků než metoda TRPO a srovnatelných výsledků s metodou ACER.
+Je avšak mnohem jednodušší na implementaci, má nižší nároky na výkon a je mnohem lepší co se týče efektivity dat pro trénování.\cite{PPO_paper}.
 
 K dosažení těchto výsledků, využívá PPO techniku ořezávání náhradních cílů vloženou do algoritmu TRPO.
 Vynucuje aby K-L divergence mezi novou a starou politikou byla v rozmezí $[1-\epsilon, 1+\epsilon]$ kde $\epsilon$ je hyperparametr.
 
 PPO má však i své nedostatky.
-Dle studie \cite{PPO_weakness} se ukázalo, že PPO nefunguje optimálně za 3 podmínek.
+\label{PPO_weakness}
+Dle studie~\cite{PPO_weakness} se ukázalo, že PPO nefunguje optimálně za 3 podmínek:
+\begin{enumerate}
+  \item V prostředí se spojitým prostorem akcí je nemodifikované PPO nestabilní pokud odměna náhle zmizí mimo ohraničenou podporu.
+  \item V diskrétním akčním prostoru s říkýmy vysokými odměnami PPO volí neoptimální akce.
+  \item V době těsně po inicializaci je náchylné k předčasné volení strategie, pokud je některá z optimálních akcí po inicializaci blízko a snadno dosažitelná.
+\end{enumerate}
 
-\begin{itemize}
-  \item  V prostředí se spojitým prostorem akcí.
-\end{itemize}
+Tato studie také navrhla tyto řešení a prokázala jejich účinnost.
+Bod 1 a 3 je řešen buď převedením spojitého akčního prostoru na diskrétní nebo zavedením \emph{Beta parametrizace politiky}.
+\emph{KL regulovaním cíle} je řešen bod 2.
 
 \subsection{Experiment OpenAI}
-Důležitým zdrojem pro tuto práci byla studie studie \cite{PPO_Hide_Seek_paper}, od společnosti OpenAI, vyplývá, že algoritmus je vhodný pro řešení problémů s nedokonalou informací.
+Důležitým zdrojem pro tuto práci byla studie studie~\cite{PPO_Hide_Seek_paper}, od společnosti OpenAI, vyplývá, že algoritmus je vhodný pro řešení problémů s nedokonalou informací.
 V dané studii byl algoritmus implementován na komplexní hru schovávané.
 Ve hre proti sobě hrají dva typy hráčů.
 Modří hráči se snaží schovat a utéct před červenýmy.
@@ -567,7 +599,7 @@ Toho červení hráči zneužili a za pomocí této chyby se vymršťovali do vz
   \item \emph {Návrh celého řešení i jeho částí, s odkazy na teoretickou část}
 \end{itemize}
 
-\section*{Zkoumaná modifikovaná verze hry Scotland Yard}
+\section{Zkoumaná modifikovaná verze hry Scotland Yard}
 
 Tato práce využívá modifikovanou verzi hry Scotland Yard, ve které se hráči pohybují po mřížkové herní ploše ve tvaru čtverce.
 Na mřížce se nachází {\color{red}[15x15]} polí.
@@ -584,7 +616,7 @@ Pro hru byli zvoleni 3 policisté z toho důvodu, že je herní pole velmi velk�
 V kole hraje jako první Pan X a poté policisté, již podle jejich očíslení, které jim bylo přiděleno při vytváření.
 Hra končí v okamžiku, kdy policisté chytí Pana X nebo když Pan X zůstane nepolapen až do konce.
 
-\section*{Implementace umělé inteligence do hry Scotland Yard pomocí algoritmu PPO}
+\section{Implementace umělé inteligence do hry Scotland Yard pomocí algoritmu PPO}
 \label{sec:implementace}
 
 \subsection{Použité technologie}\label{subsec:pouzite-technologie}
@@ -631,12 +663,13 @@ Samotný kód hry je rozdělena na 3 částí.
     \end{itemize}
 \end{itemize}
 
-\textit{Použití herní smyčky, která obsluhuje aktuální scénu byl inspirován tutoriálovým projektem z platformy GitHub \cite{GameSceneController}.
+\textit{Použití herní smyčky, která obsluhuje aktuální scénu bylo inspirován tutoriálovým projektem z platformy GitHub~\cite{GameSceneController}.
 Kód byl avšak značne upraven a vylepšen aby vyhovoval integrování do této práce.}
 
 Jednotlivé vrstvy hry jsou tak izolovány a mohou být snadno vyměněny za jiné implementace.
 
 \subsection{Prostředí}\label{subsec:prostredi}
+
 Vytvořit prostředí pro platformu Ray.Rlib byl velký oříšek.
 Dokumentace vytváření prostředí není příliš komplexní, byl tedy problém zajistit správnou komunikaci prostředí a agentů.
 Prostředí je komplikovanější, jelikož zde figuruje více agentů a dvě rozdílne strategie (politiky).
@@ -687,21 +720,56 @@ Jelikož policisté a Pan X mají odlišné protichůdné i jejich odměny jsou 
 
 Výpočet odměny policistů je složitější.
 Policisté znají poslední odhalenou pozici Pana X\@.
-Okolo tohoto bodu je vytvořená oblast, ve které se Pan X může nacházet.
-Policisté znají nejbližší bod této oblasti.
-Pokud je policista v této oblasti dostáva odměnu.
-Pokud je mimo tuto oblast zájmu, je penalizován.
-Čím blíže je policista k této oblasti tím menší penalizaci obdrží.
-Tento postup byl zvolen, jelikož PPO algoritmus může začít v prostředích s diskrétními akcemi volit velmi neoptimální akce.
-Toto nastává pokud má příliš málo podstatných odměn\cite{PPO_weakness}. 
+Okolo tohoto bodu je vytvořená oblast zájmů, ve které se Pan X může nacházet.
+Policisté znají nejbližší bod této oblasti který je jim nejblížší tzv. vstupní bod.
+Čím blíže je policista k tomuto bodu, tím větší odměnu získává.
+Pokud je od oblasti velmi vzdálený obdrží penalizaci.
+Jakmile policista docílí oblastí zájmů dostáva odměnu.
 
+PPO algoritmus může začít v prostředích s diskrétními akcemi volit velmi neoptimální akce.
+Toto nastává pokud má příliš málo podstatných odměn\cite{PPO_weakness}.
+To se dokonce ukázalo i během tohoto experimentu, kdy v ranných fázích vývoje nebyla udělována odměna za vzdálenost od oblasti zájmu.
+Učení nebylo příliš úspěšné, avšak přídáním této dílčí odměny za interakci s touto oblastí se učená politika značně zlepšila a agenti dosahovali lepších výsledků.
 
 Tento styl odměnování policistů se ukázal jako velmi efektivní.
-Další varianta byla přidat do pozorování policistů pozice všech políček, kde se může Pan X nacházet.
+Další varianta byla přidat do pozorování policistů pozice všech pozic, kde se může Pan X nacházet.
 Toto by ale bylo velmi neefektivní, jelikož by se pozorovací prostor několikanásobně zvětšil.
 Tím by se zvýšila náročnost výpočtů a zpomalilo by se učení.
 
-\subsubsection*{Pozorování agentů}
+\subsubsection*{Pozorovací prostor agentů}
+
+Pozorovací prostor agentů je doopravdy velmi důležité pro úspěšně naučení dobré politiky.
+V této práci vzájemně v prostředí vystupují dva agenti s různými politikami a různými pozorovacími prostory.
+Akční prostor je stejný jak pro policisty tak pro Pana X\@.
+
+Struktury jednotlivých pozorovacích prostorů jsou následující:
+
+\begin{itemize}
+  \item Shodné položky
+    \begin{itemize}
+    \item Pozice X,Y sama sebe
+    \item Pozice X,Y a vzdálenost od poslední známé pozice pana X
+    \item Číslo aktuálního kola
+    \item Maximální počet kol
+    \item Číslo kola, kdy dojde k dalšímu odhalení pozice Pana X
+  \end{itemize}
+  \item \textbf{Pan X}
+    \begin{itemize}
+    \item Pozice X,Y policistů
+    \item Vzdálenost od  policistů
+  \end{itemize}
+  \item \textbf{Policisté}
+    \begin{itemize}
+    \item Pozice X,Y zbylých policistů
+    \item Vzdálenost od zbylých policistů
+    \item Pozice X,Y nejbližšího bodu oblasti zájmu
+    \item Vzdálenost od nejbližšího bodu oblasti zájmu
+    \item Pravdivostní hodnota, zda je policista v oblasti zájmu
+  \end{itemize}
+\end{itemize}
+
+Pokud informace obsažená v těchto pozorovacích prostorech není v daný moment definována, je nahrazena hodnotou -1.
+Konkrétně se jedná pouze o hodnoty týkající se poslední veřejně známé pozice Pana X, jelikož v prvních několika prních kolech není odhalena.
 
 \chapter{Experimenty}
 \label{ch:experimenty}

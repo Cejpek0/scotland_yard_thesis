@@ -15,45 +15,45 @@ Warning--entry type for "Monte_Carlo_Tree_Search" isn't style-file defined
 Warning--empty journal in PPO_Hide_Seek_page
 Warning--empty edition in PPO_Hide_Seek_page
 Warning--empty number in PPO_Hide_Seek_page
-You've used 19 entries,
+You've used 20 entries,
             3945 wiz_defined-function locations,
-            937 strings with 9044 characters,
-and the built_in function-call counts, 8877 in all, are:
-= -- 681
-> -- 352
-< -- 37
-+ -- 145
-- -- 122
-* -- 512
-:= -- 1147
-add.period$ -- 63
-call.type$ -- 19
-change.case$ -- 160
+            941 strings with 9108 characters,
+and the built_in function-call counts, 9255 in all, are:
+= -- 709
+> -- 361
+< -- 38
++ -- 148
+- -- 124
+* -- 530
+:= -- 1190
+add.period$ -- 66
+call.type$ -- 20
+change.case$ -- 165
 chr.to.int$ -- 40
-cite$ -- 21
-duplicate$ -- 524
-empty$ -- 1078
-format.name$ -- 102
-if$ -- 2110
+cite$ -- 22
+duplicate$ -- 552
+empty$ -- 1135
+format.name$ -- 104
+if$ -- 2205
 int.to.chr$ -- 0
-int.to.str$ -- 19
+int.to.str$ -- 20
 missing$ -- 0
-newline$ -- 122
-num.names$ -- 37
-pop$ -- 325
+newline$ -- 128
+num.names$ -- 39
+pop$ -- 342
 preamble$ -- 1
-purify$ -- 108
+purify$ -- 111
 quote$ -- 0
-skip$ -- 392
+skip$ -- 411
 stack$ -- 0
-substring$ -- 258
-swap$ -- 112
-text.length$ -- 32
+substring$ -- 268
+swap$ -- 117
+text.length$ -- 34
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 39
+type$ -- 41
 warning$ -- 3
-while$ -- 55
-width$ -- 21
-write$ -- 240
+while$ -- 57
+width$ -- 22
+write$ -- 252
 (There were 4 warnings)
