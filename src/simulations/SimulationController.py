@@ -18,44 +18,53 @@ class SimulationController:
         turns_ppo_vs_random = config["turns_ppo_vs_random"]
         turns_random_vs_random = config["turns_random_vs_random"]
 
+        # PPO_cop vs PPO_x 
         for i in range(turns_ppo_vs_ppo):
             self.simulate_game(scotland_yard_game_logic.DefinedAlgorithms.PPO,
                                scotland_yard_game_logic.DefinedAlgorithms.PPO)
             self.current_game_id += 1
         print("PPO vs PPO done")
+
+        # Random_cop vs PPO_x
         for i in range(turns_random_vs_ppo):
             self.simulate_game(scotland_yard_game_logic.DefinedAlgorithms.RANDOM,
                                scotland_yard_game_logic.DefinedAlgorithms.PPO)
             self.current_game_id += 1
         print("Random vs PPO done")
+
+        # PPO_cop vs Random_x
         for i in range(turns_ppo_vs_random):
             self.simulate_game(scotland_yard_game_logic.DefinedAlgorithms.PPO,
                                scotland_yard_game_logic.DefinedAlgorithms.RANDOM)
             self.current_game_id += 1
         print("PPO vs Random done")
+
+        # Random_cop vs Random_x
         for i in range(turns_random_vs_random):
             self.simulate_game(scotland_yard_game_logic.DefinedAlgorithms.RANDOM,
                                scotland_yard_game_logic.DefinedAlgorithms.RANDOM)
             self.current_game_id += 1
         print("Random vs Random done")
         self.merge_csv_results(f"results{random.randint(0, 10000)}.csv")
-    
+
+    def run_train_simulation(self, config):
+        pass
+
     def merge_csv_results(self, file_name):
         pass
-        
 
-    def simulate_game(self, cop_agent, mr_x_agent):
+    def simulate_game(self, cop_algo, mr_x_algo):
         self.game.reset()
         rounds_stats = {}
         while self.game.get_game_status() is scotland_yard_game_logic.GameStatus.ONGOING:
-            self.game.play_turn(cop_agent, mr_x_agent)
+            self.game.play_turn(cop_algo, mr_x_algo)
             if self.game.playing_player_index == len(self.game.players) - 1:
                 rounds_stats[self.game.get_current_round_number()] = self.get_round_statistics()
 
         game_stats = self.get_game_statistics()
         game_stats["game_id"] = self.current_game_id
-        game_stats["mr_x_agent"] = mr_x_agent.value
-        game_stats["cop_agent"] = cop_agent.value
+        game_stats["mr_x_algo"] = mr_x_algo.value
+        game_stats["cop_algo"] = cop_algo.value
         self.save_statistics(game_stats, rounds_stats)
 
     def save_statistics(self, game_stats, rounds_stats):
@@ -83,3 +92,5 @@ class SimulationController:
     def get_game_statistics(self):
         game_result = self.game.get_game_status().value
         return {"game_result": game_result}
+    
+    

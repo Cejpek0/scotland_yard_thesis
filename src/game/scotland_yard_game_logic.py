@@ -3,11 +3,13 @@ import random
 import sys
 import time
 from enum import Enum
+from typing import List
 
 import numpy as np
 import pygame
 import ray
 from gymnasium import spaces
+from ray.rllib.algorithms import DQNConfig, DQN
 from ray.rllib.algorithms.algorithm import Algorithm
 from ray.rllib.algorithms.ppo import PPO, PPOConfig
 from ray.rllib.examples.models.centralized_critic_models import (
@@ -26,7 +28,7 @@ from src.environments.rlib.FakeEnv import FakeEnv
 # Constants
 
 GRID_SIZE = 15
-MAX_DISTANCE = math.ceil(math.sqrt(GRID_SIZE ** 2 + GRID_SIZE ** 2))
+MAX_DISTANCE = round(math.sqrt(GRID_SIZE ** 2 + GRID_SIZE ** 2), 2)
 NUMBER_OF_STARTING_POSITIONS_COPS = 10
 NUMBER_OF_STARTING_POSITIONS_MR_X = 5
 MAX_NUMBER_OF_TURNS = 24
@@ -143,11 +145,12 @@ class GameStatus(Enum):
 
 class DefinedAlgorithms(Enum):
     PPO = 1
-    RANDOM = 2
+    DQN = 2
+    RANDOM = 3
 
 
 class ScotlandYardGameLogic:
-    def __init__(self, training=False):
+    def __init__(self, training=False, algorithm_to_use=DefinedAlgorithms.PPO):
         self.number_of_cops = 3
         self.round_number = 0
         self.start_positions_mr_x = []
@@ -186,17 +189,57 @@ class ScotlandYardGameLogic:
             print("3")
 
             if False:
-                from tune_rlib import get_latest_checkpoint
+                from tune_ppo import get_latest_checkpoint
                 latest_checkpoint_dir = get_latest_checkpoint()
 
                 self.algorithm = Algorithm.from_checkpoint(latest_checkpoint_dir)
             else:
-                algo = PPO(env="scotland_env", config=my_config)
-                print("4")
-                algo.restore(
-                    "trained_policies")
-                print("5")
-                self.algorithm = algo
+                
+                if algorithm_to_use == DefinedAlgorithms.PPO:
+                    algo = PPO(env="scotland_env", config=my_config)
+                    algo.train()
+                    algo.restore("trained_policies")
+                    self.algorithm = algo
+                elif algorithm_to_use == DefinedAlgorithms.DQN:
+                    ModelCatalog.register_custom_model(
+                        "cc_model",
+                        TorchCentralizedCriticModel
+                    )
+
+                    my_config = (DQNConfig()
+                                 .training(model={"custom_model": "cc_model"}, )
+                                 .rollouts(observation_filter="MeanStdFilter"))
+
+                    replay_config = {
+                        "type": "MultiAgentPrioritizedReplayBuffer",
+                        "capacity": 60000,
+                        "prioritized_replay_alpha": 0.5,
+                        "prioritized_replay_beta": 0.5,
+                        "prioritized_replay_eps": 3e-6,
+                    }
+                    my_config = my_config.training(replay_buffer_config=replay_config)
+
+                    my_config["policies"] = {
+                        "mr_x_policy": MR_X_POLICY_SPEC,
+                        "cop_policy": COP_POLICY_SPEC,
+                    }
+
+                    def policy_mapping_fn(agent_id, episode, worker):
+                        return "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
+
+                    my_config["policy_mapping_fn"] = policy_mapping_fn
+
+                    my_config["num_iterations"] = 100000
+                    my_config["num_rollout_workers"] = 4
+                    my_config["reuse_actors"] = True
+                    my_config.resources(num_gpus=1, num_gpus_per_worker=0.2)
+                    my_config["rollout_fragment_length"] = "auto"
+                    my_config.framework("torch")
+
+                    # Set the config object's env.
+                    algo = DQN(env="scotland_env", config=my_config)
+                    algo.restore("trained_policies_dqn")    
+                    self.algorithm = algo
         # Create players
         self.create_players()
         self.reset()
@@ -368,20 +411,30 @@ class ScotlandYardGameLogic:
         return observations
 
     def get_random_action(self):
-        count = 0
+        valid_actions = self.get_players_valid_moves(self.get_current_player())
+        generated_action = random.choice(valid_actions)
+        if self.is_valid_move(self.get_current_player(), Direction(generated_action)):
+            return Direction(generated_action)
+        else:
+            raise Exception("Generated action is not valid")
+
+    def get_action_for_player_DQN(self, player: Player) -> Direction:
+        # Use the policy to obtain an action for the given player and observation
+        observations = self.get_observations()
+        player = self.get_player_by_name(player.name)
         direction = None
         action_is_valid = False
+        count = 0
         while not action_is_valid:
-            if count < 10:
-                generated_action = random.randint(0, len(Direction) - 1)
+            if count < 100:
+                generated_action = self.algorithm.compute_single_action(observations[player.name],
+                                                                        policy_id="mr_x_policy" if player.number == 0
+                                                                        else "cop_policy")
             else:
-                generated_action = 0
-                for i in range(len(Direction)):
-                    generated_action = i
-                    if self.is_valid_move(self.get_current_player(), Direction(generated_action)):
-                        return Direction(generated_action)
+                generated_action = self.get_random_action()
+                print(f"Generated random action after 100 tries")
             direction = Direction(generated_action)
-            if self.is_valid_move(self.get_current_player(), direction):
+            if self.is_valid_move(player, direction):
                 action_is_valid = True
             count += 1
         return direction
@@ -451,7 +504,80 @@ class ScotlandYardGameLogic:
         if self.round_number in REVEAL_POSITION_ROUNDS and player.is_mr_x():
             self.get_mr_x().mr_x_reveal_position()
         self.playing_player_index = (self.playing_player_index + 1) % len(self.players)
+        
+        #Display rewards for each agent
+        rewards = self.get_rewards_fake()
+        print("Rewards:")
+        for player in self.players:
+            print(f"{player.name}: {rewards[player.name]}")
+        
         return self
+
+    #TODO: delete
+    def get_rewards_fake(self, invalid_actions_players: List[str] = None):
+        if invalid_actions_players is None:
+            invalid_actions_players = []
+        distance_reward = 0
+        minimum_distance = 5
+        rewards = {}
+
+        # __ MR X __ #
+        if "mr_x" in invalid_actions_players:
+            rewards["mr_x"] = -20
+        else:
+            # Distance to cops
+            for cop in self.get_cops():
+                distance = self.get_mr_x().get_distance_to(cop.position)
+                if distance == 0:
+                    distance_reward -= 100
+                else:
+                    distance_reward += round((distance - minimum_distance), 10)
+            rewards["mr_x"] = distance_reward
+
+        # __ COPS __ #
+
+        possible_mr_x_positions = self.get_possible_mr_x_positions()
+
+        if self.get_game_status() == GameStatus.COPS_WON:
+            for cop in self.get_cops():
+                distance_to_mr_x = cop.get_distance_to(self.get_mr_x().position)
+                if distance_to_mr_x == 0:
+                    rewards[cop.name] = 100
+                else:
+                    rewards[cop.name] = 50
+            return rewards
+
+        for cop in self.get_cops():
+            if f"cop_{cop.number}" in invalid_actions_players:
+                rewards[cop.name] = -20
+                continue
+
+            # Check winnning condition
+            if cop.position == self.get_mr_x().position:
+                for cop in self.get_cops():
+                    rewards[cop.name] = 100
+                continue
+
+            # Distance to last known position of mr x
+            distance_reward = 0
+            inside_reward = 0
+
+            closest_position = self.get_closest_position(
+                cop.position,
+                possible_mr_x_positions
+            )
+            distance_to_closest_position = cop.get_distance_to(closest_position)
+            if cop.position in possible_mr_x_positions:
+                # Being inside the area of interest is more beneficial
+                inside_reward = 10
+            else:
+                # Closer to the area of interest, the more reward is gained
+                # Maximum reward is 5, so being inside location of interest is more beneficial
+                inside_reward = (((minimum_distance-distance_to_closest_position) / MAX_DISTANCE) * 5)
+
+            total_reward = distance_reward + inside_reward
+            rewards[cop.name] = total_reward
+        return rewards
 
     # -- END: GAMEPLAY FUNCTIONS -- #
 

@@ -2,7 +2,7 @@ import time
 
 from src.GameController import GameController
 from src.GuiController import GuiController
-from src.game.scotland_yard_game_logic import ScotlandYardGameLogic, GameStatus
+from src.game.scotland_yard_game_logic import ScotlandYardGameLogic, GameStatus, DefinedAlgorithms
 from src.game.scotland_yard_game_visual import ScotlandYardGameVisual, GRID_SIZE
 from src.scenes.scene import Scene
 
@@ -14,7 +14,7 @@ class ScotlandYardScene(Scene):
         Scene.__init__(self, game_controller, gui_controller)
 
         self.time_of_end = None
-        self.game = ScotlandYardGameLogic(training=False)
+        self.game = ScotlandYardGameLogic(training=False, algorithm_to_use=DefinedAlgorithms.DQN)
         self.game_visual = ScotlandYardGameVisual(self.game, gui_controller)
         self.cell_size = gui_controller.width // GRID_SIZE
 

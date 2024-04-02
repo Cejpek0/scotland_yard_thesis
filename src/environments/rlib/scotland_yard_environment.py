@@ -80,11 +80,11 @@ class ScotlandYardEnvironment(MultiAgentEnv):
         # Update game state
         if "cop_3" in action_dict.keys():
             self.game.round_number += 1
-            # Reveal mr x position if current turn is in REVEAL_POSITION_TURNS
-            if self.game.get_current_round_number() in scotland_yard_game.REVEAL_POSITION_TURNS:
+            # Reveal mr x position if current turn is in REVEAL_POSITION_ROUNDS
+            if self.game.get_current_round_number() in scotland_yard_game.REVEAL_POSITION_ROUNDS:
                 self.game.get_mr_x().last_known_position = self.game.get_mr_x().position
 
-        # Return observations, rewards, terminates,truncateds, info
+        # Return observations, rewards, terminates,truncated, info
         return observations, rewards, terminates, {"__all__": False, "mr_x": False, "cop_1": False, "cop_2": False,
                                                    "cop_3": False, }, infos
 
@@ -112,6 +112,7 @@ class ScotlandYardEnvironment(MultiAgentEnv):
         distance_reward = 0
         minimum_distance = 5
         rewards = {}
+        
         # __ MR X __ #
         if "mr_x" in invalid_actions_players:
             rewards["mr_x"] = -20
@@ -122,26 +123,31 @@ class ScotlandYardEnvironment(MultiAgentEnv):
                 if distance == 0:
                     distance_reward -= 100
                 else:
-                    distance_reward += round((distance - minimum_distance) * (1 / 3.0), 10)
-            # Distance to last known position
-            if self.game.get_mr_x().last_known_position is not None:
-                distance_reward += round(
-                    self.game.get_mr_x().get_distance_to(self.game.get_mr_x().last_known_position) * 0.2,
-                    10)
+                    distance_reward += round((distance - minimum_distance), 10)
             rewards["mr_x"] = distance_reward
 
         # __ COPS __ #
 
         possible_mr_x_positions = self.game.get_possible_mr_x_positions()
 
+        if self.game.get_game_status() == scotland_yard_game.GameStatus.COPS_WON:
+            for cop in self.game.get_cops():
+                distance_to_mr_x = cop.get_distance_to(self.game.get_mr_x().position)
+                if distance_to_mr_x == 0:
+                    rewards[cop.name] = 100
+                else:
+                    rewards[cop.name] = 50
+            return rewards
+
         for cop in self.game.get_cops():
             if f"cop_{cop.number}" in invalid_actions_players:
-                rewards[cop.name] = -50
+                rewards[cop.name] = -20
                 continue
 
             # Check winnning condition
             if cop.position == self.game.get_mr_x().position:
-                rewards[cop.name] = 100
+                for cop in self.game.get_cops():
+                    rewards[cop.name] = 100
                 continue
 
             # Distance to last known position of mr x
@@ -153,12 +159,13 @@ class ScotlandYardEnvironment(MultiAgentEnv):
                 possible_mr_x_positions
             )
             distance_to_closest_position = cop.get_distance_to(closest_position)
-            if self.game.get_mr_x().last_known_position is not None:
-                if cop.position in possible_mr_x_positions:
-                    inside_reward = 5
-                else:
-                    # Negative reward for being outside of area of interest
-                    inside_reward = -((scotland_yard_game.MAX_DISTANCE - distance_to_closest_position) / scotland_yard_game.MAX_DISTANCE * 5)
+            if cop.position in possible_mr_x_positions:
+                # Being inside the area of interest is more beneficial
+                inside_reward = 10
+            else:
+                # Closer to the area of interest, the more reward is gained
+                # Maximum reward is 5, so being inside location of interest is more beneficial
+                inside_reward = (((minimum_distance-distance_to_closest_position) / scotland_yard_game.MAX_DISTANCE) * 5)
 
             total_reward = distance_reward + inside_reward
             rewards[cop.name] = total_reward

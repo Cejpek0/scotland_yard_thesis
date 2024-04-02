@@ -1,6 +1,7 @@
 import pygame
 
 from src.GuiController import GuiController
+from src.Player import Player
 from src.colors import *
 from src.game.scotland_yard_game_logic import ScotlandYardGameLogic, GameStatus
 
@@ -70,6 +71,7 @@ class ScotlandYardGameVisual:
         for player in self.game.players:
             if player.position is not None:
                 self.to_draw_rectangle_at_position(player.position, player.color, small=True)
+                self.draw_player_number(player)
         return self
 
     def to_clear_grid(self):
@@ -89,6 +91,11 @@ class ScotlandYardGameVisual:
             self.to_draw_rectangle_at_position(position, GREEN, 128)
         for position in self.game.start_positions_mr_x:
             self.to_draw_rectangle_at_position(position, RED, 128)
+        return self
+
+    def draw_player_number(self, player: Player):
+        self.gui_controller.to_draw_text(text=f"{player.number}", position=(
+        player.position[0] * self.cell_size + 5, player.position[1] * self.cell_size + 5))
         return self
 
     def to_highlight_area_of_interest(self):
