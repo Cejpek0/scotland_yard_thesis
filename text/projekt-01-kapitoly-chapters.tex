@@ -35,7 +35,7 @@ PPO je často používán k řešení problémů se spojitými veličinamy a ve 
 Důvod proč byl algoritmus PPO vybrán, byla hlavně experiment OpenAI~\cite{PPO_Hide_Seek_page}, podrobně popsán zde\cite{PPO_Hide_Seek_paper}.
 V tomto experimentu byla proximální optimalizace politiky použita pro učení politiky ve hře typu \textit{schováváná} s několika agenty a neúplnou informací.
 Jelikož tento typ hry přesně odpovídá i hře Scotland Yard, zdá se být vhodný i pro řešení této hry.
-Také další studie~\cite{Manille} tento výrok dále podporuje.
+Také další studie~\cite{Manille} a \cite{Dota2} tento výrok dále podporují.
 Algoritmus je pro mě zajímavý a zkušenost s tímto algoritmém by se dala využít v mém dalším pracovním životě.
 
 Pro zpracování práce byly využity tyto hlavní knihovny:
@@ -168,6 +168,8 @@ Zlato slouží jako herní měna, za kterou si hrdinové mohou koupit různé p�
 Ve hře se vyskytuje válečná mlha, která způsobuje že hráči vidí pouze část mapy ve svém okolí a okolí spřátelených jednotek.
 To znamená, že hráči nemají úplnou informaci o pozici nepřátelských jednotek.
 
+\bigskip
+
 Dota 2 je pro umělou inteligenci náročnou výzvou z těchto důvodů:
 \begin{itemize}
   \item Složitost hry
@@ -181,9 +183,9 @@ Dota 2 je pro umělou inteligenci náročnou výzvou z těchto důvodů:
 
 Dota 2 sama o sobě obsahuje implementaci chování umělé inteligence.
 Její výkon však není dostatečný a nebyla schopna ani zdaleka porazit nejlepší hráče světa.
-Použité algoritmy pro vytvoření této umělé inteligence bohužel nejsou zveřejněny.
+Použité metody pro vytvoření této umělé inteligence bohužel nejsou zveřejněny.
 
-Změnu opět přinesla společnost OpenAI a jejich projekt \emph{OpenAI Five}\cite{Dota2}.
+Inovaci umělé iteligence v této hře opět přinesla společnost OpenAI a jejich projekt \emph{OpenAI Five}\cite{Dota2}.
 Tento projekt se zaměřil na vytvoření umělé inteligence, která by byla schopna porazit nejlepší hráče světa ve hře Dota 2.
 OpenAi nepřišel se žádným novým algoritmem, ale pouze s novým přístupem k trénování a využití algoritmu \textbf{PPO} v doposud neviděném velkém měřítku. 
 OpenAi Five porazil tehdejší nejlepší tým světa během exibice na nejprestižnejším turnaji Dota2 \textit{The International}.
@@ -194,17 +196,15 @@ V celém exhibičním turnaji proti nejlepším týmům světa z celkových 24 h
 
 Agent OpenAI Five byl, kombinovaně s předchozí verzí, trénován asi \emph{55 000} herních let hraním sama proti sobě.
 Pozorovací prostor je obrovský, obsahuje až 16 000 vstupů.
-
 Akční prostor je složitý, jelikož lidé hrají Dotu 2 většinou pomocí myši a klávesnice.
-U OpenAI Five je akční prostor rozdělen na hlavní akce a parametry.
+U OpenAI Five je akční prostor rozdělen na hlavní akce a parametry těchto akcí.
 Hlavní akce jsou například, pohyb, útok, použití schopnosti/ předmětu, zakoupení předmětu a další situační akce.
 Dostupnost těchto akcí je závislá na stavu hry a je řízena maskou akcí.
-Tyto akce mají 3 parametry, zpoždění, vybranou jednotku a cíl akce.
+Tyto akce mají 3 parametry, zpoždění, vybranou jednotku a offset cíle akce.
 Pokud tyto akce a jejich parametry zkombinujeme získáme akční prostor o velikosti 1,837,080 dimenzí.
-Výsledný reakční čas agenta je okolo 33ms.
-Reakční čas profesionálních herních hráčů je okolo 100ms\cite{reaction_time}
+Výsledný reakční čas agenta je okolo 33ms, oproti tomu reakční čas profesionálních hráčů her je okolo 120ms\cite{reaction_time}
 
-Na začátku byla většina chování agentů uměle skriptována a postupně jim byla předávána kontrola nad vlastním chováním s využití politiky.
+Na začátku byla většina chování agenta uměle skriptována a postupně mu byla předávána kontrola nad vlastním chováním s využití politiky.
 Nekteré skriptované chování však bylo zachováno i ve finální verzi OpenAi Five a nebyly odstraněny jelikož již agent byl dostatečně efektivní a nebylo třeba je odstranit.
 
 \section{Klíčové koncepty posilovaného učení}\label{sec:klicove-koncepty-posilovaneho-uceni}
@@ -216,7 +216,7 @@ Agent se učí strategii chování, která maximalizuje kumulativní odměnu.
 Je komplexní entita, která interaguje s prostředím.
 Prostředí poskytuje agentovi informace o stavu a agent na základě těchto pozorování vykonává akce.
 Tyto akce mohou ovlivnit stav prostředí a agent obdrží odměnu na základě odměnové funkce.
-Agent volí takové akce aby maximalizoval kumulativní odměnu.
+Agent většinou volí takové akce aby maximalizoval kumulativní odměnu.
 
 \subsection{Pozorovací a akční prostor}
 \label{subsec:prostory}
@@ -241,7 +241,7 @@ Samozřejmě může být akčí prostor i spojitého typu (blíže popsáno v da
 
 V herním prostředí mohou nastat situace kdy se nějaká akce stane nevalidní, jelikož by její provedení vyústilo v nevalidní stav herního prostředí.
 V takovém případě je vhodné zvolení této akce zamezit, nejlépe pomocí akční masky.
-Ta definuje, které akce jsou v momentálním stavu prostředí validní.
+Ta definuje, které akce jsou v momentálním stavu prostředí proveditelné.
 
 \subsection{Diskrétní a spojitý prostor}\label{subsec:diskretni-a-spojity-prostor}
 
@@ -250,23 +250,18 @@ Například, pokud máme prostor kde se agent může hýbat pouze 4 směry (naho
 
 \bigskip
 
-Uvažujme však 3D hru kde se agent může hýbat za pomocí aplikování silového vektoru o různých velikostech.
+Uvažujme však 3D hru kde se agent může hýbat za pomocí aplikování silového vektoru o různé velikosti a v různém směru.
 Může tím tedy měnit rychlost a směr pohybu.
 V tomto případě se jedná o \textbf{spojitý akční prostor}.
 
 \subsection{Prostředí}\label{subsec:prostredi2}
 
 Je vše s čím agent interaguje.
-Prostředí je buď fyzické (entity z reálného světa, ovládání chytré domácnosti, ovládání reaktoru, atd.) nebo virtuální (simulace, například hra).
-Prostředí reaguje na akce agenta poskytuje mu zpětnou vazbu ve formě odměny či trestu (záporná odměna).
+Prostředí je buď fyzické (entity z reálného světa, ovládání chytré domácnosti, robotické ruky, ovládání reaktoru, apod.) nebo virtuální (simulace nebo hra).
+Prostředí reaguje na zvolené akce agenta poskytuje mu zpětnou vazbu ve formě odměny.
+Odměna může být i záporná, pokud agent zvolil velmi nevhodnou akci.
 Pokud v prostředí existuje více agentů, může mít každý agent jiné pozorování.
-Diky tomuto můžeme například schovat agentu \textit{A} určité informace, které agent \textit{B} vidí.
-
-\subsection{Model}\label{subsec:model}
-
-Je matematická funkce, která popisuje chování prostředí v závislosti na agentových akcích.
-Model může být známý nebo neznámý, to následně rozděluje metody učení posilovaného na 2 základní kategorie: metody \emph{s modelem} a metody \emph{ bez modelu}.
-
+Diky tomuto můžeme například schovat agentovi \textit{A} určité informace, které agent \textit{B} vidí.
 
 \subsection{Politika}\label{subsec:politika}
 
@@ -274,7 +269,6 @@ Pomocí posilovaného učení vzniká takzvaná politika.
 Politika je matematická funkce, která definuje agentovo chování na základě jeho pozorování (stavu).
 Snaží se definovat takové chování, které vede k maximální kumulativní odměně.
 Politika může být deterministická nebo stochastická.
-
 
   \subsubsection*{Deterministická politika}
   
@@ -285,7 +279,7 @@ Politika může být deterministická nebo stochastická.
   Nemůže se stát aby byla šance, že agent zvolí akci, která teplotu ještě sníží.
   Další výhoda, je že je jednoduchá na interpretaci a implementaci.\cite{Policies}
 
-  Rovnice deterministické politiky je:
+  Rovnice výsledné akce deterministické politiky je:
   \begin{equation}
     \pi(s) = a\label{eq:policy_deterministic}
   \end{equation}
@@ -299,28 +293,28 @@ Politika může být deterministická nebo stochastická.
   Například tam kde by deterministická politika zvolila jasnou akci \textit{A}, stochastická politika by mohla  s malou pravděpodobností zvolit akci \textit{B}.
   Čímž ale může odhalit, že stav \textit{B} je s ohledem na komulativní odměnu lepší než stav \textit{A}.\cite{Policies}
 
-  Rovnice stochastické politiky je:
+  Rovnice výsledné akce stochastické politiky je:
   \begin{equation}
     \pi(a \vert s) = \mathbb{P}_\pi [A=a \vert S=s]\label{eq:policy_stochastic}
   \end{equation}
 
-  \subsection{Akce}\label{subsec:akce}
+\subsection{Akce}\label{subsec:akce}
 
 Akce je přechod z aktuálního stavu, do následujícího stavu z množiny možných stavů.
-  Zjednodušeně, je to rozhodnutí, které agent vykonává v prostředí a toto rozhodnutí ovlivňuje prostředí.
-  Akce zvolena dle politiky a je závislá na pozorování agenta.
+Zjednodušeně, je to rozhodnutí, které agent vykonává v prostředí a toto rozhodnutí ovlivňuje prostředí.
+Akce je zvolena dle politiky a je závislá na aktuálním stavu agenta.
   
-  \subsection{Odměna}\label{subsec:odmena}
+\subsection{Odměna}\label{subsec:odmena}
 
-Odměna je hodnota, kterou agent obdrží od prostředí po vykonání akce.
+  Odměna je hodnota, kterou agent obdrží od prostředí po vybrání akce.
   Může být kladná, záporná nebo nulová.
   Dle této zpětné vazby se agent učí, jak moc byla jeho zvolená akce v daném stavu vhodná.
 
 \subsection{Hodnotová funkce}\label{subsec:hodnotova-funkce}
 
-Hodnotová funkce vyhodnocuje, jak dobrý je stav tím, že predikuje budoucí odměnu.
-  Čím vzdálenější odměna je, tím více je snížena.
-  Jelikož, čím je odměna vzdálenější tím více je nejistá.
+  Hodnotová funkce vyhodnocuje, jak dobrý je stav tím, že predikuje budoucí odměnu pokud bude další tah začínat v tomto stavu.
+  Čím vzdálenější odměna je od tohoto stavu, tím více je snížena.
+  Protože, čím je odměna vzdálenější tím více je nejistá, že bude doopravdy získána.
 
   Existují dva typy hodnotových funkcí:
 
@@ -335,8 +329,7 @@ Hodnotová funkce vyhodnocuje, jak dobrý je stav tím, že predikuje budoucí o
 
   Hodnotová funkce akce \emph{$Q(s, a)$} vyhodnocuje očekávanou komulativní odměnu, pokud se agent nachází v tomto stavu a zvolí tuto akci.
   Tato funkce je opět závislá na politice, kterou se agent řídí.
-  Vyhodnocuije tedy jak příznié je zvolení dané akce v aktuálním stavu.
-
+  Vyhodnocuije tedy jak příznivé je zvolení dané akce v aktuálním stavu.
 
 \subsection{Markovský rozhodovací proces}\label{subsec:markovsky-rozhodovaci-proces}
 
@@ -357,7 +350,6 @@ Markovský rozhodovací proces je definován pěticí $(S, A, P, R, \gamma)$\cit
 
 \begin{itemize}
 \item $S$ je množina stavů.
-
 \item $A$ je množina akcí.
 \item $P$ je pravděpodobnostní přechodová funkce
 \item $R$ je odměnová funkce
@@ -387,6 +379,7 @@ Tyto informace, nemusí být kompletní, nebo mohou být zavádějící.
 A to z důvodu nedostatečného trénování, či nedostatečného prozkoumávání možností prostředí.
 
 Tomu opačná metoda \emph{explorace} se snaží prozkoumat možnosti, které nejsou známé a mohly by vést k lepší budoucí odměně.
+Explorace tedy často zvolí akci, která nemusí být nejlepší, ale může odhalit nové informace, které následovně povedou ke zlepšení exploatace.
 
 \subsection{Druhy informací v teorii her}\label{subsec:druhy-informaci-v-teorii-her}
 V rámci umělé inteligence se potýkáme s různými druhy informací.
