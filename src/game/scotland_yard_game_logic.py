@@ -162,6 +162,17 @@ class ScotlandYardGameLogic:
         self.algorithm = None
         self.playing_player_index = 0
 
+        self.agents_previous_locations = {}
+        self.agents_is_in_previous_location_count = {}
+        self.agents_previous_locations["mr_x"] = None
+        self.agents_previous_locations["cop_1"] = None
+        self.agents_previous_locations["cop_2"] = None
+        self.agents_previous_locations["cop_3"] = None
+        self.agents_is_in_previous_location_count["mr_x"] = 0
+        self.agents_is_in_previous_location_count["cop_1"] = 0
+        self.agents_is_in_previous_location_count["cop_2"] = 0
+        self.agents_is_in_previous_location_count["cop_3"] = 0
+
         if not training:
             def env_creator(env_config):
                 return FakeEnv({})
@@ -194,51 +205,74 @@ class ScotlandYardGameLogic:
 
                 self.algorithm = Algorithm.from_checkpoint(latest_checkpoint_dir)
             else:
-                
+
                 if algorithm_to_use == DefinedAlgorithms.PPO:
                     algo = PPO(env="scotland_env", config=my_config)
                     algo.train()
                     algo.restore("trained_policies")
                     self.algorithm = algo
                 elif algorithm_to_use == DefinedAlgorithms.DQN:
-                    ModelCatalog.register_custom_model(
-                        "cc_model",
-                        TorchCentralizedCriticModel
-                    )
-
                     my_config = (DQNConfig()
-                                 .training(model={"custom_model": "cc_model"}, )
+                                 .training(model={"fcnet_hiddens": [250, 250, 250]},
+                                           lr=0.001,
+                                           gamma=0.99,
+                                           target_network_update_freq=10,
+                                           double_q=True,
+                                           dueling=True,
+                                           num_atoms=1,
+                                           noisy=True,
+                                           n_step=3, )
                                  .rollouts(observation_filter="MeanStdFilter"))
 
+                    repeat = 50
+
                     replay_config = {
+                        "_enable_replay_buffer_api": True,
                         "type": "MultiAgentPrioritizedReplayBuffer",
                         "capacity": 60000,
                         "prioritized_replay_alpha": 0.5,
                         "prioritized_replay_beta": 0.5,
                         "prioritized_replay_eps": 3e-6,
                     }
-                    my_config = my_config.training(replay_buffer_config=replay_config)
+
+                    exploration_config = {
+                        "type": "EpsilonGreedy",
+                        "initial_epsilon": 1.0,
+                        "final_epsilon": 0.05,
+                        "epsilon_timesteps": repeat
+                    }
+
+                    my_config["replay_config"] = replay_config
+                    my_config["exploration_config"] = exploration_config
+
+                    my_config.evaluation_config = {
+                        "evaluation_interval": 10,
+                        "evaluation_num_episodes": 10,
+                    }
 
                     my_config["policies"] = {
                         "mr_x_policy": MR_X_POLICY_SPEC,
                         "cop_policy": COP_POLICY_SPEC,
                     }
 
+                    def adjust_rollout_fragment_length(iteration, start_length, max_length, total_iterations):
+                        progress = iteration / total_iterations
+                        return int(start_length + progress * (max_length - start_length))
+
                     def policy_mapping_fn(agent_id, episode, worker):
                         return "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
 
                     my_config["policy_mapping_fn"] = policy_mapping_fn
 
-                    my_config["num_iterations"] = 100000
                     my_config["num_rollout_workers"] = 4
                     my_config["reuse_actors"] = True
                     my_config.resources(num_gpus=1, num_gpus_per_worker=0.2)
-                    my_config["rollout_fragment_length"] = "auto"
+                    my_config["rollout_fragment_length"] = 500
                     my_config.framework("torch")
 
                     # Set the config object's env.
                     algo = DQN(env="scotland_env", config=my_config)
-                    algo.restore("trained_policies_dqn")    
+                    algo.restore("trained_policies_dqn")
                     self.algorithm = algo
         # Create players
         self.create_players()
@@ -418,27 +452,6 @@ class ScotlandYardGameLogic:
         else:
             raise Exception("Generated action is not valid")
 
-    def get_action_for_player_DQN(self, player: Player) -> Direction:
-        # Use the policy to obtain an action for the given player and observation
-        observations = self.get_observations()
-        player = self.get_player_by_name(player.name)
-        direction = None
-        action_is_valid = False
-        count = 0
-        while not action_is_valid:
-            if count < 100:
-                generated_action = self.algorithm.compute_single_action(observations[player.name],
-                                                                        policy_id="mr_x_policy" if player.number == 0
-                                                                        else "cop_policy")
-            else:
-                generated_action = self.get_random_action()
-                print(f"Generated random action after 100 tries")
-            direction = Direction(generated_action)
-            if self.is_valid_move(player, direction):
-                action_is_valid = True
-            count += 1
-        return direction
-
     def get_action_for_player(self, player: Player) -> Direction:
         # Use the policy to obtain an action for the given player and observation
         observations = self.get_observations()
@@ -452,6 +465,7 @@ class ScotlandYardGameLogic:
                 generated_action = self.algorithm.compute_single_action(observations[player.name],
                                                                         policy_id="mr_x_policy" if player.number == 0
                                                                         else "cop_policy")
+                print(generated_action)
             else:
                 generated_action = self.get_random_action()
                 print(f"Generated random action after 100 tries")
@@ -492,32 +506,37 @@ class ScotlandYardGameLogic:
         if player.is_mr_x():
             if mr_x_algo == DefinedAlgorithms.PPO:
                 action = self.get_action_for_player(player)
-            elif mr_x_algo == DefinedAlgorithms.RANDOM:
+            elif mr_x_algo == DefinedAlgorithms.DQN:
+                action = self.get_action_for_player(player)
+            else:
                 action = self.get_random_action()
         elif player.is_cop():
             if cop_algo == DefinedAlgorithms.PPO:
                 action = self.get_action_for_player(player)
-            elif cop_algo == DefinedAlgorithms.RANDOM:
+            elif cop_algo == DefinedAlgorithms.DQN:
+                action = self.get_action_for_player(player)
+            else:
                 action = self.get_random_action()
 
         self.move_player(player, action)
         if self.round_number in REVEAL_POSITION_ROUNDS and player.is_mr_x():
             self.get_mr_x().mr_x_reveal_position()
         self.playing_player_index = (self.playing_player_index + 1) % len(self.players)
-        
-        #Display rewards for each agent
+
+        # Display rewards for each agent
         rewards = self.get_rewards_fake()
         print("Rewards:")
         for player in self.players:
             print(f"{player.name}: {rewards[player.name]}")
-        
+
         return self
 
-    #TODO: delete
+    # TODO: delete
     def get_rewards_fake(self, invalid_actions_players: List[str] = None):
         if invalid_actions_players is None:
             invalid_actions_players = []
         distance_reward = 0
+        inactivity_penalty = 0
         minimum_distance = 5
         rewards = {}
 
@@ -525,6 +544,12 @@ class ScotlandYardGameLogic:
         if "mr_x" in invalid_actions_players:
             rewards["mr_x"] = -20
         else:
+            if self.get_mr_x().position == self.agents_previous_locations["mr_x"]:
+                self.agents_is_in_previous_location_count["mr_x"] += 1
+            else:
+                self.agents_is_in_previous_location_count["mr_x"] = 0
+            self.agents_previous_locations["mr_x"] = self.get_mr_x().position
+            inactivity_penalty = self.agents_is_in_previous_location_count["mr_x"] * (-1)
             # Distance to cops
             for cop in self.get_cops():
                 distance = self.get_mr_x().get_distance_to(cop.position)
@@ -532,7 +557,7 @@ class ScotlandYardGameLogic:
                     distance_reward -= 100
                 else:
                     distance_reward += round((distance - minimum_distance), 10)
-            rewards["mr_x"] = distance_reward
+            rewards["mr_x"] = distance_reward + inactivity_penalty
 
         # __ COPS __ #
 
@@ -551,6 +576,14 @@ class ScotlandYardGameLogic:
             if f"cop_{cop.number}" in invalid_actions_players:
                 rewards[cop.name] = -20
                 continue
+
+            if cop.position == self.agents_previous_locations[cop.name]:
+                self.agents_is_in_previous_location_count[cop.name] += 1
+            else:
+                self.agents_is_in_previous_location_count[cop.name] = 0
+            self.agents_previous_locations[cop.name] = cop.position
+
+            inactivity_penalty = self.agents_is_in_previous_location_count[cop.name] * (-1)
 
             # Check winnning condition
             if cop.position == self.get_mr_x().position:
@@ -573,9 +606,10 @@ class ScotlandYardGameLogic:
             else:
                 # Closer to the area of interest, the more reward is gained
                 # Maximum reward is 5, so being inside location of interest is more beneficial
-                inside_reward = (((minimum_distance-distance_to_closest_position) / MAX_DISTANCE) * 5)
+                inside_reward = (
+                        ((minimum_distance - distance_to_closest_position) / MAX_DISTANCE) * 5)
 
-            total_reward = distance_reward + inside_reward
+            total_reward = distance_reward + inside_reward + inactivity_penalty
             rewards[cop.name] = total_reward
         return rewards
 

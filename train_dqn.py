@@ -26,10 +26,21 @@ if __name__ == "__main__":
     )
 
     my_config = (DQNConfig()
-                 .training(model={"custom_model": "cc_model"}, )
+                 .training(model={"fcnet_hiddens": [250, 250, 250]},
+                           lr=0.001,
+                           gamma=0.99,
+                           target_network_update_freq=10,
+                           double_q=True,
+                           dueling=True,
+                           num_atoms=1,
+                           noisy=True,
+                           n_step=3,)
                  .rollouts(observation_filter="MeanStdFilter"))
 
+    repeat = 500
+
     replay_config = {
+        "_enable_replay_buffer_api": True,
         "type": "MultiAgentPrioritizedReplayBuffer",
         "capacity": 60000,
         "prioritized_replay_alpha": 0.5,
@@ -40,16 +51,27 @@ if __name__ == "__main__":
     exploration_config = {
         "type": "EpsilonGreedy",
         "initial_epsilon": 1.0,
-        "final_epsilon": 0.05
+        "final_epsilon": 0.05,
+        "epsilon_timesteps": repeat
     }
 
     my_config["replay_config"] = replay_config
     my_config["exploration_config"] = exploration_config
 
+    my_config.evaluation_config = {
+        "evaluation_interval": 10,
+        "evaluation_num_episodes": 10,
+    }
+
     my_config["policies"] = {
         "mr_x_policy": scotland_yard_game.MR_X_POLICY_SPEC,
         "cop_policy": scotland_yard_game.COP_POLICY_SPEC,
     }
+
+    def adjust_rollout_fragment_length(iteration, start_length, max_length, total_iterations):
+        progress = iteration / total_iterations
+        return int(start_length + progress * (max_length - start_length))
+
 
 
     def policy_mapping_fn(agent_id, episode, worker):
@@ -58,17 +80,16 @@ if __name__ == "__main__":
 
     my_config["policy_mapping_fn"] = policy_mapping_fn
 
-    my_config["num_iterations"] = 100000
     my_config["num_rollout_workers"] = 4
-    my_config["reuse_actors"] = False
+    my_config["reuse_actors"] = True
     my_config.resources(num_gpus=1, num_gpus_per_worker=0.2)
-    my_config["rollout_fragment_length"] = 2500
+    my_config["rollout_fragment_length"] = 500
     my_config.framework("torch")
 
     # Set the config object's env.
     algo = DQN(env="scotland_env", config=my_config)
 
-    repeat = 100
+    
     # check if trained policies exist
     directory = "trained_policies_dqn"
 
@@ -77,6 +98,10 @@ if __name__ == "__main__":
         algo.restore(directory)
     for i in range(repeat):
         print("Training iteration {} of {}".format(i + 1, repeat))
+        current_length = adjust_rollout_fragment_length(i, 1000, 3000, repeat)
+        my_config["rollout_fragment_length"] = current_length
+        print(f"Rollout fragment length: {current_length}")
+        algo.config = my_config
         algo.train()
         if i % 4 == 0:
             print("Saving policies")

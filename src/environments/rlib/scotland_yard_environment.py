@@ -22,6 +22,16 @@ class ScotlandYardEnvironment(MultiAgentEnv):
         self._agent_ids = ["mr_x", "cop_1", "cop_2", "cop_3"]
         self.agents = self._agent_ids
         self.num_agents = len(self._agent_ids)
+        self.agents_previous_locations = {}
+        self.agents_is_in_previous_location_count = {}
+        self.agents_previous_locations["mr_x"] = None
+        self.agents_previous_locations["cop_1"] = None
+        self.agents_previous_locations["cop_2"] = None
+        self.agents_previous_locations["cop_3"] = None
+        self.agents_is_in_previous_location_count["mr_x"] = 0
+        self.agents_is_in_previous_location_count["cop_1"] = 0
+        self.agents_is_in_previous_location_count["cop_2"] = 0
+        self.agents_is_in_previous_location_count["cop_3"] = 0
 
         self.action_space = spaces.dict.Dict({
             "mr_x": spaces.Discrete(9),
@@ -112,11 +122,17 @@ class ScotlandYardEnvironment(MultiAgentEnv):
         distance_reward = 0
         minimum_distance = 5
         rewards = {}
-        
+
         # __ MR X __ #
         if "mr_x" in invalid_actions_players:
             rewards["mr_x"] = -20
         else:
+            if self.game.get_mr_x().position == self.agents_previous_locations["mr_x"]:
+                self.agents_is_in_previous_location_count["mr_x"] += 1
+            else:
+                self.agents_is_in_previous_location_count["mr_x"] = 0
+            self.agents_previous_locations["mr_x"] = self.game.get_mr_x().position
+            inactivity_penalty = self.agents_is_in_previous_location_count["mr_x"] * (-1)
             # Distance to cops
             for cop in self.game.get_cops():
                 distance = self.game.get_mr_x().get_distance_to(cop.position)
@@ -124,7 +140,7 @@ class ScotlandYardEnvironment(MultiAgentEnv):
                     distance_reward -= 100
                 else:
                     distance_reward += round((distance - minimum_distance), 10)
-            rewards["mr_x"] = distance_reward
+            rewards["mr_x"] = distance_reward + inactivity_penalty
 
         # __ COPS __ #
 
@@ -143,6 +159,14 @@ class ScotlandYardEnvironment(MultiAgentEnv):
             if f"cop_{cop.number}" in invalid_actions_players:
                 rewards[cop.name] = -20
                 continue
+
+            if cop.position == self.agents_previous_locations[cop.name]:
+                self.agents_is_in_previous_location_count[cop.name] += 1
+            else:
+                self.agents_is_in_previous_location_count[cop.name] = 0
+            self.agents_previous_locations[cop.name] = cop.position
+
+            inactivity_penalty = self.agents_is_in_previous_location_count[cop.name] * (-1)
 
             # Check winnning condition
             if cop.position == self.game.get_mr_x().position:
@@ -165,9 +189,10 @@ class ScotlandYardEnvironment(MultiAgentEnv):
             else:
                 # Closer to the area of interest, the more reward is gained
                 # Maximum reward is 5, so being inside location of interest is more beneficial
-                inside_reward = (((minimum_distance-distance_to_closest_position) / scotland_yard_game.MAX_DISTANCE) * 5)
+                inside_reward = (
+                        ((minimum_distance - distance_to_closest_position) / scotland_yard_game.MAX_DISTANCE) * 5)
 
-            total_reward = distance_reward + inside_reward
+            total_reward = distance_reward + inside_reward + inactivity_penalty
             rewards[cop.name] = total_reward
         return rewards
 
