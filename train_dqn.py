@@ -26,7 +26,7 @@ if __name__ == "__main__":
     )
 
     my_config = (DQNConfig()
-                 .training(model={"fcnet_hiddens": [250, 250, 250]},
+                 .training(model={"fcnet_hiddens": [64, 32]},
                            lr=0.001,
                            gamma=0.99,
                            target_network_update_freq=10,
@@ -37,7 +37,7 @@ if __name__ == "__main__":
                            n_step=3,)
                  .rollouts(observation_filter="MeanStdFilter"))
 
-    repeat = 500
+    repeat = 1000
 
     replay_config = {
         "_enable_replay_buffer_api": True,
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     exploration_config = {
         "type": "EpsilonGreedy",
         "initial_epsilon": 1.0,
-        "final_epsilon": 0.05,
+        "final_epsilon": 0.1,
         "epsilon_timesteps": repeat
     }
 
@@ -98,7 +98,7 @@ if __name__ == "__main__":
         algo.restore(directory)
     for i in range(repeat):
         print("Training iteration {} of {}".format(i + 1, repeat))
-        current_length = adjust_rollout_fragment_length(i, 1000, 3000, repeat)
+        current_length = adjust_rollout_fragment_length(i, 500, 3000, repeat)
         my_config["rollout_fragment_length"] = current_length
         print(f"Rollout fragment length: {current_length}")
         algo.config = my_config
