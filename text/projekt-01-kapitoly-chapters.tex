@@ -14,11 +14,10 @@
 Umělá inteligence je obor, který nás postupem let všechny obklopuje čím dál tím více.
 Dokonce je navždy spjata i s naším českým národem, když Karel Čapek dal zrodu slova robot.
 
-Pokrok umělé inteligence je často měřen aplikací v oblasti her.
-A to proto, že právě hry mají jasná pravidla, jejich výkon je snadno měřitelný a pokrok dokáže vidět i lajk.
+Pokrok umělé inteligence je často měřen její aplikováním v oblasti her.
+A to proto, že právě hry mají jasně definovaná pravidla a cíle.
+Výkon AI je snadno měřitelný a pokrok dokáže vidět i lajk.
 Umělá inteligence již dokázala porazit nejlepší hráče v \textit{šachu}~\cite{DeepBlue}, \textit{Dota 2}~\cite{Dota2}, \textit{Go}~\cite{AlphaGo} a spoustě dalších her.
-
-Zaměření této práce jsem si vybral jelikož mi vždy byla umělá inteligence blízká a vždy jsem chtěl začít tomuto odvětví více věnovat i po praktické stránce.
 
 Hra studovaná v této práci se jmenuje \emph{Scotland Yard}.
 Jedná se o hru pro tři až šest hráčů.
@@ -26,16 +25,18 @@ V této hře obvykle hraje jeden hráč jako Pan X, který se snaží uniknout p
 Policisté avšak nevědí, kde na herním poli se Pan X nachází.
 A musí tedy odhadovat jeho pozici a spolupracovat mezi sebou, aby ho mohli polapit.
 Pozice Pana X je policistům odhalena pouze v určitých kolech.
-Hra končí, když je Pan X chycen (vyhrávají policisté), nebo když je dosažen maximální počet kol (vyhrává Pan X).
+Hra končí, když jeli Pan X chycen policisty (vyhrávají policisté), nebo když je dosažen maximální počet kol (vyhrává Pan X).
 Scotland Yard je ideální hrou ke studování umělé inteligence, protože se jedná o hru s nedokonalou informací a k vítězství policistů je zapotřebí spolupráce a strategie.
 
-Tato práce zkoumá algoritmy posilovaného učení, jejich použití na hry s neurčitostí a porovnání s klasickýmy metodami hraní her.
+Tato práce zkoumá algoritmy posilovaného učení, jejich použití na hry s neurčitostí a jejich porovnání s klasickýmy metodami hraní her.
 Algoritmus proximální optimalizace politiky (Proximal Policy Optimization - PPO) je hlavním zkoumaným algoritmem.
 PPO je často používán k řešení problémů se spojitými veličinamy a ve 3D prostoru.
-Důvod proč byl algoritmus PPO vybrán, byla hlavně experiment OpenAI~\cite{PPO_Hide_Seek_page}, podrobně popsán zde\cite{PPO_Hide_Seek_paper}.
+Důvod proč byl algoritmus PPO vybrán, byl hlavně experiment OpenAI~\cite{PPO_Hide_Seek_page}, podrobně popsán zde\cite{PPO_Hide_Seek_paper}.
 V tomto experimentu byla proximální optimalizace politiky použita pro učení politiky ve hře typu \textit{schováváná} s několika agenty a neúplnou informací.
 Jelikož tento typ hry přesně odpovídá i hře Scotland Yard, zdá se být vhodný i pro řešení této hry.
 Také další studie~\cite{Manille} a \cite{Dota2} tento výrok dále podporují.
+
+Zaměření této práce jsem si vybral jelikož mi vždy byla umělá inteligence blízká a vždy jsem chtěl začít tomuto odvětví více věnovat i po praktické stránce.
 Algoritmus je pro mě zajímavý a zkušenost s tímto algoritmém by se dala využít v mém dalším pracovním životě.
 
 Pro zpracování práce byly využity tyto hlavní knihovny:
@@ -421,8 +422,6 @@ Příklady
 
 Tato kapitola se zaměřuje na algoritmy, které jsou vhodné pro řešení her s nedokonalou informací, s důrazem na metody posilovaného učení a srovnáním s klasickými metodami jako Monte Carlo.
 
-\subsection{Alpha-beta}
-
 \subsection{Monte Carlo tree search}\label{subsec:monte-carlo-tree-search}
 Metoda Monte Carlo tree search (MCTS) je heruistický algoritmus prohledávání.
 Kombinuje stromové vyhledávání s principy posilovaného učení.
@@ -635,19 +634,23 @@ Toho červení hráči zneužili a za pomocí této chyby se vymršťovali do vz
 \section{Zkoumaná modifikovaná verze hry Scotland Yard}\label{sec:zkoumana-modifikovana-verze-hry-scotland-yard}
 
 Tato práce využívá modifikovanou verzi hry Scotland Yard, ve které se hráči pohybují po mřížkové herní ploše ve tvaru čtverce.
-Na mřížce se nachází {\color{red}[15x15]} polí.
-Hračí se po těchto polích pohybují ortogonálně i diagonálně, vždy o maximálně 1 pole.
+Na mřížce se nachází {\color{red}[15$\times$15]} polí.
+Hračí se po těchto polích mohou pohybovat ortogonálně i diagonálně, vždy o však maximálně 1 pole.
 Hráč se může rozhodnot nezměnit pozici a zůstat na svém aktuálním poli.
 K pohybu nejsou potřebné žádné jízdenky.
-Toto zjednodušení herní plochy nijak nemění základní podstatu hry, zachovává neurčitost, ale značně zjednodušuje implementaci.
 
 Předtím nežli začne hra, že se vyberou náhodné možné pozice Pana X a policistů.
 Z těchto možných pozíc se následně náhodná pozice přidělí jednotlivým hráčům.
 Poté začíná hra.
-Hra se dělí na jednotlivá kola, ve kterých se hráči střídají.
+Hra se dělí na jednotlivá kola, ve kterých se hráči ve svých tazích střídají.
 Pro hru byli zvoleni 3 policisté z toho důvodu, že je herní pole velmi velké a 2 policisté by nemuseli mít možnost ho celé pokrýt.
-V kole hraje jako první Pan X a poté policisté, již podle jejich očíslení, které jim bylo přiděleno při vytváření.
+V kole hraje jako první Pan X a poté policisté, již podle jejich očíslení, které jim bylo náhodně přiděleno při vytváření.
 Hra končí v okamžiku, kdy policisté chytí Pana X nebo když Pan X zůstane nepolapen až do konce.
+
+Z původní verze hry byly odstraněny nekteré elementy jako jsou jízdenky a různé druhy dopravních prostředků.
+Tato úprava vede k tomu, že se zjednodušila strategie agentů, jelikož se nemusí starat o svoje jízdenky a mohou se pohybovat po herní ploše libovolně.
+Změny avšak nemění základní podstatu hry, zachovává neurčitost, ale značně zjednodušuje implementaci.
+Stavový prostor je tedy zjednodušený a tím se i změnšují nároky na výkon.
 
 \section{Implementace umělé inteligence do hry Scotland Yard pomocí algoritmu PPO}
 \label{sec:implementace}
@@ -655,20 +658,19 @@ Hra končí v okamžiku, kdy policisté chytí Pana X nebo když Pan X zůstane 
 \subsection{Použité technologie}\label{subsec:pouzite-technologie}
 K učení politiky pro hru Scotland Yard byla využit open-source framework \emph{Ray}~\cite{Ray}.
 Konkrétně byla využita knihovna \emph{Ray.Rllib}.
-Tato knihovna poskytuje nástroje pro posilované učení a samotné implementace jednotlivých algoritmů, včetně zkoupameného algoritmu \emph{PPO}.
+Tato knihovna poskytuje nástroje pro posilované učení a samotné implementace jednotlivých algoritmů, včetně zkoumaného algoritmu \emph{PPO}.
 Rllib dokáže využívat obě populární knihovny pro strojové učení \emph{Tensorflow} a \emph{Pytorch}.
 Pro tuto práci byla vybrána knihovna \emph{Pytorch}.
 
 Před finálním rozhodnutím pro využití frameworku Ray byly zkoumány i další možnosti.
-{\color{red}[Dopsat]}
-Knihovna Stable Baselines 3.
-Knihovna byla zavrhnuta, jelikož neumožňuje učení více politik se hraním agentů proti sobě.
+Knihovna Stable Baselines 3, která byla zavrhnuta, jelikož neumožňuje učení více politik souběžně při hraním agentů proti sobě.
 
 \subsection{Implementace uživatelského rozraní a herních mechanizmů}\label{subsec:implementace-uzivatelskeho-rozrani-a-hernich-mechanizmu}
 
 Uživatelské rozhraní bylo vytvářeno pomocí knihovny \emph{Pygame}.
-Hra začíná v menu, kde je momentálně možné vybrat pouze možnost sledování hry mezi dvoumy agenty.
-Je zde ale možnost vybrat jaký algoritmus rozhodování je použit, jestli algoritmus PPO či náhodné chování.
+Hra začíná v menu, kde je momentálně možné vybrat pouze možnost sledování hry mezi dvěma agenty.
+Je zde ale možnost vybrat jaký algoritmus rozhodování je použit pro jednotlivé agenty.
+K dispozici jsou algoritmy \emph{PPO}, \emph{DQN} a náhodné chování.
 
 Samotný kód hry je rozdělena na 3 částí.
 
@@ -701,11 +703,29 @@ Kód byl avšak značne upraven a vylepšen aby vyhovoval integrování do této
 
 Jednotlivé vrstvy hry jsou tak izolovány a mohou být snadno vyměněny za jiné implementace.
 
-\subsection{Prostředí}\label{subsec:prostredi}
+\subsection{Prostředí a učení}\label{subsec:prostredi}
 
 Vytvořit prostředí pro platformu Ray.Rlib byl velký oříšek.
 Dokumentace vytváření prostředí není příliš komplexní, byl tedy problém zajistit správnou komunikaci prostředí a agentů.
-Prostředí je komplikovanější, jelikož zde figuruje více agentů a dvě rozdílne strategie (politiky).
+Prostředí a následné učení je komplikované, jelikož zde figuruje více agentů a dvě rozdílne strategie (politiky).
+
+Agenti se již od začátku učí zásadně pouze hraním proti sobě.
+Důvodem pro toto rozhodnutí bylo, že se jedná o zajímavější experiment, kdy jsou agenti vpuštěni do absolutně neznámého prostředí a nemají se od koho učit strategii.
+Jejich učení tedy není nijak podporováno a musí se naučit strategii sami.
+Tím je i odhaleno jestli jsou agenti vůbec schopni rozpoznat cíl hry, co je po nich požadováno a případně jak rychle k dosáhnou dobré strategie.
+
+Algoritmus PPO i DQN převzat z knihony Ray.Rlib.
+PPO využívá základní parametry tréningu bez žádné modifikace superparametrů jelikož se ukázalo, že agenti se chovají optimálně a hru pochopili i bez těchto zásahů do základní implementace algoritmu.
+Zato DQN se velmi dlouho chovalo \emph{ne}optimálně.
+Agenti se naučili pouze stát na místě, přestože dostávali velkou penalizaci.
+Pro vyřešení tohoto problému, je nyní agentům udělována penalizace pokud se 5 kroků po sobě nehnou.
+Penalizace postupně roste a pohybem je resetována.
+
+Parametry DQN byly upraveny následovně:
+Obsahuje 3 vnitřní skryté vrstvy, všechny po 250 neuronech.{\color {red} [Přepsat jak to bude výsledně]}
+Parametr $\gamma$ byl nastaven na 0.99.
+Používá verzi \emph{double DQN}
+$epsilon$ je postupem tréninku snižováno na velikost 0.05
 
 \subsubsection*{Řešení zvolení nevalidních akcí}
 
@@ -724,6 +744,8 @@ Aby se zamezilo nekonečnému cyklu čekání na validní akci, je po 100 pokuse
 Takto uměle generovaná akce, nebyla za celou dobu testování potřeba.
 
 \subsubsection*{Systém odměn}
+
+{\color {red} [DOPSAT STAY IN ONE PLACE odměnu]}
 
 Jednotlivým agentům jsou udělovány odměny na základě jejich chování.
 Jelikož policisté a Pan X mají odlišné protichůdné i jejich odměny jsou odlišné.
