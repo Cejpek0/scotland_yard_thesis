@@ -213,7 +213,7 @@ class ScotlandYardGameLogic:
                     self.algorithm = algo
                 elif algorithm_to_use == DefinedAlgorithms.DQN:
                     my_config = (DQNConfig()
-                                 .training(model={"fcnet_hiddens": [250, 250, 250]},
+                                 .training(model={"fcnet_hiddens": [32, 32, 16]},
                                            lr=0.001,
                                            gamma=0.99,
                                            target_network_update_freq=10,
