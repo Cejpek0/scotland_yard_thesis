@@ -722,43 +722,42 @@ Pro vyřešení tohoto problému, je nyní agentům udělována penalizace pokud
 Penalizace postupně roste a pohybem je resetována.
 
 Parametry DQN byly upraveny následovně:
-Obsahuje 3 vnitřní skryté vrstvy, všechny po 250 neuronech.{\color {red} [Přepsat jak to bude výsledně]}
-Parametr $\gamma$ byl nastaven na 0.99.
+Obsahuje 3 vnitřní skryté vrstvy, první a třetí vrstvá má 64 neuronů a prostřední druhá vrstva má 128 neuronů.{\color {red} [Přepsat jak to bude výsledně]}
 Používá verzi \emph{double DQN}
 $epsilon$ je postupem tréninku snižováno na velikost 0.05
 
 \subsubsection*{Řešení zvolení nevalidních akcí}
 
 Hra Scotland Yard má omezené herní pole.
-Tím pádem je jasné, že pokud jsou hráči na okraji herního pole, nemohou zvolit takovou akci, která by je posunula mimo herní pole.
-K vyřešení tohoto problému se využívá tzv.~ maska akcí (\emph{Action mask}).
+Tím pádem je jasné, že pokud se hráči vyskytují na okraji herního pole, nemohou zvolit takovou akci, která by je posunula mimo toto herní pole.
+K vyřešení tohoto problému se nejčastěji využívá tzv.~ maska akcí (\emph{Action mask}).
 Framework Ray tuto možnost v omezené míře podporuje.
 Je avšak potřeba vytvořené prostředí obalit v obalové třídě, která tuto funkcionalitu zprostředkuje.
-Avšak nepodařilo se mi tuto funkcionalitu zkloubit s dalšímy požadavky systému.
+Bohužel se mi nepodařilo tuto funkcionalitu spojit s dalšímy požadavky systému, které také vyžadují zabalení do jiné třídy.
 Mezi těmito požadavky je fungování více aktérů s různými politikami v jednom prostředí a různé pozorovací prostory agentů.
 
 Politika, tedy může zvolit nevalidní akci, ale je velmi penalizována.
-Agenti ji tedy zvolí opravdu zřídka.
-Pokud se tak stane, je ve hře implementovaná funkcionalita, která se pokusi znovy vygenerovat akci, dokud není validní.
+Agenti ji tedy zvolí opravdu zřídka a to jen na základě velmi malé explorační šance.
+Pokud se i tak stane, je ve hře implementovaná funkcionalita, která se pokusi znovu vygenerovat další akce, dokud vygenerovaná akce není validní.
 Aby se zamezilo nekonečnému cyklu čekání na validní akci, je po 100 pokusech vygenerována náhodná validní akce.
-Takto uměle generovaná akce, nebyla za celou dobu testování potřeba.
+Takto uměle generovaná akce, nebyla za celou dobu testování použita, avšak ze statistického hlediska může tato situace nastat.
+
+Zavedení tohoto omezení pomocí systému odměn vedlo k positivním výsledkům a agenti se naučili jaké akce jsou nevalidní a nepoužívají je.
 
 \subsubsection*{Systém odměn}
-
-{\color {red} [DOPSAT STAY IN ONE PLACE odměnu]}
 
 Jednotlivým agentům jsou udělovány odměny na základě jejich chování.
 Jelikož policisté a Pan X mají odlišné protichůdné i jejich odměny jsou odlišné.
 
 \begin{equation}
-    \label{eq:odmena_za_vzdalenost_od_policistu}
+    \label{eq:odmena_za_vzdalenost_od_policisty}
   R_{\rho_p} = \sum_{i=1}^{3}[(\rho_{p_i} - \rho_{pref}) \div 3]
 \end{equation}
 \begin{equation}
     \label{eq:odmena_za_vzdalenost_od_posledni_pozice}
   R_{\rho_l} = \rho_l * 0.2
 \end{equation}
-  \begin{equation}
+\begin{equation}
     \label{eq:celkova_odmena}
   R = R_{\rho_p} + R_{\rho_l}
 \end{equation}
@@ -791,9 +790,15 @@ Další varianta byla přidat do pozorování policistů pozice všech pozic, kd
 Toto by ale bylo velmi neefektivní, jelikož by se pozorovací prostor několikanásobně zvětšil.
 Tím by se zvýšila náročnost výpočtů a zpomalilo by se učení.
 
-\subsubsection*{Pozorovací prostor agentů}
+\bigskip
 
-Pozorovací prostor agentů je doopravdy velmi důležité pro úspěšně naučení dobré politiky.
+Pro zlepšení učení algoritmu DQN byla pro všechny agenty přidána penalizace za nečinnost.
+Pokud se agent nehnul po dobu 5 kroků, je mu udělena penalizace.
+Penalizace je rovna zápornému počtu kol nečinnosti.
+
+\subsubsection*{Pozorovací a akční prostor agentů}
+
+\textbf{Pozorovací prostor} agentů je doopravdy velmi důležitý pro úspěšné naučení dobré politiky.
 V této práci vzájemně v prostředí vystupují dva agenti s různými politikami a různými pozorovacími prostory.
 Akční prostor je stejný jak pro policisty tak pro Pana X\@.
 
@@ -823,8 +828,21 @@ Struktury jednotlivých pozorovacích prostorů jsou následující:
   \end{itemize}
 \end{itemize}
 
+Velikost pozorovacího prostoru tedy není příliš velká a je snadněji zpracovatelná než kdyby obsahoval všechny herní políčka.
+Celkově má tedy pozorovací prostor Pana X 17 rozměrů a pozorovací prostor policistů 18 rozměrů.
+Tento prostor je spojitý s typovou hodnotou \emph{numpy.float32}, jelikož se v něm vyskytují hodnoty vzdálenosti a ty nejsou celočíselné.
+
 Pokud informace obsažená v těchto pozorovacích prostorech není v daný moment definována, je nahrazena hodnotou -1.
-Konkrétně se jedná pouze o hodnoty týkající se poslední veřejně známé pozice Pana X, jelikož v prvních několika prních kolech není odhalena.
+Konkrétně se jedná pouze o hodnoty týkající se poslední veřejně známé pozice Pana X, jelikož v prvních několika kolech není známa.
+
+\bigskip
+
+\textbf{Akční prostor} agentů reprezentuje možné akce, které mohou agenti provést.
+Tyto akce jsou stejné jak pro policisty tak pro Pana X\@.
+Jedná se o jak ortogonální tak diagonální pohyb.
+Agent také může zůstat na místě a neprovést žádnou akci.
+Celková velikost akčního prostoru je 9.
+Jedná se o diskrétní prostor, jehož výstupem je hodnota 1 má--li být akce zvolena.
 
 \chapter{Experimenty}
 \label{ch:experimenty}
@@ -840,18 +858,19 @@ Experimenty byly prováděny na systému s následujícími parametry:
 \end{itemize}
 
 Všechny experiment, kromě experimentu 3~\nameref{sec:experiment-3}, byly provedeny za těchto podmínek:\\
-Všichni agenti se učili ve stejném prostředí, za stejných počátečních podmínek.
-Měly totožný stavový i akční prostor a stejné odměny.
+Všichni agenti se učili ve stejném prostředí, za stejných počátečních podmínek, měli totožný stavový i akční prostor a stejné odměny.
 
 \bigskip
 \noindent Pomocí algoritmu \textbf{PPO} byl agent trénován \emph{1000} krát.\\
-Stejně pak pomocí algoritmus \textbf{DQN} byl agent trénován \emph{1000} krát.\\
-Náhodný agent vždy vybírá náhodnou, avšak validní akci.
+Stejně pak pomocí algoritmus \textbf{DQN} byl agent trénován \emph{10000} s postupným zvětšováním trénovací sady.\\
+Náhodný agent vždy vybírá jednu náhodnou akci z validních akcí.
 
 \section{Experiment 1: Výsledky algoritmu PPO při hraní hry Scotland Yard}
 \label{sec:experiment-1}
 
-
+Tento experiment byl proveden za účelem ověření výkonu algoritmu PPO při hraní hry Scotland Yard.
+Snaží se zjistit jestli jsou agenti trénování tímto způsobem schopni být výrazně odlišeni od agenta který používá pouze náhodné akce.
+Také porovnává agenty trénované pomocí PPO a DQN\@.
 
 \section{Experiment 2: Blízkost policistů k Panu X}
 \label{sec:experiment-2}
@@ -862,6 +881,28 @@ Náhodný agent vždy vybírá náhodnou, avšak validní akci.
 
 \chapter{Závěr}
 \label{ch:zaver}
+
+Experimenty ukázali že algoritmus PPO je zkutečně vhodný na hry s neúplnou informací.
+Zkoumaní agenti dokázali pochopit koncept a cíl hry Scotland Yard a naučili se jak se v ní optimálně chovat, přestože začínali s nulovým věděním a hráli jen proti sobě.
+
+
+\section*{Možná vylepšení}
+\label{sec:mozna-vylepseni}
+
+Bohužel se během experimentu nepovedlo separovat výslednou politiku od frameworku Ray.Rlib a extrahovat ji do podoby kde by již Rlib nebyl potřeba pro její zpracování.
+Při spouštění hry se tedy načítá i celý framework Ray.Rlib, toto velmi zpomaluje načítání hry kdy prvotní načtení trvá několik desítek sekund.
+
+Původním plánem bylo také realizovat možnost hraní hry mezi hráčem a umělou inteligencí.
+Tuto implementaci jsem avšak nestihl dokončit.
+Mám za to, že by tato možnost nadále prohloubila výsledky této studie o zajímavé experimenty kde by bylo možné sledovat jak si agent PPO vede proti lidskému protivníkovi.
+
+Algoritmus DQN nebyl plně prozkoumán a tak jeho využití v tomto projektu nemulo být optimální.
+Navrhuji změnu stavového a akčního prostoru aby byl kompatibilní s verzemi studentů z minulých let, kteří realizovali bakalářskou práci na podobné téma.
+
+Dále je zde možnost rozšířit hratelnost hry o jednotlivé druhy dopravy a k ním příslušící jízdenky.
+Tím by výrazně vzrostla složitost hry a stavový prostor.
+Jak ale ukázala práce OpenAI~\cite{Dota2}, algoritmus PPO nemá problém s obrovským stavovým prostorem a naučit se i komplikované hry.
+
 \chapter{Přílohy}
 \label{ch:prilohy}
 
