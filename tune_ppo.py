@@ -46,7 +46,7 @@ if __name__ == "__main__":
     ray.init(num_gpus=1)
 
     def env_creator(env_config):
-        return ScotlandYardEnvironment({})  # return an env instance
+        return ScotlandYardEnvironment({}, scotland_yard_game.DefinedAlgorithms.PPO)  # return an env instance
 
 
     register_env("scotland_env", env_creator)

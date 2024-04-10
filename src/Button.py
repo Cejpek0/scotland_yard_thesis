@@ -4,8 +4,9 @@ from src.colors import *
 
 # Button class
 class Button:
-    def __init__(self, text, x, y, width, height, screen, color, hover_color, text_color,
-                 text_hover_color, border_color, border_color_hovered, border_size, border_size_hovered, font=None):
+    def __init__(self, text, x, y, width, height, screen, color, hover_color, text_color, text_hover_color,
+                 border_color, border_color_hovered, border_size, border_size_hovered, value=None, font=None):
+        self.value = value
         self.rect = pygame.Rect(x, y, width, height)
         self.color = color
         self.hover_color = hover_color
@@ -31,9 +32,8 @@ class Button:
         self.actual_border_size = self.border_size
         self.actual_rect_border = self.rect_border
 
-        self.set_hover_style()
-
     def draw(self):
+        self.set_hover_style()
         pygame.draw.rect(self.screen, self.actual_border_color, self.actual_rect_border)
         pygame.draw.rect(self.screen, self.actual_color, self.rect)
         text_surface = self.font.render(self.text, True, self.actual_text_color)
@@ -49,6 +49,12 @@ class Button:
             self.actual_border_color = self.border_color_hovered
             self.actual_border_size = self.border_size_hovered
             self.actual_rect_border = self.rect_border_hovered
+        else:
+            self.actual_color = self.color
+            self.actual_text_color = self.text_color
+            self.actual_border_color = self.border_color
+            self.actual_border_size = self.border_size
+            self.actual_rect_border = self.rect_border
 
     def is_hovered(self):
         return self.rect.collidepoint(pygame.mouse.get_pos())

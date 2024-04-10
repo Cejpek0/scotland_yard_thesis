@@ -150,7 +150,10 @@ class DefinedAlgorithms(Enum):
 
 
 class ScotlandYardGameLogic:
-    def __init__(self, training=False, algorithm_to_use=DefinedAlgorithms.PPO):
+    def __init__(self, training=False, cop_algorithm=DefinedAlgorithms.PPO, mrx_algorithm=DefinedAlgorithms.PPO):
+        self.cop_algorithm = cop_algorithm
+        self.mrx_algorithm = mrx_algorithm
+        
         self.number_of_cops = 3
         self.round_number = 0
         self.start_positions_mr_x = []
@@ -159,7 +162,6 @@ class ScotlandYardGameLogic:
         self.number_of_starting_positions_cops = NUMBER_OF_STARTING_POSITIONS_COPS
         self.number_of_starting_positions_mr_x = NUMBER_OF_STARTING_POSITIONS_MR_X
         self.players = []
-        self.algorithm = None
         self.playing_player_index = 0
 
         self.agents_previous_locations = {}
@@ -184,96 +186,18 @@ class ScotlandYardGameLogic:
                 TorchCentralizedCriticModel
             )
 
-            my_config = (PPOConfig()
-                         .training(model={"custom_model": "cc_model"}))
+            ppo_model = PPO(env="scotland_env")
+            ppo_model.restore("trained_policies")
+            self.ppo_model = ppo_model
 
-            my_config["policies"] = {
-                "mr_x_policy": MR_X_POLICY_SPEC,
-                "cop_policy": COP_POLICY_SPEC,
-            }
+            # Set the config object's env.
+            dqn_model = DQN(env="scotland_env")
+            dqn_model.restore("trained_policies_dqn")
+            self.dqn_model = dqn_model
 
-            def policy_mapping_fn(agent_id, episode, worker):
-                return "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
+        print(f"Cop algorithm: {cop_algorithm}")
+        print(f"Mr X algorithm: {mrx_algorithm}")
 
-            my_config["policy_mapping_fn"] = policy_mapping_fn
-
-            print("3")
-
-            if False:
-                from tune_ppo import get_latest_checkpoint
-                latest_checkpoint_dir = get_latest_checkpoint()
-
-                self.algorithm = Algorithm.from_checkpoint(latest_checkpoint_dir)
-            else:
-
-                if algorithm_to_use == DefinedAlgorithms.PPO:
-                    algo = PPO(env="scotland_env", config=my_config)
-                    algo.train()
-                    algo.restore("trained_policies")
-                    self.algorithm = algo
-                elif algorithm_to_use == DefinedAlgorithms.DQN:
-                    my_config = (DQNConfig()
-                                 .training(model={"fcnet_hiddens": [32, 32, 16]},
-                                           lr=0.001,
-                                           gamma=0.99,
-                                           target_network_update_freq=10,
-                                           double_q=True,
-                                           dueling=True,
-                                           num_atoms=1,
-                                           noisy=True,
-                                           n_step=3, )
-                                 .rollouts(observation_filter="MeanStdFilter"))
-
-                    repeat = 50
-
-                    replay_config = {
-                        "_enable_replay_buffer_api": True,
-                        "type": "MultiAgentPrioritizedReplayBuffer",
-                        "capacity": 60000,
-                        "prioritized_replay_alpha": 0.5,
-                        "prioritized_replay_beta": 0.5,
-                        "prioritized_replay_eps": 3e-6,
-                    }
-
-                    exploration_config = {
-                        "type": "EpsilonGreedy",
-                        "initial_epsilon": 1.0,
-                        "final_epsilon": 0.05,
-                        "epsilon_timesteps": repeat
-                    }
-
-                    my_config["replay_config"] = replay_config
-                    my_config["exploration_config"] = exploration_config
-
-                    my_config.evaluation_config = {
-                        "evaluation_interval": 10,
-                        "evaluation_num_episodes": 10,
-                    }
-
-                    my_config["policies"] = {
-                        "mr_x_policy": MR_X_POLICY_SPEC,
-                        "cop_policy": COP_POLICY_SPEC,
-                    }
-
-                    def adjust_rollout_fragment_length(iteration, start_length, max_length, total_iterations):
-                        progress = iteration / total_iterations
-                        return int(start_length + progress * (max_length - start_length))
-
-                    def policy_mapping_fn(agent_id, episode, worker):
-                        return "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
-
-                    my_config["policy_mapping_fn"] = policy_mapping_fn
-
-                    my_config["num_rollout_workers"] = 4
-                    my_config["reuse_actors"] = True
-                    my_config.resources(num_gpus=1, num_gpus_per_worker=0.2)
-                    my_config["rollout_fragment_length"] = 500
-                    my_config.framework("torch")
-
-                    # Set the config object's env.
-                    algo = DQN(env="scotland_env", config=my_config)
-                    algo.restore("trained_policies_dqn")
-                    self.algorithm = algo
         # Create players
         self.create_players()
         self.reset()
@@ -462,9 +386,12 @@ class ScotlandYardGameLogic:
         player = self.get_player_by_name(player.name)
         while not action_is_valid:
             if count < 100:
-                generated_action = self.algorithm.compute_single_action(observations[player.name],
-                                                                        policy_id="mr_x_policy" if player.number == 0
-                                                                        else "cop_policy")
+                if player.is_mr_x():
+                    generated_action = self.ppo_model.compute_single_action(observations[player.name],
+                                                                           policy_id="mr_x_policy")
+                else:
+                    generated_action = self.dqn_model.compute_single_action(observations[player.name],
+                                                                           policy_id="cop_policy")
                 print(generated_action)
             else:
                 generated_action = self.get_random_action()
@@ -497,23 +424,19 @@ class ScotlandYardGameLogic:
     def get_current_player(self):
         return self.players[self.playing_player_index]
 
-    def play_turn(self, cop_algo=DefinedAlgorithms.PPO, mr_x_algo=DefinedAlgorithms.PPO):
+    def play_turn(self):
         if self.playing_player_index == 0:
             self.round_number += 1
 
         player = self.get_current_player()
         action = None
         if player.is_mr_x():
-            if mr_x_algo == DefinedAlgorithms.PPO:
-                action = self.get_action_for_player(player)
-            elif mr_x_algo == DefinedAlgorithms.DQN:
+            if self.mrx_algorithm != DefinedAlgorithms.RANDOM:
                 action = self.get_action_for_player(player)
             else:
                 action = self.get_random_action()
         elif player.is_cop():
-            if cop_algo == DefinedAlgorithms.PPO:
-                action = self.get_action_for_player(player)
-            elif cop_algo == DefinedAlgorithms.DQN:
+            if self.cop_algorithm == DefinedAlgorithms.RANDOM:
                 action = self.get_action_for_player(player)
             else:
                 action = self.get_random_action()

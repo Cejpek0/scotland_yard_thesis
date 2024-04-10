@@ -30,8 +30,10 @@ class UserActions(Enum):
 
 class GameController():
     def __init__(self):
+        pygame.init()
         self.font = None
         self.gui_controller = GuiController()
+        self.load_assets()
 
         from src.scene_stack import SceneStack
         self.scene_stack = SceneStack()
@@ -40,19 +42,15 @@ class GameController():
         self.title_screen = Title(self, self.gui_controller)
         self.scene_stack.push(self.title_screen)
 
-        pygame.init()
-
+        self.clock = pygame.time.Clock()
         self.running, self.playing = True, False
         self.user_actions = {}
         for action in UserActions:
             self.user_actions[action.name] = False
         self.dt, self.prev_time = 0, 0
 
-        self.load_assets()
-
     def game_loop(self):
         while self.running:
-            self.get_dt()
             self.get_events()
             if self.user_actions[UserActions.escape.name]:
                 if len(self.scene_stack) > 1:
@@ -62,7 +60,6 @@ class GameController():
             self.update()
             self.render()
             self.reset_keys()
-            time.sleep(0.2)
 
     def get_events(self):
         for event in pygame.event.get():
@@ -108,11 +105,6 @@ class GameController():
         self.scene_stack.top().scene_cleanup()
         pygame.quit()
         exit(0)
-
-    def get_dt(self):
-        now = time.time()
-        self.dt = now - self.prev_time
-        self.prev_time = now
 
     def load_assets(self):
         self.font = pygame.font.SysFont("Arial", 20)

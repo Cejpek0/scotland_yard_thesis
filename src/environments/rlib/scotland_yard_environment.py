@@ -12,12 +12,12 @@ import src.game.scotland_yard_game_logic as scotland_yard_game
 class ScotlandYardEnvironment(MultiAgentEnv):
     _agent_ids = ["mr_x", "cop_1", "cop_2", "cop_3"]
 
-    def __init__(self, config):
+    def __init__(self, config, selected_algo):
         self.next_agent_index = 1
         self.next_agent = "cop_1"
         super().__init__()
         self.config = config
-        self.game = scotland_yard_game.ScotlandYardGameLogic(training=True)
+        self.game = scotland_yard_game.ScotlandYardGameLogic(True, selected_algo, selected_algo)
         self.observations = None
         self._agent_ids = ["mr_x", "cop_1", "cop_2", "cop_3"]
         self.agents = self._agent_ids

@@ -10,11 +10,12 @@ from src.scenes.scene import Scene
 # Constants
 
 class ScotlandYardScene(Scene):
-    def __init__(self, game_controller: GameController, gui_controller: GuiController):
+    def __init__(self, game_controller: GameController, gui_controller: GuiController, cop_algorithm=DefinedAlgorithms.PPO,
+                 mrx_algorithm=DefinedAlgorithms.PPO):
         Scene.__init__(self, game_controller, gui_controller)
 
         self.time_of_end = None
-        self.game = ScotlandYardGameLogic(training=False, algorithm_to_use=DefinedAlgorithms.DQN)
+        self.game = ScotlandYardGameLogic(training=False, cop_algorithm, mrx_algorithm)
         self.game_visual = ScotlandYardGameVisual(self.game, gui_controller)
         self.cell_size = gui_controller.width // GRID_SIZE
 
