@@ -4,8 +4,8 @@ from src.colors import *
 
 # Button class
 class Button:
-    def __init__(self, text, x, y, width, height, screen, color, hover_color, text_color, text_hover_color,
-                 border_color, border_color_hovered, border_size, border_size_hovered, value=None, font=None):
+    def __init__(self, text, value, x, y, width, height, screen, color, hover_color, text_color, text_hover_color,
+                 border_color, border_color_hovered, border_size, border_size_hovered, font=None):
         self.value = value
         self.rect = pygame.Rect(x, y, width, height)
         self.color = color

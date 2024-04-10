@@ -111,30 +111,31 @@ class Title(Scene):
 
     def to_draw_buttons(self, display):
         btn_color, btn_hover_color, text_color, hover_text_color, border_color, border_color_hovered = GREEN, WHITE, WHITE, BLACK, WHITE, BLACK
-        btn_cop_ppo = Button("PPO", self.cop_button_pos_x, 200, self.button_width, self.button_height, display,
-                             btn_color, btn_hover_color, text_color, hover_text_color, border_color,
-                             border_color_hovered, 3, 5, DefinedAlgorithms.PPO)
-        btn_cop_dqn = Button("DQN", self.cop_button_pos_x, 250, self.button_width, self.button_height, display,
-                             btn_color, btn_hover_color, text_color, hover_text_color, border_color,
-                             border_color_hovered, 3, 5, DefinedAlgorithms.DQN)
-        btn_cop_random = Button("Random", self.cop_button_pos_x, 300, self.button_width, self.button_height, display,
-                                btn_color, btn_hover_color, text_color, hover_text_color, border_color,
-                                border_color_hovered, 3, 5, DefinedAlgorithms.RANDOM)
+        btn_cop_ppo = Button("PPO", DefinedAlgorithms.PPO, self.cop_button_pos_x, 200, self.button_width,
+                             self.button_height, display, btn_color, btn_hover_color, text_color, hover_text_color,
+                             border_color, border_color_hovered, 3, 5)
+        btn_cop_dqn = Button("DQN", DefinedAlgorithms.DQN, self.cop_button_pos_x, 250, self.button_width,
+                             self.button_height, display, btn_color, btn_hover_color, text_color, hover_text_color,
+                             border_color, border_color_hovered, 3, 5)
+        btn_cop_random = Button("Random", DefinedAlgorithms.RANDOM, self.cop_button_pos_x, 300, self.button_width,
+                                self.button_height, display, btn_color, btn_hover_color, text_color, hover_text_color,
+                                border_color, border_color_hovered, 3, 5)
 
-        btn_mr_x_ppo = Button("PPO", self.mr_x_button_pos_x, 200, self.button_width, self.button_height, display,
-                              btn_color, btn_hover_color, text_color, hover_text_color, border_color,
-                              border_color_hovered, 3, 5, DefinedAlgorithms.PPO)
-        btn_mr_x_dqn = Button("DQN", self.mr_x_button_pos_x, 250, self.button_width, self.button_height, display,
-                              btn_color, btn_hover_color, text_color, hover_text_color, border_color,
-                              border_color_hovered, 3, 5, DefinedAlgorithms.DQN)
-        btn_mr_x_random = Button("Random", self.mr_x_button_pos_x, 300, self.button_width, self.button_height, display,
-                                 btn_color, btn_hover_color, text_color, hover_text_color, border_color,
-                                 border_color_hovered, 3, 5, DefinedAlgorithms.RANDOM)
+        btn_mr_x_ppo = Button("PPO", DefinedAlgorithms.PPO, self.mr_x_button_pos_x, 200, self.button_width,
+                              self.button_height, display, btn_color, btn_hover_color, text_color, hover_text_color,
+                              border_color, border_color_hovered, 3, 5)
+        btn_mr_x_dqn = Button("DQN", DefinedAlgorithms.DQN, self.mr_x_button_pos_x, 250, self.button_width,
+                              self.button_height, display, btn_color, btn_hover_color, text_color, hover_text_color,
+                              border_color, border_color_hovered, 3, 5)
+        btn_mr_x_random = Button("Random", DefinedAlgorithms.RANDOM, self.mr_x_button_pos_x, 300, self.button_width,
+                                 self.button_height, display, btn_color, btn_hover_color, text_color, hover_text_color,
+                                 border_color, border_color_hovered, 3, 5)
 
         start_button_center_x = self.screen_width // 2
         start_button_y = self.screen_height - self.button_height - self.button_margin - 20
 
-        btn_start = Button("Start", start_button_center_x - self.button_width, start_button_y, self.button_width * 2,
-                           self.button_height, display, BLACK, WHITE, WHITE, BLACK, WHITE, BLACK, 3, 5)
+        btn_start = Button("Start", None, start_button_center_x - self.button_width, start_button_y,
+                           self.button_width * 2, self.button_height, display, BLACK, WHITE, WHITE, BLACK, WHITE, BLACK,
+                           3, 5)
 
         return btn_start, btn_cop_ppo, btn_cop_dqn, btn_cop_random, btn_mr_x_ppo, btn_mr_x_dqn, btn_mr_x_random
