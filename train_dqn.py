@@ -37,7 +37,7 @@ if __name__ == "__main__":
                            n_step=3,)
                  .rollouts(observation_filter="MeanStdFilter"))
 
-    repeat = 10000
+    repeat = 1000
 
     replay_config = {
         "_enable_replay_buffer_api": True,

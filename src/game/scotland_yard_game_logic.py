@@ -40,6 +40,7 @@ mrx_observation_space = spaces.Box(low=np.array([
     0,  # current turn
     0,  # max turns
     0,  # next reveal
+    0,  # number of inactivity rounds
     0,  # position x
     0,  # position y
     -1,  # last known position x
@@ -58,6 +59,7 @@ mrx_observation_space = spaces.Box(low=np.array([
     MAX_NUMBER_OF_TURNS,  # current turn
     MAX_NUMBER_OF_TURNS,  # max turns
     MAX_NUMBER_OF_TURNS,  # next reveal
+    MAX_NUMBER_OF_TURNS,  # number of inactivity rounds
     GRID_SIZE,  # position x
     GRID_SIZE,  # position y
     GRID_SIZE,  # last known position x
@@ -78,6 +80,7 @@ general_cop_observation_space = spaces.Box(low=np.array([
     0,  # current turn
     0,  # max turns
     0,  # next reveal
+    0,  # number of inactivity rounds
     0,  # position x
     0,  # position y
     -1,  # last known position x of mr x
@@ -97,6 +100,7 @@ general_cop_observation_space = spaces.Box(low=np.array([
     MAX_NUMBER_OF_TURNS,  # current turn
     MAX_NUMBER_OF_TURNS,  # max turns
     MAX_NUMBER_OF_TURNS,  # next reveal
+    MAX_NUMBER_OF_TURNS,  # number of inactivity rounds
     GRID_SIZE,  # position x
     GRID_SIZE,  # position y
     GRID_SIZE,  # last known position x of mr x
@@ -153,7 +157,7 @@ class ScotlandYardGameLogic:
     def __init__(self, training=False, cop_algorithm=DefinedAlgorithms.PPO, mrx_algorithm=DefinedAlgorithms.PPO):
         self.cop_algorithm = cop_algorithm
         self.mrx_algorithm = mrx_algorithm
-        
+
         self.number_of_cops = 3
         self.round_number = 0
         self.start_positions_mr_x = []
@@ -186,12 +190,43 @@ class ScotlandYardGameLogic:
                 TorchCentralizedCriticModel
             )
 
-            ppo_model = PPO(env="scotland_env")
+            ppo_config = (PPOConfig()
+                          .training(model={"custom_model": "cc_model"}))
+
+            ppo_config["policies"] = {
+                "mr_x_policy": MR_X_POLICY_SPEC,
+                "cop_policy": COP_POLICY_SPEC,
+            }
+
+            def policy_mapping_fn(agent_id, episode, worker):
+                return "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
+
+            ppo_config["policy_mapping_fn"] = policy_mapping_fn
+            ppo_config.framework("torch")
+
+            ppo_model = PPO(env="scotland_env", config=ppo_config)
             ppo_model.restore("trained_policies")
             self.ppo_model = ppo_model
 
-            # Set the config object's env.
-            dqn_model = DQN(env="scotland_env")
+            dqn_config = (DQNConfig()
+                          .training(model={"fcnet_hiddens": [32, 32, 16]},
+                                    lr=0.001,
+                                    gamma=0.99,
+                                    target_network_update_freq=10,
+                                    double_q=True,
+                                    dueling=True,
+                                    num_atoms=1,
+                                    noisy=True,
+                                    n_step=3, )
+                          .rollouts(observation_filter="MeanStdFilter"))
+            dqn_config.framework("torch")
+            dqn_config["policy_mapping_fn"] = policy_mapping_fn
+            dqn_config["policies"] = {
+                "mr_x_policy": MR_X_POLICY_SPEC,
+                "cop_policy": COP_POLICY_SPEC,
+            }
+
+            dqn_model = DQN(env="scotland_env", config=dqn_config)
             dqn_model.restore("trained_policies_dqn")
             self.dqn_model = dqn_model
 
@@ -267,46 +302,26 @@ class ScotlandYardGameLogic:
         mr_x = self.get_mr_x()
 
         # mr_x
-        if mr_x.last_known_position is not None:
-            obs_list_mrx = np.array([
-                self.get_current_round_number(),
-                self.get_round_turns(),
-                self.get_next_reveal_round_number(),
-                mr_x.position[0],
-                mr_x.position[1],
-                mr_x.last_known_position[0],
-                mr_x.last_known_position[1],
-                mr_x.get_distance_to(mr_x.last_known_position),
-                cop_1.position[0],
-                cop_1.position[1],
-                mr_x.get_distance_to(cop_1.position),
-                cop_2.position[0],
-                cop_2.position[1],
-                mr_x.get_distance_to(cop_2.position),
-                cop_3.position[0],
-                cop_3.position[1],
-                mr_x.get_distance_to(cop_3.position)
-            ]).astype(np.float32)
-        else:
-            obs_list_mrx = np.array([
-                self.get_current_round_number(),
-                self.get_round_turns(),
-                self.get_next_reveal_round_number(),
-                mr_x.position[0],
-                mr_x.position[1],
-                -1,
-                -1,
-                -1,
-                cop_1.position[0],
-                cop_1.position[1],
-                mr_x.get_distance_to(cop_1.position),
-                cop_2.position[0],
-                cop_2.position[1],
-                mr_x.get_distance_to(cop_2.position),
-                cop_3.position[0],
-                cop_3.position[1],
-                mr_x.get_distance_to(cop_3.position)
-            ]).astype(np.float32)
+        obs_list_mrx = np.array([
+            self.get_current_round_number(),
+            self.get_round_turns(),
+            self.get_next_reveal_round_number(),
+            self.agents_is_in_previous_location_count["mr_x"],
+            mr_x.position[0],
+            mr_x.position[1],
+            mr_x.last_known_position[0] if mr_x.last_known_position is not None else -1,
+            mr_x.last_known_position[1] if mr_x.last_known_position is not None else -1,
+            mr_x.get_distance_to(mr_x.last_known_position) if mr_x.last_known_position is not None else -1,
+            cop_1.position[0],
+            cop_1.position[1],
+            mr_x.get_distance_to(cop_1.position),
+            cop_2.position[0],
+            cop_2.position[1],
+            mr_x.get_distance_to(cop_2.position),
+            cop_3.position[0],
+            cop_3.position[1],
+            mr_x.get_distance_to(cop_3.position),
+        ]).astype(np.float32)
 
         # cops
         cops_observations = []
@@ -315,28 +330,18 @@ class ScotlandYardGameLogic:
 
         for cop_number in range(1, self.number_of_cops + 1):
             cop = self.get_cop_by_number(cop_number)
-            if mr_x.last_known_position is not None:
-                obs_list_cop = np.array([
-                    self.get_current_round_number(),
-                    self.get_round_turns(),
-                    self.get_next_reveal_round_number(),
-                    cop.position[0],
-                    cop.position[1],
-                    mr_x.last_known_position[0],
-                    mr_x.last_known_position[1],
-                    cop.get_distance_to(mr_x.last_known_position),
-                ]).astype(np.float32)
-            else:
-                obs_list_cop = np.array([
-                    self.get_current_round_number(),
-                    self.get_round_turns(),
-                    self.get_next_reveal_round_number(),
-                    cop.position[0],
-                    cop.position[1],
-                    -1,
-                    -1,
-                    -1,
-                ]).astype(np.float32)
+            obs_list_cop = np.array([
+                self.get_current_round_number(),
+                self.get_round_turns(),
+                self.get_next_reveal_round_number(),
+                self.agents_is_in_previous_location_count[f"cop_{cop_number}"],
+                cop.position[0],
+                cop.position[1],
+                mr_x.last_known_position[0] if mr_x.last_known_position is not None else -1,
+                mr_x.last_known_position[1] if mr_x.last_known_position is not None else -1,
+                cop.get_distance_to(mr_x.last_known_position) if mr_x.last_known_position is not None else -1,
+            ]).astype(np.float32)
+
             for other_cop in self.get_cops():
                 if other_cop.number == cop_number:
                     continue
@@ -388,10 +393,10 @@ class ScotlandYardGameLogic:
             if count < 100:
                 if player.is_mr_x():
                     generated_action = self.ppo_model.compute_single_action(observations[player.name],
-                                                                           policy_id="mr_x_policy")
+                                                                            policy_id="mr_x_policy")
                 else:
                     generated_action = self.dqn_model.compute_single_action(observations[player.name],
-                                                                           policy_id="cop_policy")
+                                                                            policy_id="cop_policy")
                 print(generated_action)
             else:
                 generated_action = self.get_random_action()
@@ -445,96 +450,7 @@ class ScotlandYardGameLogic:
         if self.round_number in REVEAL_POSITION_ROUNDS and player.is_mr_x():
             self.get_mr_x().mr_x_reveal_position()
         self.playing_player_index = (self.playing_player_index + 1) % len(self.players)
-
-        # Display rewards for each agent
-        rewards = self.get_rewards_fake()
-        print("Rewards:")
-        for player in self.players:
-            print(f"{player.name}: {rewards[player.name]}")
-
         return self
-
-    # TODO: delete
-    def get_rewards_fake(self, invalid_actions_players: List[str] = None):
-        if invalid_actions_players is None:
-            invalid_actions_players = []
-        distance_reward = 0
-        inactivity_penalty = 0
-        minimum_distance = 5
-        rewards = {}
-
-        # __ MR X __ #
-        if "mr_x" in invalid_actions_players:
-            rewards["mr_x"] = -20
-        else:
-            if self.get_mr_x().position == self.agents_previous_locations["mr_x"]:
-                self.agents_is_in_previous_location_count["mr_x"] += 1
-            else:
-                self.agents_is_in_previous_location_count["mr_x"] = 0
-            self.agents_previous_locations["mr_x"] = self.get_mr_x().position
-            inactivity_penalty = self.agents_is_in_previous_location_count["mr_x"] * (-1)
-            # Distance to cops
-            for cop in self.get_cops():
-                distance = self.get_mr_x().get_distance_to(cop.position)
-                if distance == 0:
-                    distance_reward -= 100
-                else:
-                    distance_reward += round((distance - minimum_distance), 10)
-            rewards["mr_x"] = distance_reward + inactivity_penalty
-
-        # __ COPS __ #
-
-        possible_mr_x_positions = self.get_possible_mr_x_positions()
-
-        if self.get_game_status() == GameStatus.COPS_WON:
-            for cop in self.get_cops():
-                distance_to_mr_x = cop.get_distance_to(self.get_mr_x().position)
-                if distance_to_mr_x == 0:
-                    rewards[cop.name] = 100
-                else:
-                    rewards[cop.name] = 50
-            return rewards
-
-        for cop in self.get_cops():
-            if f"cop_{cop.number}" in invalid_actions_players:
-                rewards[cop.name] = -20
-                continue
-
-            if cop.position == self.agents_previous_locations[cop.name]:
-                self.agents_is_in_previous_location_count[cop.name] += 1
-            else:
-                self.agents_is_in_previous_location_count[cop.name] = 0
-            self.agents_previous_locations[cop.name] = cop.position
-
-            inactivity_penalty = self.agents_is_in_previous_location_count[cop.name] * (-1)
-
-            # Check winnning condition
-            if cop.position == self.get_mr_x().position:
-                for cop in self.get_cops():
-                    rewards[cop.name] = 100
-                continue
-
-            # Distance to last known position of mr x
-            distance_reward = 0
-            inside_reward = 0
-
-            closest_position = self.get_closest_position(
-                cop.position,
-                possible_mr_x_positions
-            )
-            distance_to_closest_position = cop.get_distance_to(closest_position)
-            if cop.position in possible_mr_x_positions:
-                # Being inside the area of interest is more beneficial
-                inside_reward = 10
-            else:
-                # Closer to the area of interest, the more reward is gained
-                # Maximum reward is 5, so being inside location of interest is more beneficial
-                inside_reward = (
-                        ((minimum_distance - distance_to_closest_position) / MAX_DISTANCE) * 5)
-
-            total_reward = distance_reward + inside_reward + inactivity_penalty
-            rewards[cop.name] = total_reward
-        return rewards
 
     # -- END: GAMEPLAY FUNCTIONS -- #
 

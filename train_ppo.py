@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
     my_config["policy_mapping_fn"] = policy_mapping_fn
 
-    my_config["num_iterations"] = 20
+    my_config["num_iterations"] = 1000
     my_config["num_rollout_workers"] = 4
     my_config["reuse_actors"] = True
     my_config.resources(num_gpus=1, num_gpus_per_worker=0.2)

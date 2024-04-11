@@ -99,6 +99,11 @@ class GameController():
         self.gui_controller.screen.blit(self.gui_controller.game_canvas, (0, 0))
         pygame.display.flip()
 
+    def get_delta_time(self):
+        current_time = time.time()
+        self.dt = current_time - self.prev_time
+        self.prev_time = current_time
+
     def quit_game(self):
         self.playing = False
         self.running = False

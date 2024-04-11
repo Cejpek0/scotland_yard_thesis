@@ -18,10 +18,10 @@ class FakeEnv(MultiAgentEnv):
         self._agent_ids = ["mr_x", "cop_1", "cop_2", "cop_3"]
 
         self.action_space = spaces.dict.Dict({
-            "mr_x": spaces.Discrete(4),
-            "cop_1": spaces.Discrete(4),
-            "cop_2": spaces.Discrete(4),
-            "cop_3": spaces.Discrete(4)
+            "mr_x": spaces.Discrete(9),
+            "cop_1": spaces.Discrete(9),
+            "cop_2": spaces.Discrete(9),
+            "cop_3": spaces.Discrete(9)
         })
 
         from src.game.scotland_yard_game_logic import mrx_observation_space
@@ -58,10 +58,13 @@ class FakeEnv(MultiAgentEnv):
         return observations, {"mr_x": 0, "cop_1": 0, "cop_2": 0, "cop_3": 0}
 
     def get_empty_observation(self):
-        mrx_obs = np.array([0, 0, 0, 0, 0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        mrx_obs = np.array([0, 0, 0, 0, 0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
         mrx_obs = mrx_obs.astype(np.float32)
-        cop_obs = np.array([0, 0, 0, 0, 0, -1, -1, -1, 0, 0, 0, 0, 0, 0])
+        cop_obs = np.array([0, 0, 0, 0, 0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0])
         cop_obs = cop_obs.astype(np.float32)
         return {
             "mr_x": mrx_obs
+            , "cop_1": cop_obs 
+            , "cop_2": cop_obs
+            , "cop_3": cop_obs
         }

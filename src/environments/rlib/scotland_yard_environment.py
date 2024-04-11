@@ -201,10 +201,17 @@ class ScotlandYardEnvironment(MultiAgentEnv):
         return observations
 
     def get_empty_observation(self):
-        mrx_obs = np.array([0, 0, 0, 0, 0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        mrx_obs = np.array([0, 0, 0, 0, 0, 0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0])
         mrx_obs = mrx_obs.astype(np.float32)
+
+        cop_obs = np.array([0, 0, 0, 0, 0, 0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        cop_obs = cop_obs.astype(np.float32)
+
         return {
-            "mr_x": mrx_obs
+            "mr_x": mrx_obs,
+            "cop_1": cop_obs,
+            "cop_2": cop_obs,
+            "cop_3": cop_obs
         }
 
     def getTerminations(self):

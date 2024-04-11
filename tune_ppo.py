@@ -21,21 +21,10 @@ def get_all_subdirs(directory):
 
 def get_latest_checkpoint():
     import os
-    tuned_results_dir = 'tuned_results'
+    tuned_results_dir = 'C:/Users/cmich/ray_results'
     if not os.path.exists(tuned_results_dir):
         return None
     all_subdirs = get_all_subdirs(tuned_results_dir)
-    if len(all_subdirs) == 0:
-        return None
-    latest_checkpoint_dir = max(all_subdirs, key=os.path.getmtime)
-
-    all_subdirs = get_all_subdirs(latest_checkpoint_dir)
-
-    if len(all_subdirs) == 0:
-        return None
-    latest_checkpoint_dir = max(all_subdirs, key=os.path.getmtime)
-
-    all_subdirs = get_all_subdirs(latest_checkpoint_dir)
     if len(all_subdirs) == 0:
         return None
     latest_checkpoint_dir = max(all_subdirs, key=os.path.getmtime)
@@ -44,6 +33,7 @@ def get_latest_checkpoint():
 
 if __name__ == "__main__":
     ray.init(num_gpus=1)
+
 
     def env_creator(env_config):
         return ScotlandYardEnvironment({}, scotland_yard_game.DefinedAlgorithms.PPO)  # return an env instance
@@ -64,24 +54,8 @@ if __name__ == "__main__":
         "num_gpus": 0.2,
         "num_gpus_per_worker": 0.2,
         "num_envs_per_worker": 1,
-        "model": {
-            "fcnet_hiddens": [256, 256],
-            "fcnet_activation": "relu",
-        },
-        "lr": 3e-4,
-        "optimization": {
-            "optimizer": "adam",
-            "adam_epsilon": 1e-8,
-            "adam_beta1": 0.9,
-            "adam_beta2": 0.999,
-        },
-        "gamma": 0.60,
-        "num_sgd_iter": 20,
-        "sgd_minibatch_size": 1000,
-        "rollout_fragment_length": 1000,
-        "train_batch_size": 8000,
-        "stop": {"training_iteration": 20},
-        "exploration_config": {},
+        "lr": tune.grid_search([0.01, 0.001, 0.0001]),
+        "gamma": tune.choice([0.95, 0.99]),
         "multiagent": {
             "policies_to_train": ["mr_x_policy", "cop_policy"],
             "policies": {
@@ -106,15 +80,6 @@ if __name__ == "__main__":
         tune_config["restore"] = checkpoint_path
         print("restoring from checkpoint")
 
-    result = tune.run(
-        run_or_experiment=PPO,
-        config=tune_config,
-        local_dir=directory,
-        checkpoint_freq=5,
-        checkpoint_at_end=True,
-        stop={"training_iteration": 20},
-        export_formats=[ExportFormat.H5],
-        reuse_actors=True,
-    )
-    print(result)
+    tune.run(PPO, config=tune_config, num_samples=10)
+
     ray.shutdown()

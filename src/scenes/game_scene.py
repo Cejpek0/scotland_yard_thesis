@@ -1,5 +1,7 @@
 import time
 
+import pygame.time
+
 from src.GameController import GameController
 from src.GuiController import GuiController
 from src.game.scotland_yard_game_logic import ScotlandYardGameLogic, GameStatus, DefinedAlgorithms
@@ -15,7 +17,7 @@ class ScotlandYardScene(Scene):
         Scene.__init__(self, game_controller, gui_controller)
 
         self.time_of_end = None
-        self.game = ScotlandYardGameLogic(training=False, cop_algorithm, mrx_algorithm)
+        self.game = ScotlandYardGameLogic(False, cop_algorithm, mrx_algorithm)
         self.game_visual = ScotlandYardGameVisual(self.game, gui_controller)
         self.cell_size = gui_controller.width // GRID_SIZE
 
@@ -41,7 +43,9 @@ class ScotlandYardScene(Scene):
             self.time_of_end = None
 
     def render(self, display):
-        self.game_visual.redraw()
+        self.game_visual.redraw()   
+        pygame.time.delay(333)
+        
 
     def scene_cleanup(self):
         self.game_controller.playing = False
