@@ -13,7 +13,7 @@ class ScotlandYardEnvironment(MultiAgentEnv):
     _agent_ids = ["mr_x", "cop_1", "cop_2", "cop_3"]
 
     def __init__(self, config, selected_algo):
-        self.next_agent_index = 1
+        self.next_agent_index = 0
         self.next_agent = "cop_1"
         super().__init__()
         self.config = config
@@ -22,16 +22,6 @@ class ScotlandYardEnvironment(MultiAgentEnv):
         self._agent_ids = ["mr_x", "cop_1", "cop_2", "cop_3"]
         self.agents = self._agent_ids
         self.num_agents = len(self._agent_ids)
-        self.agents_previous_locations = {}
-        self.agents_is_in_previous_location_count = {}
-        self.agents_previous_locations["mr_x"] = None
-        self.agents_previous_locations["cop_1"] = None
-        self.agents_previous_locations["cop_2"] = None
-        self.agents_previous_locations["cop_3"] = None
-        self.agents_is_in_previous_location_count["mr_x"] = 0
-        self.agents_is_in_previous_location_count["cop_1"] = 0
-        self.agents_is_in_previous_location_count["cop_2"] = 0
-        self.agents_is_in_previous_location_count["cop_3"] = 0
 
         self.action_space = spaces.dict.Dict({
             "mr_x": spaces.Discrete(9),
@@ -50,49 +40,42 @@ class ScotlandYardEnvironment(MultiAgentEnv):
     def step(self, action_dict: Dict[AgentID, int]) -> (
             Dict[Any, Any], Dict[Any, Any], Dict[Any, Any], Dict[Any, Any], Dict[Any, Any]):
         # check if actions of all agents are valid
-
         if len(action_dict) == 0:
             exit(1)
-        agent_id = next(iter(action_dict.keys()))
-        action = next(iter(action_dict.values()))
+        current_agent = self.game.get_current_player()
+        print(action_dict)
+        print(current_agent.name)
+        action = action_dict[current_agent.name]
+
+        direction = scotland_yard_game.Direction(action)
 
         invalid_move = False
 
-        if scotland_yard_game.Direction(action) not in self.game.get_players_valid_moves(
-                self.game.get_player_by_name(agent_id)):
+        if self.game.is_valid_move(current_agent, direction) is False:
             invalid_move = True
 
         # If any action is invalid, do not proceed with the step. Do not update the game, and heavily penalize agents
         # that made invalid actions
         if invalid_move:
-            observations = {agent_id: self.get_observations()[agent_id]}
-            infos = {agent_id: {}}
+            observations = {current_agent.name: self.get_observations()[current_agent.name]}
+            infos = {current_agent.name: {}}
 
-            return observations, self.get_rewards(agent_id), self.getTerminations(), {
+            return observations, self.get_rewards([current_agent.name]), self.getTerminations(), {
                 "__all__": False, "mr_x": False, "cop_1": False, "cop_2": False, "cop_3": False, }, infos
 
-        # Proceed with the step
-
-        # Move player
-        self.game.move_player(self.game.get_player_by_name(agent_id), scotland_yard_game.Direction(action))
+        self.game.play_turn(direction)
 
         # Get updated observations
-        observations = {self.next_agent: self.get_observations()[self.next_agent]}
-        infos = {self.next_agent: {}}
-        self.next_agent = self.agents[(self.next_agent_index + 1) % self.num_agents]
-        self.next_agent_index = (self.next_agent_index + 1) % self.num_agents
+        next_player = self.game.get_player_by_number((current_agent.number + 1) % self.num_agents)
+        assert next_player is not None
+        observations = {next_player.name: self.get_observations()[next_player.name]}
+        infos = {next_player.name: {}}
+
         # Calculate rewards
         rewards = self.get_rewards()
 
         # Check if the game is over
         terminates = self.getTerminations()
-
-        # Update game state
-        if "cop_3" in action_dict.keys():
-            self.game.round_number += 1
-            # Reveal mr x position if current turn is in REVEAL_POSITION_ROUNDS
-            if self.game.get_current_round_number() in scotland_yard_game.REVEAL_POSITION_ROUNDS:
-                self.game.get_mr_x().last_known_position = self.game.get_mr_x().position
 
         # Return observations, rewards, terminates,truncated, info
         return observations, rewards, terminates, {"__all__": False, "mr_x": False, "cop_1": False, "cop_2": False,
@@ -100,19 +83,9 @@ class ScotlandYardEnvironment(MultiAgentEnv):
 
     def reset(self, *, seed=None, options=None):
         self.game.reset()
-        self.game.start_positions_cops = self.game.generate_start_positions([],
-                                                                            self.game.number_of_starting_positions_cops)
-        self.game.start_positions_mr_x = self.game.generate_start_positions(self.game.start_positions_cops,
-                                                                            self.game.number_of_starting_positions_mr_x)
-        self.game.get_mr_x().set_start_position(
-            self.game.start_positions_mr_x[random.randint(0, len(self.game.start_positions_mr_x) - 1)])
-        for cop in self.game.get_cops():
-            cop.set_start_position(
-                self.game.start_positions_cops[random.randint(0, len(self.game.start_positions_cops) - 1)])
+        current_player = self.game.get_current_player()
         # Observations
-        observations = self.get_empty_observation()
-        self.next_agent_index = 1
-        self.next_agent = "cop_1"
+        observations = {current_player.name: self.get_observations()[current_player.name]}
 
         return observations, {"mr_x": 0, "cop_1": 0, "cop_2": 0, "cop_3": 0}
 
@@ -127,12 +100,10 @@ class ScotlandYardEnvironment(MultiAgentEnv):
         if "mr_x" in invalid_actions_players:
             rewards["mr_x"] = -20
         else:
-            if self.game.get_mr_x().position == self.agents_previous_locations["mr_x"]:
-                self.agents_is_in_previous_location_count["mr_x"] += 1
+            if self.game.agents_is_in_previous_location_count["mr_x"] > 5:
+                inactivity_penalty = self.game.agents_is_in_previous_location_count["mr_x"] * (-1)
             else:
-                self.agents_is_in_previous_location_count["mr_x"] = 0
-            self.agents_previous_locations["mr_x"] = self.game.get_mr_x().position
-            inactivity_penalty = self.agents_is_in_previous_location_count["mr_x"] * (-1)
+                inactivity_penalty = 0
             # Distance to cops
             for cop in self.game.get_cops():
                 distance = self.game.get_mr_x().get_distance_to(cop.position)
@@ -160,15 +131,11 @@ class ScotlandYardEnvironment(MultiAgentEnv):
                 rewards[cop.name] = -20
                 continue
 
-            if cop.position == self.agents_previous_locations[cop.name]:
-                self.agents_is_in_previous_location_count[cop.name] += 1
+            if self.game.agents_is_in_previous_location_count[cop.name] > 5:
+                inactivity_penalty = self.game.agents_is_in_previous_location_count[cop.name] * (-1)
             else:
-                self.agents_is_in_previous_location_count[cop.name] = 0
-            self.agents_previous_locations[cop.name] = cop.position
-
-            inactivity_penalty = self.agents_is_in_previous_location_count[cop.name] * (-1)
-
-            # Check winnning condition
+                inactivity_penalty = 0
+            # Check winning condition
             if cop.position == self.game.get_mr_x().position:
                 for cop in self.game.get_cops():
                     rewards[cop.name] = 100
@@ -176,7 +143,6 @@ class ScotlandYardEnvironment(MultiAgentEnv):
 
             # Distance to last known position of mr x
             distance_reward = 0
-            inside_reward = 0
 
             closest_position = self.game.get_closest_position(
                 cop.position,

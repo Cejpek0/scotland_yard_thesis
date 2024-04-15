@@ -40,13 +40,9 @@ if __name__ == "__main__":
         "model": {
             "custom_model": "cc_model",
             "fcnet_hiddens": tune.grid_search([
-                [16, 16],
-                [32, 32],
-                [64, 64],
-                [32, 32, 16],
+                [64, 32, 32],
                 [64, 64, 32],
                 [32, 64, 32],
-                [64, 32, 16],
             ]),
         },
 
@@ -60,7 +56,7 @@ if __name__ == "__main__":
         "dueling": True,
         "num_atoms": 1,
         "noisy": True,
-        "n_step": tune.choice([1, 3, 5]),
+        "n_step": 3,
 
         # Replay buffer configuration
         "replay_buffer_config": {
@@ -77,12 +73,10 @@ if __name__ == "__main__":
             "type": "EpsilonGreedy",
             "initial_epsilon": 1.0,
             "final_epsilon": 0.02,
-            "epsilon_timesteps": tune.grid_search([1000, 5000, 10000, 20000])
+            "epsilon_timesteps": 100
         },
 
         "local_dir": directory,
-        # Training and evaluation
-        "rollout_fragment_length": tune.grid_search([200, 500, 1000, 2000]),
         "train_batch_size": tune.choice([32, 64, 128]),
         "evaluation_interval": 10,
         "evaluation_num_episodes": 10
@@ -104,21 +98,18 @@ if __name__ == "__main__":
 
     checkpoint_path = get_latest_checkpoint()
     print(checkpoint_path)
-    if checkpoint_path:
-        tune_config["restore"] = checkpoint_path
-        print("restoring from checkpoint")
 
-        tuner = tune.Tuner.restore(checkpoint_path, DQN)
-    else:
-        tuner = tune.Tuner(DQN,
-                           tune_config=tune.TuneConfig(
-                               metric="episode_reward_mean",
-                               mode="max",
-                               num_samples=1,
-                           ),
-                           run_config=train.RunConfig(stop={"training_iteration": 100, "time_total_s": 600}),
-                           param_space=tune_config,
-                           )
+#64,64,32,5000
+
+    tuner = tune.Tuner(DQN,
+                       tune_config=tune.TuneConfig(
+                           metric="episode_reward_mean",
+                           mode="max",
+                           num_samples=1,
+                       ),
+                       run_config=train.RunConfig(stop={"training_iteration":    100, "time_total_s": 300}),
+                       param_space=tune_config,
+                       )
 
     analysis = tuner.fit()
 

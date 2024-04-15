@@ -49,7 +49,7 @@ if __name__ == "__main__":
     # Set the config object's env.
     algo = PPO(env="scotland_env", config=my_config)
 
-    repeat = 1000
+    repeat = 200
     # check if trained policies exist
     directory = "trained_policies"
 
@@ -63,6 +63,9 @@ if __name__ == "__main__":
             print("Saving policies")
             algo.save(directory)
     algo.save(directory)
+
+    algo.export_policy_model("trained_models/policy_model_mrx_ppo", "mr_x_policy")
+    algo.export_policy_model("trained_models/policy_model_cop_ppo", "cop_policy")
 
     ray.shutdown()
 

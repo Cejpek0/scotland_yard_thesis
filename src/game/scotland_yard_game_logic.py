@@ -1,29 +1,21 @@
 import math
 import random
 import sys
-import time
 from enum import Enum
-from typing import List
 
 import numpy as np
-import pygame
-import ray
 from gymnasium import spaces
-from ray.rllib.algorithms import DQNConfig, DQN
-from ray.rllib.algorithms.algorithm import Algorithm
-from ray.rllib.algorithms.ppo import PPO, PPOConfig
-from ray.rllib.examples.models.centralized_critic_models import (
-    TorchCentralizedCriticModel,
-)
-from ray.rllib.models import ModelCatalog
+
+import torch
+from jinja2.nodes import Name
+from ray.rllib.algorithms.ppo import PPOTorchPolicy
+from ray.rllib.examples.models.centralized_critic_models import TorchCentralizedCriticModel
 from ray.rllib.policy.policy import PolicySpec
-from ray.tune import register_env
 
 from src.Cop import Cop
 from src.MrX import MrX
 from src.Player import Player
 from src.colors import *
-from src.environments.rlib.FakeEnv import FakeEnv
 
 # Constants
 
@@ -168,73 +160,25 @@ class ScotlandYardGameLogic:
         self.players = []
         self.playing_player_index = 0
 
-        self.agents_previous_locations = {}
-        self.agents_is_in_previous_location_count = {}
-        self.agents_previous_locations["mr_x"] = None
-        self.agents_previous_locations["cop_1"] = None
-        self.agents_previous_locations["cop_2"] = None
-        self.agents_previous_locations["cop_3"] = None
-        self.agents_is_in_previous_location_count["mr_x"] = 0
-        self.agents_is_in_previous_location_count["cop_1"] = 0
-        self.agents_is_in_previous_location_count["cop_2"] = 0
-        self.agents_is_in_previous_location_count["cop_3"] = 0
+        self.agents_previous_locations = {"mr_x": None, "cop_1": None, "cop_2": None, "cop_3": None}
+        self.agents_is_in_previous_location_count = {"mr_x": 0, "cop_1": 0, "cop_2": 0, "cop_3": 0}
 
         if not training:
-            def env_creator(env_config):
-                return FakeEnv({})
+            self.cop_model_ppo: TorchCentralizedCriticModel = torch.load("trained_models/policy_model_cop_ppo/model.pt")
+            self.mrx_model_ppo: TorchCentralizedCriticModel = torch.load("trained_models/policy_model_mrx_ppo/model.pt")
 
-            register_env("scotland_env", env_creator)
+            self.policy_mrx_ppo = PPOTorchPolicy(observation_space=mrx_observation_space,
+                                                 action_space=spaces.Discrete(9), config={})
+            self.policy_cop_ppo = PPOTorchPolicy(observation_space=general_cop_observation_space,
+                                                 action_space=spaces.Discrete(9), config={})
 
-            ModelCatalog.register_custom_model(
-                "cc_model",
-                TorchCentralizedCriticModel
-            )
-
-            ppo_config = (PPOConfig()
-                          .training(model={"custom_model": "cc_model"}))
-
-            ppo_config["policies"] = {
-                "mr_x_policy": MR_X_POLICY_SPEC,
-                "cop_policy": COP_POLICY_SPEC,
-            }
-
-            def policy_mapping_fn(agent_id, episode, worker):
-                return "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
-
-            ppo_config["policy_mapping_fn"] = policy_mapping_fn
-            ppo_config.framework("torch")
-
-            ppo_model = PPO(env="scotland_env", config=ppo_config)
-            ppo_model.restore("trained_policies")
-            self.ppo_model = ppo_model
-
-            dqn_config = (DQNConfig()
-                          .training(model={"fcnet_hiddens": [32, 32, 16]},
-                                    lr=0.001,
-                                    gamma=0.99,
-                                    target_network_update_freq=10,
-                                    double_q=True,
-                                    dueling=True,
-                                    num_atoms=1,
-                                    noisy=True,
-                                    n_step=3, )
-                          .rollouts(observation_filter="MeanStdFilter"))
-            dqn_config.framework("torch")
-            dqn_config["policy_mapping_fn"] = policy_mapping_fn
-            dqn_config["policies"] = {
-                "mr_x_policy": MR_X_POLICY_SPEC,
-                "cop_policy": COP_POLICY_SPEC,
-            }
-
-            dqn_model = DQN(env="scotland_env", config=dqn_config)
-            dqn_model.restore("trained_policies_dqn")
-            self.dqn_model = dqn_model
+            self.cop_model_dqn = None
+            self.mrx_model_dqn = None
 
         print(f"Cop algorithm: {cop_algorithm}")
         print(f"Mr X algorithm: {mrx_algorithm}")
 
         # Create players
-        self.create_players()
         self.reset()
 
     def create_players(self):
@@ -251,6 +195,7 @@ class ScotlandYardGameLogic:
         self.round_number = 0
         self.start_positions_mr_x.clear()
         self.start_positions_cops.clear()
+        self.agents_is_in_previous_location_count = {"mr_x": 0, "cop_1": 0, "cop_2": 0, "cop_3": 0}
         self.players.clear()
         # Create players
         self.create_players()
@@ -266,11 +211,14 @@ class ScotlandYardGameLogic:
                 chosen_start_position = random.choice(_start_positions_cops_temp)
                 self.choose_start_position(player, chosen_start_position)
                 _start_positions_cops_temp.remove(chosen_start_position)
+        self.agents_previous_locations = dict(mr_x=self.get_mr_x().position,
+                                              cop_1=self.get_player_by_number(1).position,
+                                              cop_2=self.get_player_by_number(2).position,
+                                              cop_3=self.get_player_by_number(3).position)
 
         return self
 
     def quit(self):
-        ray.shutdown()
         return self
 
     # -- END: CORE FUNCTIONS -- #
@@ -296,12 +244,14 @@ class ScotlandYardGameLogic:
         return closest_position
 
     def get_observations(self):
-        cop_1 = self.get_cop_by_number(1)
-        cop_2 = self.get_cop_by_number(2)
-        cop_3 = self.get_cop_by_number(3)
+        cop_1 = self.get_player_by_number(1)
+        cop_2 = self.get_player_by_number(2)
+        cop_3 = self.get_player_by_number(3)
         mr_x = self.get_mr_x()
 
         # mr_x
+        if self.agents_is_in_previous_location_count["mr_x"] > MAX_NUMBER_OF_TURNS:
+            print(f"ERROR:{self.agents_is_in_previous_location_count}")
         obs_list_mrx = np.array([
             self.get_current_round_number(),
             self.get_round_turns(),
@@ -329,12 +279,14 @@ class ScotlandYardGameLogic:
         possible_mr_x_positions = self.get_possible_mr_x_positions()
 
         for cop_number in range(1, self.number_of_cops + 1):
-            cop = self.get_cop_by_number(cop_number)
+            cop = self.get_player_by_number(cop_number)
+            if self.agents_is_in_previous_location_count[cop.name] > MAX_NUMBER_OF_TURNS:
+                print(f"ERROR:{self.agents_is_in_previous_location_count}")
             obs_list_cop = np.array([
                 self.get_current_round_number(),
                 self.get_round_turns(),
                 self.get_next_reveal_round_number(),
-                self.agents_is_in_previous_location_count[f"cop_{cop_number}"],
+                self.agents_is_in_previous_location_count[cop.name],
                 cop.position[0],
                 cop.position[1],
                 mr_x.last_known_position[0] if mr_x.last_known_position is not None else -1,
@@ -389,15 +341,25 @@ class ScotlandYardGameLogic:
         direction = None
         action_is_valid = False
         player = self.get_player_by_name(player.name)
+        observations_tensor = torch.tensor(observations[player.name], dtype=torch.float32)
+        observations_tensor = torch.unsqueeze(observations_tensor, 0)
         while not action_is_valid:
             if count < 100:
                 if player.is_mr_x():
-                    generated_action = self.ppo_model.compute_single_action(observations[player.name],
-                                                                            policy_id="mr_x_policy")
+                    if self.mrx_algorithm == DefinedAlgorithms.DQN:
+                        pass
+                    else:
+                        model_out, _ = self.policy_mrx_ppo.model({"obs": observations_tensor})
+                        action_dist = self.policy_mrx_ppo.dist_class(model_out, self.policy_mrx_ppo.model)
+                        generated_action = action_dist.sample().item()
                 else:
-                    generated_action = self.dqn_model.compute_single_action(observations[player.name],
-                                                                            policy_id="cop_policy")
-                print(generated_action)
+                    if self.cop_algorithm == DefinedAlgorithms.DQN:
+                        pass
+                    else:
+                        model_out, _ = self.policy_cop_ppo.model({"obs": observations_tensor})
+                        action_dist = self.policy_cop_ppo.dist_class(model_out, self.policy_cop_ppo.model)
+                        generated_action = action_dist.sample().item()
+
             else:
                 generated_action = self.get_random_action()
                 print(f"Generated random action after 100 tries")
@@ -421,32 +383,39 @@ class ScotlandYardGameLogic:
             player.position = self.get_position_after_move(player, direction)
         else:
             print(f"{player.name} tried to move {direction} from {player.position}")
-            print(f"Would result in {self.get_position_after_move(player, direction)}")
+            print(f"This move would result in {self.get_position_after_move(player, direction)}")
             sys.stderr.write(f"Move {direction} is not valid\n")
             exit(1)
         return self
 
-    def get_current_player(self):
+    def get_current_player(self) -> Player:
         return self.players[self.playing_player_index]
 
-    def play_turn(self):
+    def play_turn(self, action: Direction | Name = None):
         if self.playing_player_index == 0:
             self.round_number += 1
 
         player = self.get_current_player()
-        action = None
-        if player.is_mr_x():
-            if self.mrx_algorithm != DefinedAlgorithms.RANDOM:
-                action = self.get_action_for_player(player)
-            else:
-                action = self.get_random_action()
-        elif player.is_cop():
-            if self.cop_algorithm == DefinedAlgorithms.RANDOM:
-                action = self.get_action_for_player(player)
-            else:
-                action = self.get_random_action()
+        if action is None:
+            if player.is_mr_x():
+                if self.mrx_algorithm != DefinedAlgorithms.RANDOM:
+                    action = self.get_action_for_player(player)
+                else:
+                    action = self.get_random_action()
+            elif player.is_cop():
+                if self.cop_algorithm == DefinedAlgorithms.RANDOM:
+                    action = self.get_action_for_player(player)
+                else:
+                    action = self.get_random_action()
 
         self.move_player(player, action)
+
+        if player.position == self.agents_previous_locations[player.name]:
+            self.agents_is_in_previous_location_count[player.name] += 1
+        else:
+            self.agents_is_in_previous_location_count[player.name] = 0
+        self.agents_previous_locations[player.name] = player.position
+
         if self.round_number in REVEAL_POSITION_ROUNDS and player.is_mr_x():
             self.get_mr_x().mr_x_reveal_position()
         self.playing_player_index = (self.playing_player_index + 1) % len(self.players)
@@ -490,10 +459,10 @@ class ScotlandYardGameLogic:
     def get_cops(self):
         return self.players[1:]
 
-    def get_cop_by_number(self, number: int) -> Player | None:
-        for cop in self.get_cops():
-            if cop.number == number:
-                return cop
+    def get_player_by_number(self, number: int) -> Player | None:
+        for player in self.players:
+            if player.number == number:
+                return player
         return None
 
     def get_current_round_number(self):
