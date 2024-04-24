@@ -1,5 +1,10 @@
 import csv
+import glob
+import os
 import random
+
+import pandas
+import ray
 
 from src.game import scotland_yard_game_logic
 
@@ -45,19 +50,84 @@ class SimulationController:
                                scotland_yard_game_logic.DefinedAlgorithms.RANDOM)
             self.current_game_id += 1
         print("Random vs Random done")
-        self.merge_csv_results(f"results{random.randint(0, 10000)}.csv")
+
+        files = glob.glob(os.path.join(self.save_dir, "simulation*"))
+        simulation_count = len(files)
+        self.merge_csv_results(simulation_count)
 
     def run_train_simulation(self, config):
+        ray.init(num_gpus=1)
+    
+    
+        def env_creator(env_config):
+            return ScotlandYardEnvironment({}, scotland_yard_game.DefinedAlgorithms.PPO)
+    
+    
+        register_env("scotland_env", env_creator)
+    
+        ModelCatalog.register_custom_model(
+            "cc_model",
+            TorchCentralizedCriticModel
+        )
+    
+        my_config = (PPOConfig()
+                     .training(model={"custom_model": "cc_model"}))
+    
+        my_config["policies"] = {
+            "mr_x_policy": scotland_yard_game.MR_X_POLICY_SPEC,
+            "cop_policy": scotland_yard_game.COP_POLICY_SPEC,
+        }
+    
+    
+        def policy_mapping_fn(agent_id, episode, worker):
+            return "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
+    
+    
+        my_config["policy_mapping_fn"] = policy_mapping_fn
+        repeat = 20
+        my_config["num_iterations"] = repeat
+        my_config["num_rollout_workers"] = 4
+        my_config["reuse_actors"] = True
+        my_config.resources(num_gpus=1, num_gpus_per_worker=0.2)
+        my_config.framework("torch")
+    
+        # Set the config object's env.
+        algo = PPO(env="scotland_env", config=my_config)
+    
+    
+        # check if trained policies exist
+        directory = "trained_policies"
+    
+        if os.path.exists(directory):
+            print("Loading policies")
+            algo.restore(directory)
+        for i in range(repeat):
+            print("Training iteration {} of {}".format(i + 1, repeat))
+            print(algo.train())
+            if i % 4 == 0:
+                print("Saving policies")
+                algo.save(directory)
+        algo.save(directory)
+        ray.shutdown()
         pass
 
-    def merge_csv_results(self, file_name):
+    def merge_csv_results(self, sim_number):
+        game_files = glob.glob(os.path.join(self.save_dir, 'game*.csv'))
+        merged_data = pandas.DataFrame()
+
+        for file in game_files:
+            data = pandas.read_csv(file)
+            merged_data = merged_data.append(data, ignore_index=True)
+
+        # Save the merged DataFrame to a new CSV file
+        merged_data.to_csv(f"simulation_{sim_number}", index=False)
         pass
 
     def simulate_game(self, cop_algo, mr_x_algo):
-        self.game.reset()
+        self.game.set_mrx_algo(mr_x_algo).set_cop_algo(cop_algo).reset()
         rounds_stats = {}
         while self.game.get_game_status() is scotland_yard_game_logic.GameStatus.ONGOING:
-            self.game.play_turn(cop_algo, mr_x_algo)
+            self.game.play_turn()
             if self.game.playing_player_index == len(self.game.players) - 1:
                 rounds_stats[self.game.get_current_round_number()] = self.get_round_statistics()
 
@@ -92,5 +162,3 @@ class SimulationController:
     def get_game_statistics(self):
         game_result = self.game.get_game_status().value
         return {"game_result": game_result}
-    
-    

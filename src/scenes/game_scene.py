@@ -44,7 +44,7 @@ class ScotlandYardScene(Scene):
 
     def render(self, display):
         self.game_visual.redraw()   
-        pygame.time.delay(100)
+        pygame.time.delay(150)
         
 
     def scene_cleanup(self):

@@ -4,8 +4,6 @@ import numpy as np
 from gymnasium import spaces
 from ray.rllib import MultiAgentEnv
 from ray.rllib.utils.typing import AgentID
-import random
-
 import src.game.scotland_yard_game_logic as scotland_yard_game
 
 
@@ -37,14 +35,13 @@ class ScotlandYardEnvironment(MultiAgentEnv):
             "cop_3": scotland_yard_game.general_cop_observation_space
         })
 
+        self.reward_buffer = {agent: None for agent in self._agent_ids}
+
     def step(self, action_dict: Dict[AgentID, int]) -> (
             Dict[Any, Any], Dict[Any, Any], Dict[Any, Any], Dict[Any, Any], Dict[Any, Any]):
         # check if actions of all agents are valid
-        if len(action_dict) == 0:
-            exit(1)
+        assert len(action_dict) > 0
         current_agent = self.game.get_current_player()
-        print(action_dict)
-        print(current_agent.name)
         action = action_dict[current_agent.name]
 
         direction = scotland_yard_game.Direction(action)
@@ -60,7 +57,7 @@ class ScotlandYardEnvironment(MultiAgentEnv):
             observations = {current_agent.name: self.get_observations()[current_agent.name]}
             infos = {current_agent.name: {}}
 
-            return observations, self.get_rewards([current_agent.name]), self.getTerminations(), {
+            return observations, self.get_rewards(current_agent.name), self.getTerminations(), {
                 "__all__": False, "mr_x": False, "cop_1": False, "cop_2": False, "cop_3": False, }, infos
 
         self.game.play_turn(direction)
@@ -68,17 +65,22 @@ class ScotlandYardEnvironment(MultiAgentEnv):
         # Get updated observations
         next_player = self.game.get_player_by_number((current_agent.number + 1) % self.num_agents)
         assert next_player is not None
-        observations = {next_player.name: self.get_observations()[next_player.name]}
-        infos = {next_player.name: {}}
+        infos = {}
 
         # Calculate rewards
-        rewards = self.get_rewards()
-
+        turn_reward = self.get_rewards()
+        self.reward_buffer[current_agent.name] = turn_reward[current_agent.name]
         # Check if the game is over
         terminates = self.getTerminations()
 
+        observations = {next_player.name: self.get_observations()[next_player.name]}
+
+        if self.game.get_game_status() is scotland_yard_game.GameStatus.ONGOING:
+            rewards = {name: None for name in self._agent_ids}
+            rewards[next_player.name] = self.reward_buffer[next_player.name]
+
         # Return observations, rewards, terminates,truncated, info
-        return observations, rewards, terminates, {"__all__": False, "mr_x": False, "cop_1": False, "cop_2": False,
+        return observations, turn_reward, terminates, {"__all__": False, "mr_x": False, "cop_1": False, "cop_2": False,
                                                    "cop_3": False, }, infos
 
     def reset(self, *, seed=None, options=None):
@@ -86,63 +88,53 @@ class ScotlandYardEnvironment(MultiAgentEnv):
         current_player = self.game.get_current_player()
         # Observations
         observations = {current_player.name: self.get_observations()[current_player.name]}
+        self.reward_buffer = {agent: None for agent in self._agent_ids}
 
-        return observations, {"mr_x": 0, "cop_1": 0, "cop_2": 0, "cop_3": 0}
+        return observations, {agent: None for agent in self._agent_ids}
 
-    def get_rewards(self, invalid_actions_players: List[str] = None):
-        if invalid_actions_players is None:
-            invalid_actions_players = []
-        distance_reward = 0
-        minimum_distance = 5
-        rewards = {}
+    def get_rewards(self, invalid_actions_player: str | None = None):
+
+        if invalid_actions_player is not None:
+            return {invalid_actions_player: -20}
+        minimum_distance = scotland_yard_game.MAX_DISTANCE // 2
+        rewards = {agent: 0.0 for agent in self._agent_ids}
+        win_rewards = {agent: 0.0 for agent in self._agent_ids}
+        inactivity_penalty = {agent: 0.0 for agent in self._agent_ids}
+        distance_rewards = {agent: 0.0 for agent in self._agent_ids}
+        inside_rewards = {agent: 0.0 for agent in self._agent_ids}
+
+        for agent in self._agent_ids:
+            if self.game.agents_is_in_previous_location_count[agent] > 5:
+                inactivity_penalty[agent] = self.game.agents_is_in_previous_location_count[agent] * (-0.5)
+            else:
+                inactivity_penalty[agent] = 0
 
         # __ MR X __ #
-        if "mr_x" in invalid_actions_players:
-            rewards["mr_x"] = -20
-        else:
-            if self.game.agents_is_in_previous_location_count["mr_x"] > 5:
-                inactivity_penalty = self.game.agents_is_in_previous_location_count["mr_x"] * (-1)
-            else:
-                inactivity_penalty = 0
-            # Distance to cops
-            for cop in self.game.get_cops():
-                distance = self.game.get_mr_x().get_distance_to(cop.position)
-                if distance == 0:
-                    distance_reward -= 100
-                else:
-                    distance_reward += round((distance - minimum_distance), 10)
-            rewards["mr_x"] = distance_reward + inactivity_penalty
+        # Distance to cops
+        for cop in self.game.get_cops():
+            distance = self.game.get_mr_x().get_distance_to(cop.position)
+            if distance > 0:
+                distance_rewards["mr_x"] = round(
+                    (((distance - minimum_distance) / scotland_yard_game.MAX_DISTANCE) * 20) / 3, 10)
 
         # __ COPS __ #
 
         possible_mr_x_positions = self.game.get_possible_mr_x_positions()
-
         if self.game.get_game_status() == scotland_yard_game.GameStatus.COPS_WON:
             for cop in self.game.get_cops():
                 distance_to_mr_x = cop.get_distance_to(self.game.get_mr_x().position)
                 if distance_to_mr_x == 0:
-                    rewards[cop.name] = 100
+                    win_rewards[cop.name] = 50
                 else:
-                    rewards[cop.name] = 50
-            return rewards
+                    rewards[cop.name] = 30
+        elif self.game.get_game_status() == scotland_yard_game.GameStatus.MR_X_WON:
+            win_rewards["mr_x"] = 50
+            win_rewards["cop_1"] = -50
+            win_rewards["cop_2"] = -50
+            win_rewards["cop_3"] = -50
 
         for cop in self.game.get_cops():
-            if f"cop_{cop.number}" in invalid_actions_players:
-                rewards[cop.name] = -20
-                continue
-
-            if self.game.agents_is_in_previous_location_count[cop.name] > 5:
-                inactivity_penalty = self.game.agents_is_in_previous_location_count[cop.name] * (-1)
-            else:
-                inactivity_penalty = 0
-            # Check winning condition
-            if cop.position == self.game.get_mr_x().position:
-                for cop in self.game.get_cops():
-                    rewards[cop.name] = 100
-                continue
-
             # Distance to last known position of mr x
-            distance_reward = 0
 
             closest_position = self.game.get_closest_position(
                 cop.position,
@@ -151,15 +143,20 @@ class ScotlandYardEnvironment(MultiAgentEnv):
             distance_to_closest_position = cop.get_distance_to(closest_position)
             if cop.position in possible_mr_x_positions:
                 # Being inside the area of interest is more beneficial
-                inside_reward = 10
+                inside_rewards[cop.name] = 20
             else:
                 # Closer to the area of interest, the more reward is gained
-                # Maximum reward is 5, so being inside location of interest is more beneficial
-                inside_reward = (
-                        ((minimum_distance - distance_to_closest_position) / scotland_yard_game.MAX_DISTANCE) * 5)
+                # Maximum reward is 10, so being inside location of interest is more beneficial
+                distance_rewards[cop.name] = (float(
+                    minimum_distance - distance_to_closest_position) / scotland_yard_game.MAX_DISTANCE) * 10
 
-            total_reward = distance_reward + inside_reward + inactivity_penalty
-            rewards[cop.name] = total_reward
+        for agent in self._agent_ids:
+            rewards[agent] = (
+                    distance_rewards[agent]
+                    + win_rewards[agent]
+                    + inactivity_penalty[agent]
+                    + inside_rewards[agent]
+            )
         return rewards
 
     def get_observations(self):
