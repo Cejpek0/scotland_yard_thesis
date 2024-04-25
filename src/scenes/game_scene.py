@@ -6,18 +6,20 @@ from src.GameController import GameController
 from src.GuiController import GuiController
 from src.game.scotland_yard_game_logic import ScotlandYardGameLogic, GameStatus, DefinedAlgorithms
 from src.game.scotland_yard_game_visual import ScotlandYardGameVisual, GRID_SIZE
+from src.helper import verbose_print
 from src.scenes.scene import Scene
 
 
 # Constants
 
 class ScotlandYardScene(Scene):
-    def __init__(self, game_controller: GameController, gui_controller: GuiController, cop_algorithm=DefinedAlgorithms.PPO,
+    def __init__(self, game_controller: GameController, gui_controller: GuiController,
+                 cop_algorithm=DefinedAlgorithms.PPO,
                  mrx_algorithm=DefinedAlgorithms.PPO):
         Scene.__init__(self, game_controller, gui_controller)
-
         self.time_of_end = None
-        self.game = ScotlandYardGameLogic(False, cop_algorithm, mrx_algorithm)
+        self.game = ScotlandYardGameLogic(False, verbose=self.game_controller.verbose, cop_algorithm=cop_algorithm,
+                                          mrx_algorithm=mrx_algorithm, )
         self.game_visual = ScotlandYardGameVisual(self.game, gui_controller)
         self.cell_size = gui_controller.width // GRID_SIZE
 
@@ -33,7 +35,7 @@ class ScotlandYardScene(Scene):
         elif self.game_controller.playing:
             self.game.play_turn()
             if self.game.get_game_status() != GameStatus.ONGOING:
-                print("Game overrrr")
+                verbose_print("Game over", self.game_controller.verbose)
                 self.game_controller.playing = False
                 self.time_of_end = time.time()
 
@@ -43,9 +45,8 @@ class ScotlandYardScene(Scene):
             self.time_of_end = None
 
     def render(self, display):
-        self.game_visual.redraw()   
+        self.game_visual.redraw()
         pygame.time.delay(150)
-        
 
     def scene_cleanup(self):
         self.game_controller.playing = False

@@ -41,12 +41,7 @@ class Title(Scene):
         self.list_mrx_btns = [self.btn_mr_x_ppo, self.btn_mr_x_dqn, self.btn_mr_x_random]
 
     def update(self, delta_time, actions):
-        from src.GameController import UserActions
-        if actions[UserActions.enter.name]:
-            from src.scenes.game_scene import ScotlandYardScene
-            new_state = ScotlandYardScene(self.game_controller, self.gui_controller)
-            new_state.enter_scene()
-            self.game_controller.scene_stack.append(new_state)
+        return
 
     def render(self, display):
         display.fill(MIDNIGHT_BLUE)
@@ -68,6 +63,7 @@ class Title(Scene):
                 from src.scenes.game_scene import ScotlandYardScene
                 new_state = ScotlandYardScene(self.game_controller, self.gui_controller, self.cop_selected_algo, self.mr_x_selected_algo)
                 new_state.enter_scene()
+                return
             elif self.btn_cop_ppo.is_hovered():
                 self.cop_selected_algo = DefinedAlgorithms.PPO
             elif self.btn_cop_dqn.is_hovered():

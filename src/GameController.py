@@ -29,8 +29,9 @@ class UserActions(Enum):
 
 
 class GameController():
-    def __init__(self):
+    def __init__(self, verbose = False):
         pygame.init()
+        self.verbose = verbose
         self.font = None
         self.gui_controller = GuiController()
         self.load_assets()

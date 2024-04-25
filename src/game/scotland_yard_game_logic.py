@@ -1,5 +1,4 @@
 import math
-import os
 import random
 import sys
 from enum import Enum
@@ -20,6 +19,7 @@ from src.MrX import MrX
 from src.Player import Player
 from src.colors import *
 from src.environments.rlib.FakeEnv import FakeEnv
+from src.helper import verbose_print
 
 # Constants
 
@@ -150,7 +150,9 @@ class DefinedAlgorithms(Enum):
 
 
 class ScotlandYardGameLogic:
-    def __init__(self, training=False, cop_algorithm=DefinedAlgorithms.PPO, mrx_algorithm=DefinedAlgorithms.PPO):
+    def __init__(self, training=False, verbose=False, cop_algorithm=DefinedAlgorithms.PPO,
+                 mrx_algorithm=DefinedAlgorithms.PPO):
+        self.verbose = verbose
         self.cop_algorithm = cop_algorithm
         self.mrx_algorithm = mrx_algorithm
 
@@ -187,17 +189,15 @@ class ScotlandYardGameLogic:
 
             my_config = (PPOConfig()
                          .training())
-        
+
             my_config["policies"] = {
                 "mr_x_policy": MR_X_POLICY_SPEC,
                 "cop_policy": COP_POLICY_SPEC,
             }
-        
-        
+
             def policy_mapping_fn(agent_id, episode, worker):
                 return "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
-        
-        
+
             my_config["policy_mapping_fn"] = policy_mapping_fn
             repeat = 800
             my_config["num_iterations"] = repeat
@@ -205,18 +205,18 @@ class ScotlandYardGameLogic:
             my_config["reuse_actors"] = True
             my_config.resources(num_gpus=1, num_gpus_per_worker=0.2)
             my_config.framework("torch")
-        
+
             # Set the config object's env.
             algo = PPO(env="scotland_env", config=my_config)
 
             # check if trained policies exist
             directory = "trained_policies"
             algo.restore(directory)
-            
+
             self.algo_ppo = algo
 
-        print(f"Cop algorithm: {cop_algorithm}")
-        print(f"Mr X algorithm: {mrx_algorithm}")
+        verbose_print(f"Cop algorithm: {cop_algorithm}", self.verbose)
+        verbose_print(f"Mr X algorithm: {mrx_algorithm}", self.verbose)
 
         # Create players
         self.reset()
@@ -292,7 +292,7 @@ class ScotlandYardGameLogic:
 
         # mr_x
         if self.agents_is_in_previous_location_count["mr_x"] > MAX_NUMBER_OF_TURNS:
-            print(f"ERROR:{self.agents_is_in_previous_location_count}")
+            verbose_print(f"ERROR:{self.agents_is_in_previous_location_count}", self.verbose)
         obs_list_mrx = np.array([
             self.get_current_round_number(),
             self.get_max_rounds(),
@@ -322,7 +322,7 @@ class ScotlandYardGameLogic:
         for cop_number in range(1, self.number_of_cops + 1):
             cop = self.get_player_by_number(cop_number)
             if self.agents_is_in_previous_location_count[cop.name] > MAX_NUMBER_OF_TURNS:
-                print(f"ERROR:{self.agents_is_in_previous_location_count}")
+                verbose_print(f"ERROR:{self.agents_is_in_previous_location_count}", self.verbose)
             obs_list_cop = np.array([
                 self.get_current_round_number(),
                 self.get_max_rounds(),
@@ -381,7 +381,6 @@ class ScotlandYardGameLogic:
         count = 0
         direction = None
         action_is_valid = False
-        player = self.get_player_by_name(player.name)
         observations_tensor = torch.tensor(observations[player.name], dtype=torch.float32)
         observations_tensor = torch.unsqueeze(observations_tensor, 0)
         while not action_is_valid:
@@ -393,7 +392,8 @@ class ScotlandYardGameLogic:
                         model_out, _ = self.policy_mrx_ppo.model({"obs": observations_tensor})
                         action_dist = self.policy_mrx_ppo.dist_class(model_out, self.policy_mrx_ppo.model)
                         generated_action = action_dist.sample().item()
-                        generated_action = self.algo_ppo.compute_single_action(observations[player.name], policy_id="mr_x_policy")
+                        generated_action = self.algo_ppo.compute_single_action(observations[player.name],
+                                                                               policy_id="mr_x_policy")
                 else:
                     if self.cop_algorithm == DefinedAlgorithms.DQN:
                         pass
@@ -401,11 +401,12 @@ class ScotlandYardGameLogic:
                         model_out, _ = self.policy_cop_ppo.model({"obs": observations_tensor})
                         action_dist = self.policy_cop_ppo.dist_class(model_out, self.policy_cop_ppo.model)
                         generated_action = action_dist.sample().item()
-                        generated_action = self.algo_ppo.compute_single_action(observations[player.name], policy_id="cop_policy")
+                        generated_action = self.algo_ppo.compute_single_action(observations[player.name],
+                                                                               policy_id="cop_policy")
 
             else:
                 generated_action = self.get_random_action()
-                print(f"Generated random action after 100 tries")
+                verbose_print(f"Generated random action after 100 tries", self.verbose)
             direction = Direction(generated_action)
             if self.is_valid_move(player, direction):
                 action_is_valid = True
@@ -421,12 +422,12 @@ class ScotlandYardGameLogic:
         return self
 
     def move_player(self, player: Player, direction: Direction):
-        # print(f"Player {player.position} moves {direction}")
+        # verbose_print(f"Player {player.position} moves {direction}", self.verbose)
         if self.is_valid_move(player, direction):
             player.position = self.get_position_after_move(player, direction)
         else:
-            print(f"{player.name} tried to move {direction} from {player.position}")
-            print(f"This move would result in {self.get_position_after_move(player, direction)}")
+            verbose_print(f"{player.name} tried to move {direction} from {player.position}", self.verbose)
+            verbose_print(f"This move would result in {self.get_position_after_move(player, direction)}", self.verbose)
             sys.stderr.write(f"Move {direction} is not valid\n")
             exit(1)
         return self
@@ -434,22 +435,32 @@ class ScotlandYardGameLogic:
     def get_current_player(self) -> Player:
         return self.players[self.playing_player_index]
 
-    def play_turn(self, action: Direction | Name = None):
+    def play_turn(self, action: Direction | Name = None, verbose=False):
         if self.playing_player_index == 0:
             self.round_number += 1
 
         player = self.get_current_player()
+        verbose_print(f"Player {player.name} is playing and player {'is' if player.is_mr_x() else 'is not'} mr x", self.verbose)
+        verbose_print(f"Generated action: {action}", self.verbose)
+        verbose_print(f"Mrx_algo is {self.mrx_algorithm.name} and cop_algo is {self.cop_algorithm.name}", self.verbose)
+
         if action is None:
             if player.is_mr_x():
-                if self.mrx_algorithm != DefinedAlgorithms.RANDOM:
-                    action = self.get_action_for_player(player)
-                else:
+                verbose_print("Player is really mr_x", self.verbose)
+                if self.mrx_algorithm is DefinedAlgorithms.RANDOM:
+                    verbose_print("His algo is random", self.verbose)
                     action = self.get_random_action()
+                else:
+                    verbose_print("His algo is not random", self.verbose)
+                    action = self.get_action_for_player(player)
             elif player.is_cop():
-                if self.cop_algorithm == DefinedAlgorithms.RANDOM:
-                    action = self.get_action_for_player(player)
-                else:
+                verbose_print("Player is really cop", self.verbose)
+                if self.cop_algorithm is DefinedAlgorithms.RANDOM:
+                    verbose_print("His algo is random", self.verbose)
                     action = self.get_random_action()
+                else:
+                    verbose_print("His algo is not random", self.verbose)
+                    action = self.get_action_for_player(player)
 
         self.move_player(player, action)
 
@@ -462,9 +473,9 @@ class ScotlandYardGameLogic:
         if self.round_number in REVEAL_POSITION_ROUNDS and player.is_mr_x():
             self.get_mr_x().mr_x_reveal_position()
         self.playing_player_index = (self.playing_player_index + 1) % len(self.players)
-        
-        #print(self.get_rewards_fake())
-        
+
+        #verbose_print(self.get_rewards_fake(), self.verbose)
+
         return self
 
     # -- END: GAMEPLAY FUNCTIONS -- #
@@ -591,8 +602,8 @@ class ScotlandYardGameLogic:
         return None
 
     def log_start_info(self):
-        print("Start positions cops: " + str(self.start_positions_cops))
-        print("Start positions mr x: " + str(self.start_positions_mr_x))
+        verbose_print("Start positions cops: " + str(self.start_positions_cops), self.verbose)
+        verbose_print("Start positions mr x: " + str(self.start_positions_mr_x), self.verbose)
         return self
 
     def get_distance_between_positions(self, position_1: (int, int), position_2: (int, int)) -> float:
@@ -624,7 +635,7 @@ class ScotlandYardGameLogic:
         self.cop_algorithm = cop_algo
         return self
 
-#TODO delete
+    #TODO delete
     def get_rewards_fake(self, invalid_actions_player: str | None = None):
         pass
         if invalid_actions_player is not None:
@@ -680,7 +691,8 @@ class ScotlandYardGameLogic:
             else:
                 # Closer to the area of interest, the more reward is gained
                 # Maximum reward is 10, so being inside location of interest is more beneficial
-                distance_rewards[cop.name] = (float(minimum_distance - distance_to_closest_position) / MAX_DISTANCE) * 10
+                distance_rewards[cop.name] = (float(
+                    minimum_distance - distance_to_closest_position) / MAX_DISTANCE) * 10
 
         for agent in self._agent_ids:
             rewards[agent] = (
@@ -690,6 +702,5 @@ class ScotlandYardGameLogic:
                     + inside_rewards[agent]
             )
         return rewards
-
 
     # -- END: HELPER FUNCTIONS -- #

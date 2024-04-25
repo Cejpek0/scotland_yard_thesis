@@ -10,6 +10,8 @@ from ray.rllib.examples.models.centralized_critic_models import (
     TorchCentralizedCriticModel
 )
 
+from src.helper import verbose_print
+
 if __name__ == "__main__":
     ray.init(num_gpus=1)
 
@@ -34,7 +36,7 @@ if __name__ == "__main__":
 
 
     my_config["policy_mapping_fn"] = policy_mapping_fn
-    repeat = 800
+    repeat = 20
     my_config["num_iterations"] = repeat
     my_config["num_rollout_workers"] = 4
     my_config["reuse_actors"] = True
@@ -48,13 +50,13 @@ if __name__ == "__main__":
     directory = "trained_policies"
 
     if os.path.exists(directory):
-        print("Loading policies")
+        verbose_print("Loading policies")
         algo.restore(directory)
     for i in range(repeat):
-        print("Training iteration {} of {}".format(i + 1, repeat))
-        print(algo.train())
+        verbose_print("Training iteration {} of {}".format(i + 1, repeat))
+        verbose_print(algo.train())
         if i % 10 == 0:
-            print("Saving policies")
+            verbose_print("Saving policies")
             algo.save(directory)
             algo.export_policy_model("trained_models/policy_model_mrx_ppo", "mr_x_policy")
             algo.export_policy_model("trained_models/policy_model_cop_ppo", "cop_policy")
@@ -65,4 +67,4 @@ if __name__ == "__main__":
 
     ray.shutdown()
 
-    print("Done")
+    verbose_print("Done")
