@@ -62,8 +62,8 @@ if __name__ == "__main__":
             algo.export_policy_model("trained_models/policy_model_cop_ppo", "cop_policy")
     algo.save(directory)
 
-    algo.export_policy_model("trained_models/policy_model_mrx_ppo", "mr_x_policy")
-    algo.export_policy_model("trained_models/policy_model_cop_ppo", "cop_policy")
+    algo.get_policy("mr_x_policy").export_model("trained_models/policy_model_mrx_ppo")
+    algo.get_policy("cop_policy").export_model("trained_models/policy_model_cop_ppo")
 
     ray.shutdown()
 

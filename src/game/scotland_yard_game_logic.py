@@ -1,4 +1,5 @@
 import math
+import os
 import random
 import sys
 from enum import Enum
@@ -9,7 +10,7 @@ from gymnasium import spaces
 
 import torch
 from jinja2.nodes import Name
-from ray.rllib.algorithms import PPOConfig, PPO
+from ray.rllib.algorithms import PPOConfig, PPO, DQNConfig, DQN
 from ray.rllib.algorithms.ppo import PPOTorchPolicy
 from ray.rllib.policy.policy import PolicySpec
 from ray.tune import register_env
@@ -171,13 +172,11 @@ class ScotlandYardGameLogic:
 
         if not training:
             ray.init()
-            self.cop_model_ppo = torch.load("trained_models/policy_model_cop_ppo/model.pt")
-            self.mrx_model_ppo = torch.load("trained_models/policy_model_mrx_ppo/model.pt")
+            self.cop_model_ppo = None
+            self.mrx_model_ppo = None
 
-            self.policy_mrx_ppo = PPOTorchPolicy(observation_space=mrx_observation_space,
-                                                 action_space=spaces.Discrete(9), config={})
-            self.policy_cop_ppo = PPOTorchPolicy(observation_space=general_cop_observation_space,
-                                                 action_space=spaces.Discrete(9), config={})
+            self.policy_mrx_ppo = None
+            self.policy_cop_ppo = None
 
             self.cop_model_dqn = None
             self.mrx_model_dqn = None
@@ -187,33 +186,82 @@ class ScotlandYardGameLogic:
 
             register_env("scotland_env", env_creator)
 
-            my_config = (PPOConfig()
-                         .training())
+            def policy_mapping_fn(agent_id, episode, worker):
+                return "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
 
-            my_config["policies"] = {
+            ppo_config = PPOConfig()
+
+            ppo_config["policies"] = {
                 "mr_x_policy": MR_X_POLICY_SPEC,
                 "cop_policy": COP_POLICY_SPEC,
             }
 
-            def policy_mapping_fn(agent_id, episode, worker):
-                return "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
-
-            my_config["policy_mapping_fn"] = policy_mapping_fn
-            repeat = 800
-            my_config["num_iterations"] = repeat
-            my_config["num_rollout_workers"] = 4
-            my_config["reuse_actors"] = True
-            my_config.resources(num_gpus=1, num_gpus_per_worker=0.2)
-            my_config.framework("torch")
+            ppo_config["policy_mapping_fn"] = policy_mapping_fn
+            ppo_config.framework("torch")
 
             # Set the config object's env.
-            algo = PPO(env="scotland_env", config=my_config)
-
+            algo_ppo = PPO(env="scotland_env", config=ppo_config)
             # check if trained policies exist
             directory = "trained_policies"
-            algo.restore(directory)
+            assert os.path.exists(directory), f"Directory {directory} does not exist"
+            algo_ppo.restore(directory)
 
-            self.algo_ppo = algo
+            self.algo_ppo = algo_ppo
+
+            dqn_config = (DQNConfig()
+                          .training(
+                lr=0.001,
+                gamma=0.99,
+                target_network_update_freq=10,
+                double_q=True,
+                dueling=True,
+                num_atoms=1,
+                noisy=True,
+                n_step=3, )
+                          .rollouts(observation_filter="MeanStdFilter"))
+
+
+            replay_config = {
+                "_enable_replay_buffer_api": True,
+                "type": "MultiAgentPrioritizedReplayBuffer",
+                "capacity": 50000,
+                "prioritized_replay_alpha": 0.5,
+                "prioritized_replay_beta": 0.5,
+                "prioritized_replay_eps": 3e-6,
+            }
+
+            exploration_config = {
+                "type": "EpsilonGreedy",
+                "initial_epsilon": 1.0,
+                "final_epsilon": 0.05,
+            }
+
+            dqn_config["replay_config"] = replay_config
+            dqn_config["exploration_config"] = exploration_config
+
+            dqn_config.evaluation_config = {
+                "evaluation_interval": 10,
+                "evaluation_num_episodes": 10,
+            }
+
+            dqn_config["policies"] = {
+                "mr_x_policy": MR_X_POLICY_SPEC,
+                "cop_policy": COP_POLICY_SPEC,
+            }
+
+            dqn_config["policy_mapping_fn"] = policy_mapping_fn
+            dqn_config.framework("torch")
+            dqn_config["reuse_actors"] = True
+
+            # Set the config object's env.
+            algo_dqn = DQN(env="scotland_env", config=dqn_config)
+
+            # check if trained policies exist
+            directory = "trained_policies_dqn"
+
+            assert os.path.exists(directory), f"Directory {directory} does not exist"
+            algo_dqn.restore(directory)
+            self.algo_dqn = algo_dqn
 
         verbose_print(f"Cop algorithm: {cop_algorithm}", self.verbose)
         verbose_print(f"Mr X algorithm: {mrx_algorithm}", self.verbose)
@@ -387,7 +435,8 @@ class ScotlandYardGameLogic:
             if count < 100:
                 if player.is_mr_x():
                     if self.mrx_algorithm == DefinedAlgorithms.DQN:
-                        pass
+                        generated_action = self.algo_dqn.compute_single_action(observations[player.name],
+                                                                               policy_id="mr_x_policy")
                     else:
                         model_out, _ = self.policy_mrx_ppo.model({"obs": observations_tensor})
                         action_dist = self.policy_mrx_ppo.dist_class(model_out, self.policy_mrx_ppo.model)
@@ -396,7 +445,8 @@ class ScotlandYardGameLogic:
                                                                                policy_id="mr_x_policy")
                 else:
                     if self.cop_algorithm == DefinedAlgorithms.DQN:
-                        pass
+                        generated_action = self.algo_dqn.compute_single_action(observations[player.name],
+                                                                               policy_id="cop_policy")
                     else:
                         model_out, _ = self.policy_cop_ppo.model({"obs": observations_tensor})
                         action_dist = self.policy_cop_ppo.dist_class(model_out, self.policy_cop_ppo.model)
@@ -440,7 +490,8 @@ class ScotlandYardGameLogic:
             self.round_number += 1
 
         player = self.get_current_player()
-        verbose_print(f"Player {player.name} is playing and player {'is' if player.is_mr_x() else 'is not'} mr x", self.verbose)
+        verbose_print(f"Player {player.name} is playing and player {'is' if player.is_mr_x() else 'is not'} mr x",
+                      self.verbose)
         verbose_print(f"Generated action: {action}", self.verbose)
         verbose_print(f"Mrx_algo is {self.mrx_algorithm.name} and cop_algo is {self.cop_algorithm.name}", self.verbose)
 
@@ -571,12 +622,18 @@ class ScotlandYardGameLogic:
             return False
 
         # Cop can only move to empty position or mr x position
-        if player.number != 0:
+        if not player.is_mr_x():
             for cop in self.get_cops():
                 if cop == player:
                     continue
                 if cop.position == position:
                     return False
+        #Mr X can only move to empty position
+        else:
+            for cop in self.get_cops():
+                if cop.position == position:
+                    return False
+
         return True
 
     def get_players_valid_moves(self, player: Player) -> [()]:

@@ -56,60 +56,97 @@ class SimulationController:
         self.merge_csv_results(simulation_count)
 
     def run_train_simulation(self, config):
-        ray.init(num_gpus=1)
-    
-    
+        ray.init()
+        self.cop_model_ppo = None
+        self.mrx_model_ppo = None
+
+        self.policy_mrx_ppo = None
+        self.policy_cop_ppo = None
+
+        self.cop_model_dqn = None
+        self.mrx_model_dqn = None
+
         def env_creator(env_config):
-            return ScotlandYardEnvironment({}, scotland_yard_game.DefinedAlgorithms.PPO)
-    
-    
+            return FakeEnv({})
+
         register_env("scotland_env", env_creator)
-    
-        ModelCatalog.register_custom_model(
-            "cc_model",
-            TorchCentralizedCriticModel
-        )
-    
-        my_config = (PPOConfig()
-                     .training(model={"custom_model": "cc_model"}))
-    
-        my_config["policies"] = {
-            "mr_x_policy": scotland_yard_game.MR_X_POLICY_SPEC,
-            "cop_policy": scotland_yard_game.COP_POLICY_SPEC,
-        }
-    
-    
+
         def policy_mapping_fn(agent_id, episode, worker):
             return "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
-    
-    
-        my_config["policy_mapping_fn"] = policy_mapping_fn
-        repeat = 20
-        my_config["num_iterations"] = repeat
-        my_config["num_rollout_workers"] = 4
-        my_config["reuse_actors"] = True
-        my_config.resources(num_gpus=1, num_gpus_per_worker=0.2)
-        my_config.framework("torch")
-    
+
+        ppo_config = PPOConfig()
+
+        ppo_config["policies"] = {
+            "mr_x_policy": MR_X_POLICY_SPEC,
+            "cop_policy": COP_POLICY_SPEC,
+        }
+
+        ppo_config["policy_mapping_fn"] = policy_mapping_fn
+        ppo_config.framework("torch")
+
         # Set the config object's env.
-        algo = PPO(env="scotland_env", config=my_config)
-    
-    
+        algo_ppo = PPO(env="scotland_env", config=ppo_config)
         # check if trained policies exist
         directory = "trained_policies"
-    
-        if os.path.exists(directory):
-            print("Loading policies")
-            algo.restore(directory)
-        for i in range(repeat):
-            print("Training iteration {} of {}".format(i + 1, repeat))
-            print(algo.train())
-            if i % 4 == 0:
-                print("Saving policies")
-                algo.save(directory)
-        algo.save(directory)
-        ray.shutdown()
-        pass
+        assert os.path.exists(directory), f"Directory {directory} does not exist"
+        algo_ppo.restore(directory)
+
+        self.algo_ppo = algo_ppo
+
+        dqn_config = (DQNConfig()
+                      .training(
+            lr=0.001,
+            gamma=0.99,
+            target_network_update_freq=10,
+            double_q=True,
+            dueling=True,
+            num_atoms=1,
+            noisy=True,
+            n_step=3, )
+                      .rollouts(observation_filter="MeanStdFilter"))
+
+
+        replay_config = {
+            "_enable_replay_buffer_api": True,
+            "type": "MultiAgentPrioritizedReplayBuffer",
+            "capacity": 50000,
+            "prioritized_replay_alpha": 0.5,
+            "prioritized_replay_beta": 0.5,
+            "prioritized_replay_eps": 3e-6,
+        }
+
+        exploration_config = {
+            "type": "EpsilonGreedy",
+            "initial_epsilon": 1.0,
+            "final_epsilon": 0.05,
+        }
+
+        dqn_config["replay_config"] = replay_config
+        dqn_config["exploration_config"] = exploration_config
+
+        dqn_config.evaluation_config = {
+            "evaluation_interval": 10,
+            "evaluation_num_episodes": 10,
+        }
+
+        dqn_config["policies"] = {
+            "mr_x_policy": MR_X_POLICY_SPEC,
+            "cop_policy": COP_POLICY_SPEC,
+        }
+
+        dqn_config["policy_mapping_fn"] = policy_mapping_fn
+        dqn_config.framework("torch")
+        dqn_config["reuse_actors"] = True
+
+        # Set the config object's env.
+        algo_dqn = DQN(env="scotland_env", config=dqn_config)
+
+        # check if trained policies exist
+        directory = "trained_policies_dqn"
+
+        assert os.path.exists(directory), f"Directory {directory} does not exist"
+        algo_dqn.restore(directory)
+        self.algo_dqn = algo_dqn
 
     def merge_csv_results(self, sim_number):
         game_files = glob.glob(os.path.join(self.save_dir, 'game*.csv'))

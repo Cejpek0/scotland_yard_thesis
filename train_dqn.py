@@ -12,7 +12,7 @@ from ray.rllib.examples.models.centralized_critic_models import (
 )
 
 if __name__ == "__main__":
-    ray.init(num_gpus=0)
+    ray.init()
 
 
     def env_creator(env_config):
@@ -38,7 +38,7 @@ if __name__ == "__main__":
                            n_step=3, )
                  .rollouts(observation_filter="MeanStdFilter"))
 
-    repeat = 1
+    repeat = 50
 
     replay_config = {
         "_enable_replay_buffer_api": True,
@@ -83,10 +83,8 @@ if __name__ == "__main__":
 
     my_config["num_rollout_workers"] = 4
     my_config["reuse_actors"] = True
-    my_config.resources(num_gpus=0, num_gpus_per_worker=0)
     my_config["rollout_fragment_length"] = 100
-    my_config.framework("tf")
-    my_config.export_native_model_files = True
+    my_config.framework("torch")
 
     # Set the config object's env.
     algo = DQN(env="scotland_env", config=my_config)
@@ -104,13 +102,10 @@ if __name__ == "__main__":
         print(f"Rollout fragment length: {current_length}")
         algo.config = my_config
         algo.train()
-        if i % 4 == 0:
+        if i % 10 == 0:
             print("Saving policies")
             algo.save(directory)
     algo.save(directory)
-
-    algo.export_policy_model("trained_models/policy_model_mrx_dqn", "mr_x_policy")
-    algo.export_policy_model("trained_models/policy_model_cop_dqn", "cop_policy")
 
     ray.shutdown()
 
