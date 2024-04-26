@@ -10,16 +10,17 @@ from src.helper import verbose_print
 
 
 class TrainerPPO:
-    def __init__(self, directory="trained_policies", verbose=False):
+    def __init__(self, directory="trained_policies_ppo", verbose=False, simulation=False):
         self.directory = directory
         self.verbose = verbose
-        ray.init(num_gpus=1)
+        if not simulation:
+            ray.init(num_gpus=1)
 
         def policy_mapping_fn(agent_id, episode, worker):
             return "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
 
         def env_creator(env_config):
-            return ScotlandYardEnvironment({}, scotland_yard_game.DefinedAlgorithms.PPO)
+            return ScotlandYardEnvironment({}, scotland_yard_game.DefinedAlgorithms.PPO, simulation=simulation)
 
         register_env("scotland_env", env_creator)
 
@@ -36,7 +37,10 @@ class TrainerPPO:
         my_config["num_iterations"] = repeat
         my_config["num_rollout_workers"] = 4
         my_config["reuse_actors"] = True
-        my_config.resources(num_gpus=1, num_gpus_per_worker=0.2)
+        if simulation:
+            my_config.resources(num_gpus=1, num_gpus_per_worker=0.2, num_cpus_per_worker=0.6)
+        else:
+            my_config.resources(num_gpus=1, num_gpus_per_worker=0.2)
         my_config.framework("torch")
 
         # Set the config object's env.
@@ -45,26 +49,32 @@ class TrainerPPO:
         # check if trained policies exist
         if os.path.exists(directory):
             verbose_print("Loading policies", self.verbose)
-        algo.restore(directory)
-
+            algo.restore(directory)
         self.algo = algo
+        self.config = my_config
 
-    def train(self, number_of_iterations=1):
+    def train(self, number_of_iterations=1, save_interval=10):
         for i in range(number_of_iterations):
             verbose_print(f"Training iteration {i + 1} of {number_of_iterations}", self.verbose)
-            verbose_print(self.algo.train(), self.verbose)
-            self.algo.save(self.directory)
-            self.algo.get_policy("mr_x_policy").export_model(f"{self.directory}/trained_models/policy_model_mrx_ppo")
-            self.algo.get_policy("cop_policy").export_model(f"{self.directory}/trained_models/policy_model_cop_ppo")
+            verbose_print(f"Episode reward mean:{self.algo.train()['episode_reward_mean']}", self.verbose)
+            if i % save_interval == 0 and i != 0:
+                verbose_print("Saving policies", self.verbose)
+                self.save_export()
         verbose_print("Done", self.verbose)
+        self.save_export()
+        return self
+
+    def save_export(self):
+        self.algo.save(self.directory)
+        self.algo.get_policy("mr_x_policy").export_model(f"{self.directory}/trained_models/policy_model_mrx_ppo")
+        self.algo.get_policy("cop_policy").export_model(f"{self.directory}/trained_models/policy_model_cop_ppo")
         return self
 
     def cleanup(self):
         ray.shutdown()
         return self
 
-
 if __name__ == "__main__":
-    ray.init(num_gpus=1)
-
-    verbose_print("Done")
+    (TrainerPPO(directory="trained_policies_ppo", verbose=True)
+     .train(number_of_iterations=20, save_interval=1)
+     .cleanup())

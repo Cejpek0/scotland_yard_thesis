@@ -10,13 +10,13 @@ import src.game.scotland_yard_game_logic as scotland_yard_game
 class ScotlandYardEnvironment(MultiAgentEnv):
     _agent_ids = ["mr_x", "cop_1", "cop_2", "cop_3"]
 
-    def __init__(self, config, selected_algo):
+    def __init__(self, config, selected_algo, simulation=False):
         self.next_agent_index = 0
         self.next_agent = "cop_1"
         super().__init__()
         self.config = config
         self.game = scotland_yard_game.ScotlandYardGameLogic(True, cop_algorithm=selected_algo,
-                                                             mrx_algorithm=selected_algo)
+                                                             mrx_algorithm=selected_algo, simulation=simulation)
         self.observations = None
         self._agent_ids = ["mr_x", "cop_1", "cop_2", "cop_3"]
         self.agents = self._agent_ids

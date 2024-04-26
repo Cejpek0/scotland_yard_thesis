@@ -7,11 +7,8 @@ from enum import Enum
 import numpy as np
 import ray
 from gymnasium import spaces
-
-import torch
 from jinja2.nodes import Name
 from ray.rllib.algorithms import PPOConfig, PPO, DQNConfig, DQN
-from ray.rllib.algorithms.ppo import PPOTorchPolicy
 from ray.rllib.policy.policy import PolicySpec
 from ray.tune import register_env
 
@@ -152,7 +149,7 @@ class DefinedAlgorithms(Enum):
 
 class ScotlandYardGameLogic:
     def __init__(self, training=False, verbose=False, cop_algorithm=DefinedAlgorithms.PPO,
-                 mrx_algorithm=DefinedAlgorithms.PPO):
+                 mrx_algorithm=DefinedAlgorithms.PPO, simulation=False):
         self.verbose = verbose
         self.cop_algorithm = cop_algorithm
         self.mrx_algorithm = mrx_algorithm
@@ -171,15 +168,8 @@ class ScotlandYardGameLogic:
         self.agents_is_in_previous_location_count = {"mr_x": 0, "cop_1": 0, "cop_2": 0, "cop_3": 0}
 
         if not training:
-            ray.init()
-            self.cop_model_ppo = None
-            self.mrx_model_ppo = None
-
-            self.policy_mrx_ppo = None
-            self.policy_cop_ppo = None
-
-            self.cop_model_dqn = None
-            self.mrx_model_dqn = None
+            if not simulation:
+                ray.init()
 
             def env_creator(env_config):
                 return FakeEnv({})
@@ -198,11 +188,12 @@ class ScotlandYardGameLogic:
 
             ppo_config["policy_mapping_fn"] = policy_mapping_fn
             ppo_config.framework("torch")
+            ppo_config.resources(num_cpus_per_worker=0.2)
 
             # Set the config object's env.
             algo_ppo = PPO(env="scotland_env", config=ppo_config)
             # check if trained policies exist
-            directory = "trained_policies"
+            directory = "trained_policies_ppo"
             assert os.path.exists(directory), f"Directory {directory} does not exist"
             algo_ppo.restore(directory)
 
@@ -252,6 +243,7 @@ class ScotlandYardGameLogic:
             dqn_config["policy_mapping_fn"] = policy_mapping_fn
             dqn_config.framework("torch")
             dqn_config["reuse_actors"] = True
+            dqn_config.resources(num_cpus_per_worker=0.2)
 
             # Set the config object's env.
             algo_dqn = DQN(env="scotland_env", config=dqn_config)
@@ -331,6 +323,9 @@ class ScotlandYardGameLogic:
                 min_distance = distance
                 closest_position = pos
         return closest_position
+
+    def get_players_names(self):
+        return [player.name for player in self.players]
 
     def get_observations(self):
         cop_1 = self.get_player_by_number(1)
@@ -429,8 +424,6 @@ class ScotlandYardGameLogic:
         count = 0
         direction = None
         action_is_valid = False
-        observations_tensor = torch.tensor(observations[player.name], dtype=torch.float32)
-        observations_tensor = torch.unsqueeze(observations_tensor, 0)
         while not action_is_valid:
             if count < 100:
                 if player.is_mr_x():
@@ -438,9 +431,6 @@ class ScotlandYardGameLogic:
                         generated_action = self.algo_dqn.compute_single_action(observations[player.name],
                                                                                policy_id="mr_x_policy")
                     else:
-                        model_out, _ = self.policy_mrx_ppo.model({"obs": observations_tensor})
-                        action_dist = self.policy_mrx_ppo.dist_class(model_out, self.policy_mrx_ppo.model)
-                        generated_action = action_dist.sample().item()
                         generated_action = self.algo_ppo.compute_single_action(observations[player.name],
                                                                                policy_id="mr_x_policy")
                 else:
@@ -448,9 +438,6 @@ class ScotlandYardGameLogic:
                         generated_action = self.algo_dqn.compute_single_action(observations[player.name],
                                                                                policy_id="cop_policy")
                     else:
-                        model_out, _ = self.policy_cop_ppo.model({"obs": observations_tensor})
-                        action_dist = self.policy_cop_ppo.dist_class(model_out, self.policy_cop_ppo.model)
-                        generated_action = action_dist.sample().item()
                         generated_action = self.algo_ppo.compute_single_action(observations[player.name],
                                                                                policy_id="cop_policy")
 
@@ -692,67 +679,74 @@ class ScotlandYardGameLogic:
         self.cop_algorithm = cop_algo
         return self
 
-    #TODO delete
-    def get_rewards_fake(self, invalid_actions_player: str | None = None):
-        pass
-        if invalid_actions_player is not None:
-            return {invalid_actions_player: -20}
+    def get_simulation_rewards(self) -> {str: float | None}:
+        """
+        Calculate rewards for all agents
+        win_rewards: Rewards for winning the game: 50 for direct win. 30 for indirect win. -50 for losing
+        distance_rewards: Rewards for being close to the target: capped at 10
+        inactivity_penalty: Penalty for being inactive: starts after 5 turns: -0.5 per turn including the 5 turns
+        inside_rewards: Rewards for being inside the area of interest: 20
+        invalid_actions_player: Penalize the agent that made an invalid action: -20
+        :return: Dictionary of rewards for all agents: {agent_id: reward}
+        """
         minimum_distance = MAX_DISTANCE // 2
-        rewards = {agent: 0.0 for agent in self._agent_ids}
-        win_rewards = {agent: 0.0 for agent in self._agent_ids}
-        inactivity_penalty = {agent: 0.0 for agent in self._agent_ids}
-        distance_rewards = {agent: 0.0 for agent in self._agent_ids}
-        inside_rewards = {agent: 0.0 for agent in self._agent_ids}
+        rewards = {agent: 0.0 for agent in self.get_players_names()}
+        win_rewards = {agent: 0.0 for agent in self.get_players_names()}
+        inactivity_penalty = {agent: 0.0 for agent in self.get_players_names()}
+        distance_rewards = {agent: 0.0 for agent in self.get_players_names()}
+        inside_rewards = {agent: 0.0 for agent in self.get_players_names()}
 
-        for agent in self._agent_ids:
-            if self.agents_is_in_previous_location_count[agent] > 5:
-                inactivity_penalty[agent] = self.agents_is_in_previous_location_count[agent] * (-0.5)
-            else:
-                inactivity_penalty[agent] = 0
-
-        # __ MR X __ #
-        # Distance to cops
-        for cop in self.get_cops():
-            distance = self.get_mr_x().get_distance_to(cop.position)
-            if distance > 0:
-                distance_rewards["mr_x"] = round(
-                    (((distance - minimum_distance) / MAX_DISTANCE) * 20) / 3, 10)
-
-        # __ COPS __ #
-
-        possible_mr_x_positions = self.get_possible_mr_x_positions()
+        # Win rewards #
         if self.get_game_status() == GameStatus.COPS_WON:
             for cop in self.get_cops():
                 distance_to_mr_x = cop.get_distance_to(self.get_mr_x().position)
                 if distance_to_mr_x == 0:
                     win_rewards[cop.name] = 50
                 else:
-                    rewards[cop.name] = 30
+                    win_rewards[cop.name] = 30
         elif self.get_game_status() == GameStatus.MR_X_WON:
             win_rewards["mr_x"] = 50
             win_rewards["cop_1"] = -50
             win_rewards["cop_2"] = -50
             win_rewards["cop_3"] = -50
 
-        for cop in self.get_cops():
-            # Distance to last known position of mr x
+        # Inactivity penalty #
+        for agent in self.get_players_names():
+            if self.agents_is_in_previous_location_count[agent] > 5:
+                inactivity_penalty[agent] = self.agents_is_in_previous_location_count[agent] * (-0.5)
+            else:
+                inactivity_penalty[agent] = 0
 
-            closest_position = self.get_closest_position(
-                cop.position,
-                possible_mr_x_positions
-            )
-            distance_to_closest_position = cop.get_distance_to(closest_position)
+        # __ MR X __ #
+        # Distance to cops capped at 20 and - 20
+        for cop in self.get_cops():
+            distance = self.get_mr_x().get_distance_to(cop.position)
+            if distance > 0:
+                distance_rewards["mr_x"] = round(
+                    (((distance - minimum_distance) / MAX_DISTANCE) * 10) / 3, 10)
+
+        # __ COPS __ #
+        possible_mr_x_positions = self.get_possible_mr_x_positions()
+
+        for cop in self.get_cops():
+            # If the cop is inside the area of interest
             if cop.position in possible_mr_x_positions:
-                # Being inside the area of interest is more beneficial
+                # Being inside the area of interest
                 inside_rewards[cop.name] = 20
             else:
                 # Closer to the area of interest, the more reward is gained
                 # Maximum reward is 10, so being inside location of interest is more beneficial
+                closest_position = self.get_closest_position(
+                    cop.position,
+                    possible_mr_x_positions
+                )
+                distance_to_closest_position = cop.get_distance_to(closest_position)
+
                 distance_rewards[cop.name] = (float(
                     minimum_distance - distance_to_closest_position) / MAX_DISTANCE) * 10
 
-        for agent in self._agent_ids:
-            rewards[agent] = (
+        for agent in self.get_players_names():
+            rewards[agent] += (
                     distance_rewards[agent]
                     + win_rewards[agent]
                     + inactivity_penalty[agent]
