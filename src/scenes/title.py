@@ -61,7 +61,9 @@ class Title(Scene):
         if self.game_controller.user_actions[UserActions.mouse_left_up.name]:
             if self.btn_start.is_hovered():
                 from src.scenes.game_scene import ScotlandYardScene
-                new_state = ScotlandYardScene(self.game_controller, self.gui_controller, self.cop_selected_algo, self.mr_x_selected_algo)
+
+                new_state = ScotlandYardScene(self.game_controller, self.gui_controller,
+                                              self.cop_selected_algo, self.mr_x_selected_algo)
                 new_state.enter_scene()
                 return
             elif self.btn_cop_ppo.is_hovered():

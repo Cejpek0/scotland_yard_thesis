@@ -15,8 +15,7 @@ class ScotlandYardEnvironment(MultiAgentEnv):
         self.next_agent = "cop_1"
         super().__init__()
         self.config = config
-        self.game = scotland_yard_game.ScotlandYardGameLogic(True, cop_algorithm=selected_algo,
-                                                             mrx_algorithm=selected_algo, simulation=simulation)
+        self.game = scotland_yard_game.ScotlandYardGameLogic()
         self.observations = None
         self._agent_ids = ["mr_x", "cop_1", "cop_2", "cop_3"]
         self.agents = self._agent_ids
@@ -43,7 +42,6 @@ class ScotlandYardEnvironment(MultiAgentEnv):
         current_agent = self.game.get_current_player()
         action = action_dict[current_agent.name]
         rewards = {agent: 0 for agent in self._agent_ids}
-
         direction = scotland_yard_game.Direction(action)
 
         invalid_move = False
@@ -91,10 +89,10 @@ class ScotlandYardEnvironment(MultiAgentEnv):
     def get_rewards(self, invalid_actions_player: str | None = None) -> {str: float | None}:
         """
         Calculate rewards for all agents
-        win_rewards: Rewards for winning the game: 50 for direct win. 30 for indirect win. -50 for losing
+        win_rewards: Rewards for winning the game: 50 for direct win. 30 for indirect win. -20 for losing
         distance_rewards: Rewards for being close to the target: capped at 10
         inactivity_penalty: Penalty for being inactive: starts after 5 turns: -0.5 per turn including the 5 turns
-        inside_rewards: Rewards for being inside the area of interest: 20
+        inside_rewards: Rewards for being inside the area of interest: 12
         invalid_actions_player: Penalize the agent that made an invalid action: -20
         :param invalid_actions_player: Player that made an invalid action
         :return: Dictionary of rewards for all agents: {agent_id: reward}
@@ -116,11 +114,12 @@ class ScotlandYardEnvironment(MultiAgentEnv):
                     win_rewards[cop.name] = 50
                 else:
                     win_rewards[cop.name] = 30
+            win_rewards["mr_x"] = -50
         elif self.game.get_game_status() == scotland_yard_game.GameStatus.MR_X_WON:
             win_rewards["mr_x"] = 50
-            win_rewards["cop_1"] = -50
-            win_rewards["cop_2"] = -50
-            win_rewards["cop_3"] = -50
+            win_rewards["cop_1"] = -20
+            win_rewards["cop_2"] = -20
+            win_rewards["cop_3"] = -20
 
         # Inactivity penalty #
         for agent in self._agent_ids:
@@ -144,7 +143,7 @@ class ScotlandYardEnvironment(MultiAgentEnv):
             # If the cop is inside the area of interest
             if cop.position in possible_mr_x_positions:
                 # Being inside the area of interest
-                inside_rewards[cop.name] = 20
+                inside_rewards[cop.name] = 12
             else:
                 # Closer to the area of interest, the more reward is gained
                 # Maximum reward is 10, so being inside location of interest is more beneficial

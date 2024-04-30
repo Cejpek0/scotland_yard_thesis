@@ -26,7 +26,7 @@ class SimulationController:
         for directory in self.experiment_directories:
             if not os.path.exists(self.save_dir + "/train_experiment/" + directory):
                 os.makedirs(self.save_dir + "/train_experiment/" + directory)
-        self.game = scotland_yard_game_logic.ScotlandYardGameLogic(training=False, simulation=True)
+        self.game = scotland_yard_game_logic.ScotlandYardGameLogic()
         self.current_game_id = 0
         self.train_experiment_training_count = experiment_training_iteration_count
         self.test_games_every_n_simulation = test_games_every_n_trainings
@@ -49,43 +49,48 @@ class SimulationController:
 
         # PPO_cop vs PPO_x 
         for i in range(games_ppo_vs_ppo):
-            self.simulate_game(DefinedAlgorithms.PPO,
-                               DefinedAlgorithms.PPO)
+            self.simulate_game(self.ppo_trainer.algo, DefinedAlgorithms.PPO,
+                               self.ppo_trainer.algo, DefinedAlgorithms.PPO)
             self.current_game_id += 1
         print("PPO vs PPO done")
 
         # Random_cop vs PPO_x
         for i in range(games_random_vs_ppo):
-            self.simulate_game(DefinedAlgorithms.RANDOM,
-                               DefinedAlgorithms.PPO)
+            self.simulate_game(None, DefinedAlgorithms.RANDOM,
+                               self.ppo_trainer.algo, DefinedAlgorithms.PPO)
             self.current_game_id += 1
         print("Random vs PPO done")
 
         # PPO_cop vs Random_x
         for i in range(games_ppo_vs_random):
-            self.simulate_game(DefinedAlgorithms.PPO,
-                               DefinedAlgorithms.RANDOM)
+            self.simulate_game(self.ppo_trainer.algo, DefinedAlgorithms.PPO,
+                               None, DefinedAlgorithms.RANDOM)
             self.current_game_id += 1
         print("PPO vs Random done")
 
         # Random_cop vs Random_x
         for i in range(games_random_vs_random):
-            self.simulate_game(DefinedAlgorithms.RANDOM,
-                               DefinedAlgorithms.RANDOM)
+            self.simulate_game(None, DefinedAlgorithms.RANDOM,
+                               None, DefinedAlgorithms.RANDOM)
             self.current_game_id += 1
         print("Random vs Random done")
 
         files = glob.glob(os.path.join(self.save_dir, "simulation*"))
         simulation_count = len(files)
+        self.last_simulation_time = datetime.now()
         self.merge_csv_results(simulation_count)
+        verbose_print(f"Merge took {datetime.now() - self.last_simulation_time}", self.verbose)
         self.simulation_start_time = None
 
-    def batch_simulation(self, number_of_simulations, cop_algo, mr_x_algo, use_game_id=True, save_dir=None):
+    def batch_simulation(self, number_of_simulations, cop_algo, cop_selected_algo: DefinedAlgorithms, mr_x_algo,
+                         mr_x_selected_algo: DefinedAlgorithms, use_game_id=True, save_dir=None):
         for i in range(number_of_simulations):
             if not use_game_id:
                 self.current_game_id = i + 1
             self.simulate_game(cop_algo,
+                               cop_selected_algo,
                                mr_x_algo,
+                               mr_x_selected_algo,
                                save_dir)
             if use_game_id:
                 self.current_game_id = self.current_game_id + 1
@@ -101,46 +106,47 @@ class SimulationController:
             self.last_simulation_time = datetime.now()
             self.dqn_trainer.train()
             self.ppo_trainer.train()
-            verbose_print(f"Training iteration {current_train_iteration + 1} done in {datetime.now() - self.last_simulation_time}",
-                          self.verbose)
+            verbose_print(
+                f"Training iteration {current_train_iteration + 1} done in {datetime.now() - self.last_simulation_time}",
+                self.verbose)
             current_train_iteration += 1
             if current_train_iteration % self.test_games_every_n_simulation == 0:
                 self.last_simulation_time = datetime.now()
                 self.batch_simulation(self.number_of_test_games_per_pause,
-                                      DefinedAlgorithms.DQN,
-                                      DefinedAlgorithms.PPO,
+                                      self.dqn_trainer.algo, DefinedAlgorithms.DQN,
+                                      self.ppo_trainer.algo, DefinedAlgorithms.PPO,
                                       use_game_id=False, save_dir=save_dir_train_experiment + "cop_dqn_mrx_ppo")
                 self.batch_simulation(self.number_of_test_games_per_pause,
-                                      DefinedAlgorithms.PPO,
-                                      DefinedAlgorithms.DQN,
+                                      self.ppo_trainer.algo, DefinedAlgorithms.PPO,
+                                      self.dqn_trainer.algo, DefinedAlgorithms.DQN,
                                       use_game_id=False, save_dir=save_dir_train_experiment + "cop_ppo_mrx_dqn")
                 self.batch_simulation(self.number_of_test_games_per_pause,
-                                      DefinedAlgorithms.DQN,
-                                      DefinedAlgorithms.DQN,
+                                      self.dqn_trainer.algo, DefinedAlgorithms.DQN,
+                                      self.dqn_trainer.algo, DefinedAlgorithms.DQN,
                                       use_game_id=False, save_dir=save_dir_train_experiment + "cop_dqn_mrx_dqn")
                 self.batch_simulation(self.number_of_test_games_per_pause,
-                                      DefinedAlgorithms.PPO,
-                                      DefinedAlgorithms.PPO,
+                                      self.ppo_trainer.algo, DefinedAlgorithms.PPO,
+                                      self.ppo_trainer.algo, DefinedAlgorithms.PPO,
                                       use_game_id=False, save_dir=save_dir_train_experiment + "cop_ppo_mrx_ppo")
                 self.batch_simulation(self.number_of_test_games_per_pause,
-                                      DefinedAlgorithms.RANDOM,
-                                      DefinedAlgorithms.PPO,
+                                      None, DefinedAlgorithms.RANDOM,
+                                      self.ppo_trainer.algo, DefinedAlgorithms.PPO,
                                       use_game_id=False, save_dir=save_dir_train_experiment + "cop_random_mrx_ppo")
                 self.batch_simulation(self.number_of_test_games_per_pause,
-                                      DefinedAlgorithms.PPO,
-                                      DefinedAlgorithms.RANDOM,
+                                      self.ppo_trainer.algo, DefinedAlgorithms.PPO,
+                                      None, DefinedAlgorithms.RANDOM,
                                       use_game_id=False, save_dir=save_dir_train_experiment + "cop_ppo_mrx_random")
                 self.batch_simulation(self.number_of_test_games_per_pause,
-                                      DefinedAlgorithms.DQN,
-                                      DefinedAlgorithms.RANDOM,
+                                      self.dqn_trainer.algo, DefinedAlgorithms.DQN,
+                                      None, DefinedAlgorithms.RANDOM,
                                       use_game_id=False, save_dir=save_dir_train_experiment + "cop_dqn_mrx_random")
                 self.batch_simulation(self.number_of_test_games_per_pause,
-                                      DefinedAlgorithms.RANDOM,
-                                      DefinedAlgorithms.DQN,
+                                      None, DefinedAlgorithms.RANDOM,
+                                      self.dqn_trainer.algo, DefinedAlgorithms.DQN,
                                       use_game_id=False, save_dir=save_dir_train_experiment + "cop_random_mrx_dqn")
                 self.batch_simulation(self.number_of_test_games_per_pause,
-                                      DefinedAlgorithms.RANDOM,
-                                      DefinedAlgorithms.RANDOM,
+                                      None, DefinedAlgorithms.RANDOM,
+                                      None, DefinedAlgorithms.RANDOM,
                                       use_game_id=False, save_dir=save_dir_train_experiment + "cop_random_mrx_random")
                 verbose_print(f"Simulations took {datetime.now() - self.last_simulation_time}", self.verbose)
                 self.last_simulation_time = datetime.now()
@@ -150,12 +156,13 @@ class SimulationController:
 
         self.merge_final_train_experiment_results()
         verbose_print("Train experiment done", self.verbose)
+        return self
 
     def cleanup(self):
         ray.shutdown()
         for directory in self.experiment_directories:
-            files = glob.glob(os.path.join(self.save_dir + "/train_experiment/" + directory, 'game*.csv'))
-            files2 = glob.glob(os.path.join(self.save_dir + "/train_experiment/" + directory, 'iteration_*.csv'))
+            files = glob.glob(os.path.join(self.save_dir + "/train_experiment/" + directory, '/game*.csv'))
+            files2 = glob.glob(os.path.join(self.save_dir + "/train_experiment/" + directory, '/iteration_*.csv'))
             for file in files:
                 os.remove(file)
             for file in files2:
@@ -185,6 +192,7 @@ class SimulationController:
 
             merged_data["train_iteration"] = current_train_iteration
             merged_data.to_csv(directory + f"/iteration_{current_train_iteration}", index=False)
+            self.cleanup()
 
     def merge_csv_results(self, sim_number):
         game_files = glob.glob(os.path.join(self.save_dir, 'game*.csv'))
@@ -198,35 +206,34 @@ class SimulationController:
         merged_data.to_csv(f"{self.save_dir}/simulation_{sim_number}", index=False)
         pass
 
-    def simulate_game(self, cop_algo, mr_x_algo, save_dir=None):
-        self.game.set_mrx_algo(mr_x_algo).set_cop_algo(cop_algo).reset()
+    def simulate_game(self, cop_algo, cop_algo_selected: DefinedAlgorithms, mr_x_algo,
+                      mr_x_algo_selected: DefinedAlgorithms, save_dir=None):
+        self.game.reset()
         turn_stats = {}
         while self.game.get_game_status() is scotland_yard_game_logic.GameStatus.ONGOING:
-            self.game.play_turn()
+            self.game.play_turn(cop_algo=cop_algo, mr_x_algo=mr_x_algo)
             if self.game.playing_player_index == len(self.game.players) - 1:
                 if self.game.get_game_status() is scotland_yard_game_logic.GameStatus.ONGOING:
                     turn_stats[self.game.get_current_round_number()] = self.get_round_statistics()
         turn_stats[self.game.get_current_round_number()] = self.get_round_statistics()
         game_stats = self.get_game_statistics()
         game_stats["game_id"] = self.current_game_id
-        game_stats["mr_x_algo"] = mr_x_algo.value
-        game_stats["cop_algo"] = cop_algo.value
+        game_stats["mr_x_algo"] = mr_x_algo_selected.value
+        game_stats["cop_algo"] = cop_algo_selected.value
         self.save_statistics(game_stats, turn_stats, save_dir)
 
     def save_statistics(self, game_stats, turn_stats, save_dir):
         if save_dir is None:
             save_dir = self.save_dir
         file_name = save_dir + "/game_" + str(self.current_game_id) + ".csv"
-        game_df = pandas.DataFrame(game_stats, index=[0])
 
+        rounds_df = pandas.DataFrame.from_dict(turn_stats, orient='index')
+        game_stats["mr_x_avg_distance_to_cop"] = rounds_df["mr_x_avg_distance_to_cop"].mean()
+        game_stats["avg_distance_between_cops"] = rounds_df["avg_distance_between_cops"].mean()
+        game_stats["mr_x_avg_reward"] = rounds_df["mr_x_reward"].mean()
+        game_stats["cops_avg_reward"] = rounds_df["cops_avg_reward"].mean()
         result_df = pandas.DataFrame.from_dict(turn_stats, orient='index')
-        result_df.reset_index(inplace=True)
-        result_df.rename(columns={'index': 'round'}, inplace=True)
 
-        result_df["game_id"] = game_stats["game_id"]
-        result_df["game_result"] = game_stats["game_result"]
-        result_df["mr_x_algo"] = game_stats["mr_x_algo"]
-        result_df["cop_algo"] = game_stats["cop_algo"]
         result_df.to_csv(file_name, index=False)
 
     def get_round_statistics(self):

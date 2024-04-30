@@ -14,14 +14,25 @@ from src.scenes.scene import Scene
 
 class ScotlandYardScene(Scene):
     def __init__(self, game_controller: GameController, gui_controller: GuiController,
-                 cop_algorithm=DefinedAlgorithms.PPO,
-                 mrx_algorithm=DefinedAlgorithms.PPO):
+                 cop_selected_algorithm: DefinedAlgorithms,
+                 mr_x_selected_algorithm: DefinedAlgorithms):
         Scene.__init__(self, game_controller, gui_controller)
         self.time_of_end = None
-        self.game = ScotlandYardGameLogic(False, verbose=self.game_controller.verbose, cop_algorithm=cop_algorithm,
-                                          mrx_algorithm=mrx_algorithm, )
+        self.game = ScotlandYardGameLogic(verbose=self.game_controller.verbose)
         self.game_visual = ScotlandYardGameVisual(self.game, gui_controller)
         self.cell_size = gui_controller.width // GRID_SIZE
+        if mr_x_selected_algorithm is DefinedAlgorithms.PPO:
+            self.mrx_algorithm = self.game_controller.algo_ppo
+        elif mr_x_selected_algorithm is DefinedAlgorithms.DQN:
+            self.mrx_algorithm = self.game_controller.algo_dqn
+        else:
+            self.mrx_algorithm = None
+        if cop_selected_algorithm is DefinedAlgorithms.PPO:
+            self.cop_algorithm = self.game_controller.algo_ppo
+        elif cop_selected_algorithm is DefinedAlgorithms.DQN:
+            self.cop_algorithm = self.game_controller.algo_dqn
+        else:
+            self.cop_algorithm = None
 
     def update(self, delta_time, actions):
         from src.GameController import UserActions
@@ -33,7 +44,7 @@ class ScotlandYardScene(Scene):
         elif actions[UserActions.space.name] and self.game.get_game_status() == GameStatus.ONGOING:
             self.game_controller.playing = not self.game_controller.playing
         elif self.game_controller.playing:
-            self.game.play_turn()
+            self.game.play_turn(cop_algo=self.cop_algorithm, mr_x_algo=self.mrx_algorithm)
             if self.game.get_game_status() != GameStatus.ONGOING:
                 verbose_print("Game over", self.game_controller.verbose)
                 self.game_controller.playing = False

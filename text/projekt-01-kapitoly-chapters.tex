@@ -3,12 +3,11 @@
 \chapter{Úvod}
 \label{ch:uvod}
 
-Umělá inteligence je obor, který nás postupem let všechny obklopuje čím dál tím více.
-Dokonce je navždy spjata i s naším českým národem, když Karel Čapek dal zrodu slova robot.
+V dnešní době, je umělá inteligence(AI), postupem let všudypřítomnější a její vliv ovlivňuje sloustu aspektů našeho života.
 
-Pokrok umělé inteligence je často měřen její aplikováním v oblasti her.
-A to proto, že právě hry mají jasně definovaná pravidla a cíle.
-Výkon AI je snadno měřitelný a pokrok dokáže vidět i lajk.
+Pokrok umělé inteligence je často a nejlépe měřen její aplikováním v oblasti her.
+A to proto, že právě hry nabízí jasně definovaná pravidla a cíle, čímž se stávají ideálním testovacím prostorem pro algoritmy umělé inteligence.
+Výkon AI je ve hrách snadno měřitelný a pokrok dokáže vidět i lajk bez žádných složitých grafů a výpočtů.
 Umělá inteligence již dokázala porazit nejlepší hráče v \textit{šachu}~\cite{DeepBlue}, \textit{Dota 2}~\cite{Dota2}, \textit{Go}~\cite{AlphaGo} a spoustě dalších her.
 
 Hra studovaná v této práci se jmenuje \emph{Scotland Yard}.
@@ -21,25 +20,27 @@ Hra je u konce, když Pan X chycen policisty (vyhrávají policisté), nebo kdy�
 Scotland Yard je ideální hrou ke studování umělé inteligence, protože se jedná o hru s nedokonalou informací a k vítězství policistů je zapotřebí spolupráce a strategie.
 
 Tato práce zkoumá algoritmy posilovaného učení, jejich použití na hry s neurčitostí a jejich porovnání s klasickými metodami hraní her.
-Algoritmus proximální optimalizace politiky (Proximal Policy Optimization--PPO) je hlavním zkoumaným algoritmem.
+Algoritmus proximální optimalizace politiky (Proximal Policy Optimization--PPO) je hlavním zkoumaným algoritmem této práce.
+Pro srovnání s jinýmy algoritmy slouží algoritmus Deep--Q--Learning (DQN).
 PPO je často používán k řešení problémů se spojitými veličinami a ve 3D prostoru.
-Důvod proč byl algoritmus PPO vybrán, byl hlavně experiment OpenAI~\cite{PPO_Hide_Seek_page}, podrobně popsán zde\cite{PPO_Hide_Seek_paper}.
+Algoritmus PPO byl vybrán z důvodu jeho úspěšnosti při použití ve složitých hrách s neurčitostí.
+Tyto tvrzení podporuje experiment OpenAI~\cite{PPO_Hide_Seek_page}, podrobně popsán zde\cite{PPO_Hide_Seek_paper}.
 V tomto experimentu byla proximální optimalizace politiky použita pro učení politiky ve hře typu \textit{schováváná} s několika agenty a neúplnou informací.
 Jelikož tento typ hry přesně odpovídá i hře Scotland Yard, zdá se být vhodný i pro řešení této hry.
-Také další studie~\cite{Manille} a \cite{Dota2} tento výrok dále podporují.
+Také další studie~\cite{Manille} a \cite{Dota2} tento výrok dále podporují a dokazují vhodnost algoritmu PPO pro tuto práci.
 
 Zaměření této práce jsem si vybral, jelikož mi vždy byla umělá inteligence blízká a vždy jsem chtěl začít tomuto odvětví více věnovat i po praktické stránce.
-Algoritmus je pro mě zajímavý a zkušenost s tímto algoritmém by se dala využít v mém dalším pracovním životě.
+Algoritmus je pro mě zajímavý a zkušenost s tímto algoritmém by se dala využít v mém dalším pracovním životě.\page
 
 Pro zpracování práce byly využity tyto hlavní knihovny:
 \begin{itemize}
-  \item \emph{Ray.Rlib} - framework pro posilované učení. Obsahuje již zhotovenou implementací algoritmu PPO a spousty dalších algoritmů. 
+  \item \emph{Ray.Rlib} - framework pro posilované učení. Obsahuje již zhotovenou implementací algoritmu PPO a DQN, které byly použity v této práci. 
   \item \emph{PyTorch} - podpůrná knihovna Ray.Rlib
   \item \emph{Gymnasium} - knihovna použita k vytvoření prostředí hry Scotland Yard
   \item \emph{Pygame} - knihovna pro vytváření uživatelského rozhraní
 \end{itemize}
 
-Práce byla zhotovena pro operační systémy Windows pomocí Python verze 3.10
+Práce byla zhotovena pro operační systémy Windows a Python verze 3.10
 
 \chapter{Shrnutí dosavadního stavu}
 \label{ch:dosavadni_stav}
@@ -710,16 +711,17 @@ Jejich učení tedy není nijak podporováno a musí se naučit strategii sami.
 Tím je i odhaleno, jestli jsou agenti vůbec schopni rozpoznat cíl hry, co je po nich požadováno a případně jak rychle k dosáhnou dobré strategie.
 
 Implementace algoritmu PPO i DQN je obsažena v knihovně Ray.Rlib.
-PPO využívá základní parametry tréningu bez žádné modifikace parametrů jelikož se ukázalo, že agenti se chovají optimálně a hru pochopili i bez těchto zásahů do základní implementace algoritmu.
+PPO využívá základní parametry tréningu bez žádné modifikace parametrů jelikož se ukázalo, že agenti se chovají optimálně a hru pochopili i bez těchto zásahů do předvolených hodnot hyperparametrů.
 Zato DQN se velmi dlouho chovalo \emph{ne}optimálně.
-Agenti se naučili pouze stát na místě, přestože dostávali velkou penalizaci.
+Agenti se naučili pouze stát na místě, přestože tato taktika nebyla optimální.
 Pro vyřešení tohoto problému, je nyní agentům udělována penalizace pokud se 5 kroků po sobě nehnou.
 Penalizace postupně roste a pohybem je resetována.
-
-Parametry DQN byly upraveny následovně:
+Byly také upraveny hyperparametry DQN, následnovným způsobem:
 Obsahuje 3 vnitřní skryté vrstvy, první a třetí vrstvá má 64 neuronů a prostřední druhá vrstva má 128 neuronů.{\color {red} [Přepsat jak to bude výsledně]}
 Používá verzi \emph{double DQN}
-$epsilon$ je postupem tréninku snižováno na velikost 0.05
+Algoritmus k vyvážení explorace a exploatace při učení využívá metodu $\epsilon$--greedy, kde je $epsilon$ postupem trénování snižováno z hodnoty 1 na 0.05.
+Tato hodnota udává pravděpodobnost náhodné volby akce.
+Po natrénování modelu je ve hře explorace vypnuta, $epsilon$ je tedy nastaveno na 0.
 
 \subsubsection*{Řešení zvolení nevalidních akcí}
 

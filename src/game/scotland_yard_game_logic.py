@@ -1,22 +1,17 @@
 import math
-import os
 import random
 import sys
 from enum import Enum
 
 import numpy as np
-import ray
 from gymnasium import spaces
 from jinja2.nodes import Name
-from ray.rllib.algorithms import PPOConfig, PPO, DQNConfig, DQN
 from ray.rllib.policy.policy import PolicySpec
-from ray.tune import register_env
 
 from src.Cop import Cop
 from src.MrX import MrX
 from src.Player import Player
 from src.colors import *
-from src.environments.rlib.FakeEnv import FakeEnv
 from src.helper import verbose_print
 
 # Constants
@@ -148,11 +143,8 @@ class DefinedAlgorithms(Enum):
 
 
 class ScotlandYardGameLogic:
-    def __init__(self, training=False, verbose=False, cop_algorithm=DefinedAlgorithms.PPO,
-                 mrx_algorithm=DefinedAlgorithms.PPO, simulation=False):
+    def __init__(self, verbose=False):
         self.verbose = verbose
-        self.cop_algorithm = cop_algorithm
-        self.mrx_algorithm = mrx_algorithm
 
         self.number_of_cops = 3
         self.round_number = 0
@@ -166,97 +158,6 @@ class ScotlandYardGameLogic:
 
         self.agents_previous_locations = {"mr_x": None, "cop_1": None, "cop_2": None, "cop_3": None}
         self.agents_is_in_previous_location_count = {"mr_x": 0, "cop_1": 0, "cop_2": 0, "cop_3": 0}
-
-        if not training:
-            if not simulation:
-                ray.init()
-
-            def env_creator(env_config):
-                return FakeEnv({})
-
-            register_env("scotland_env", env_creator)
-
-            def policy_mapping_fn(agent_id, episode, worker):
-                return "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
-
-            ppo_config = PPOConfig()
-
-            ppo_config["policies"] = {
-                "mr_x_policy": MR_X_POLICY_SPEC,
-                "cop_policy": COP_POLICY_SPEC,
-            }
-
-            ppo_config["policy_mapping_fn"] = policy_mapping_fn
-            ppo_config.framework("torch")
-            ppo_config.resources(num_cpus_per_worker=0.2)
-
-            # Set the config object's env.
-            algo_ppo = PPO(env="scotland_env", config=ppo_config)
-            # check if trained policies exist
-            directory = "trained_policies_ppo"
-            assert os.path.exists(directory), f"Directory {directory} does not exist"
-            algo_ppo.restore(directory)
-
-            self.algo_ppo = algo_ppo
-
-            dqn_config = (DQNConfig()
-                          .training(
-                lr=0.001,
-                gamma=0.99,
-                target_network_update_freq=10,
-                double_q=True,
-                dueling=True,
-                num_atoms=1,
-                noisy=True,
-                n_step=3, )
-                          .rollouts(observation_filter="MeanStdFilter"))
-
-
-            replay_config = {
-                "_enable_replay_buffer_api": True,
-                "type": "MultiAgentPrioritizedReplayBuffer",
-                "capacity": 50000,
-                "prioritized_replay_alpha": 0.5,
-                "prioritized_replay_beta": 0.5,
-                "prioritized_replay_eps": 3e-6,
-            }
-
-            exploration_config = {
-                "type": "EpsilonGreedy",
-                "initial_epsilon": 1.0,
-                "final_epsilon": 0.05,
-            }
-
-            dqn_config["replay_config"] = replay_config
-            dqn_config["exploration_config"] = exploration_config
-
-            dqn_config.evaluation_config = {
-                "evaluation_interval": 10,
-                "evaluation_num_episodes": 10,
-            }
-
-            dqn_config["policies"] = {
-                "mr_x_policy": MR_X_POLICY_SPEC,
-                "cop_policy": COP_POLICY_SPEC,
-            }
-
-            dqn_config["policy_mapping_fn"] = policy_mapping_fn
-            dqn_config.framework("torch")
-            dqn_config["reuse_actors"] = True
-            dqn_config.resources(num_cpus_per_worker=0.2)
-
-            # Set the config object's env.
-            algo_dqn = DQN(env="scotland_env", config=dqn_config)
-
-            # check if trained policies exist
-            directory = "trained_policies_dqn"
-
-            assert os.path.exists(directory), f"Directory {directory} does not exist"
-            algo_dqn.restore(directory)
-            self.algo_dqn = algo_dqn
-
-        verbose_print(f"Cop algorithm: {cop_algorithm}", self.verbose)
-        verbose_print(f"Mr X algorithm: {mrx_algorithm}", self.verbose)
 
         # Create players
         self.reset()
@@ -417,7 +318,7 @@ class ScotlandYardGameLogic:
         else:
             raise Exception("Generated action is not valid")
 
-    def get_action_for_player(self, player: Player) -> Direction:
+    def get_action_for_player(self, player: Player, cop_algo, mr_x_algo) -> Direction:
         # Use the policy to obtain an action for the given player and observation
         observations = self.get_observations()
 
@@ -427,20 +328,17 @@ class ScotlandYardGameLogic:
         while not action_is_valid:
             if count < 100:
                 if player.is_mr_x():
-                    if self.mrx_algorithm == DefinedAlgorithms.DQN:
-                        generated_action = self.algo_dqn.compute_single_action(observations[player.name],
-                                                                               policy_id="mr_x_policy")
+                    if mr_x_algo is None:
+                        generated_action = self.get_random_action()
                     else:
-                        generated_action = self.algo_ppo.compute_single_action(observations[player.name],
-                                                                               policy_id="mr_x_policy")
+                        generated_action = mr_x_algo.compute_single_action(observations[player.name],
+                                                                           policy_id="mr_x_policy", explore=False)
                 else:
-                    if self.cop_algorithm == DefinedAlgorithms.DQN:
-                        generated_action = self.algo_dqn.compute_single_action(observations[player.name],
-                                                                               policy_id="cop_policy")
+                    if cop_algo is None:
+                        generated_action = self.get_random_action()
                     else:
-                        generated_action = self.algo_ppo.compute_single_action(observations[player.name],
-                                                                               policy_id="cop_policy")
-
+                        generated_action = cop_algo.compute_single_action(observations[player.name],
+                                                                          policy_id="cop_policy", explore=False)
             else:
                 generated_action = self.get_random_action()
                 verbose_print(f"Generated random action after 100 tries", self.verbose)
@@ -472,7 +370,7 @@ class ScotlandYardGameLogic:
     def get_current_player(self) -> Player:
         return self.players[self.playing_player_index]
 
-    def play_turn(self, action: Direction | Name = None, verbose=False):
+    def play_turn(self, action: Direction | Name = None, cop_algo=None, mr_x_algo=None, verbose=False):
         if self.playing_player_index == 0:
             self.round_number += 1
 
@@ -480,25 +378,27 @@ class ScotlandYardGameLogic:
         verbose_print(f"Player {player.name} is playing and player {'is' if player.is_mr_x() else 'is not'} mr x",
                       self.verbose)
         verbose_print(f"Generated action: {action}", self.verbose)
-        verbose_print(f"Mrx_algo is {self.mrx_algorithm.name} and cop_algo is {self.cop_algorithm.name}", self.verbose)
+        verbose_print(
+            f"Mrx_algo is {'None' if mr_x_algo is None else mr_x_algo.__class__} and cop_algo is {'None' if cop_algo is None else cop_algo.__class__}",
+            self.verbose)
 
         if action is None:
             if player.is_mr_x():
                 verbose_print("Player is really mr_x", self.verbose)
-                if self.mrx_algorithm is DefinedAlgorithms.RANDOM:
+                if mr_x_algo is None:
                     verbose_print("His algo is random", self.verbose)
                     action = self.get_random_action()
                 else:
                     verbose_print("His algo is not random", self.verbose)
-                    action = self.get_action_for_player(player)
+                    action = self.get_action_for_player(player, cop_algo, mr_x_algo)
             elif player.is_cop():
                 verbose_print("Player is really cop", self.verbose)
-                if self.cop_algorithm is DefinedAlgorithms.RANDOM:
+                if cop_algo is None:
                     verbose_print("His algo is random", self.verbose)
                     action = self.get_random_action()
                 else:
                     verbose_print("His algo is not random", self.verbose)
-                    action = self.get_action_for_player(player)
+                    action = self.get_action_for_player(player, cop_algo, mr_x_algo)
 
         self.move_player(player, action)
 
@@ -670,14 +570,6 @@ class ScotlandYardGameLogic:
                     if position not in possible_mr_x_positions:
                         possible_mr_x_positions.append(position)
         return possible_mr_x_positions
-
-    def set_mrx_algo(self, mr_x_algo):
-        self.mrx_algorithm = mr_x_algo
-        return self
-
-    def set_cop_algo(self, cop_algo):
-        self.cop_algorithm = cop_algo
-        return self
 
     def get_simulation_rewards(self) -> {str: float | None}:
         """

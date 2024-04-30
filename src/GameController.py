@@ -10,8 +10,14 @@ Idea has been adopted, changed and expanded to fit the needs of the project.
 
 import os, time, pygame
 from enum import Enum
+import ray
+from ray.rllib.algorithms import PPOConfig, PPO, DQNConfig, DQN
+from ray.tune import register_env
 
+from TrainerDQN import TrainerDQN
+from TrainerPPO import TrainerPPO
 from src.GuiController import GuiController
+from src.game.scotland_yard_game_logic import MR_X_POLICY_SPEC, COP_POLICY_SPEC
 
 
 # Enumerations
@@ -29,8 +35,11 @@ class UserActions(Enum):
 
 
 class GameController():
-    def __init__(self, verbose = False):
+    def __init__(self, verbose=False):
+        print("GameController init")
         pygame.init()
+        print("Pygame init")
+        
         self.verbose = verbose
         self.font = None
         self.gui_controller = GuiController()
@@ -49,6 +58,13 @@ class GameController():
         for action in UserActions:
             self.user_actions[action.name] = False
         self.dt, self.prev_time = 0, 0
+
+        ray.init()
+
+        trainer_ppo = TrainerPPO(playing=True)
+        trainer_dqn = TrainerDQN(1, playing=True)
+        self.algo_ppo = trainer_ppo.algo
+        self.algo_dqn = trainer_dqn.algo
 
     def game_loop(self):
         while self.running:

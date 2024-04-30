@@ -11,11 +11,11 @@ from src.helper import verbose_print
 
 
 class TrainerDQN:
-    def __init__(self, max_iterations, directory="trained_policies_dqn", verbose=False, simulation=False):
+    def __init__(self, max_iterations, directory="trained_policies_dqn", verbose=False, simulation=False, playing=False):
         self.directory = directory
         self.verbose = verbose
-        if not simulation:
-            ray.init(num_gpus=1)
+        if not simulation and not playing:
+            ray.init()
 
         def policy_mapping_fn(agent_id, episode, worker):
             return "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
@@ -26,35 +26,20 @@ class TrainerDQN:
         register_env("scotland_env", env_creator)
 
         my_config = (DQNConfig()
-                     .training(
-            lr=0.0005,
-            gamma=0.999,
-            target_network_update_freq=10,
-            double_q=True,
-            dueling=True,
-            num_atoms=1,
-            noisy=True,
-            n_step=3, )
-                     .rollouts(observation_filter="MeanStdFilter").exploration(explore=True))
+                     .training(model={"fcnet_hiddens": [64, 64]},
+                               lr=0.0005,
+                               gamma=0.999,
+                               target_network_update_freq=10,
+                               double_q=True,
+                               num_atoms=1,
+                               noisy=True,
+                               n_step=3, )
+                     .rollouts(batch_mode="complete_episodes"))
 
-        replay_config = {
-            "_enable_replay_buffer_api": True,
-            "type": "MultiAgentPrioritizedReplayBuffer",
-            "capacity": 50000,
-            "prioritized_replay_alpha": 0.5,
-            "prioritized_replay_beta": 0.5,
-            "prioritized_replay_eps": 3e-6,
-        }
-
-        exploration_config = {
-            "type": "EpsilonGreedy",
-            "initial_epsilon": 1.0,
-            "final_epsilon": 0.05,
-            "epsilon_timesteps": max_iterations
-        }
-
-        my_config["replay_config"] = replay_config
-        my_config["exploration_config"] = exploration_config
+        if not playing and not simulation:
+            my_config.exploration(explore=True, exploration_config={"type": "EpsilonGreedy", "initial_epsilon": 1.0,
+                                                                "final_epsilon": 0.05,
+                                                                "epsilon_timesteps": max_iterations * 1000})
 
         my_config.evaluation_config = {
             "evaluation_interval": 10,
@@ -68,9 +53,7 @@ class TrainerDQN:
 
         my_config["policy_mapping_fn"] = policy_mapping_fn
 
-        my_config["num_rollout_workers"] = 4
-        my_config["reuse_actors"] = True
-        my_config["rollout_fragment_length"] = 100
+        my_config["reuse_actors"] = False
         my_config.framework("torch")
         if simulation:
             my_config.resources(num_cpus_per_worker=0.2)
@@ -92,11 +75,10 @@ class TrainerDQN:
     def train(self, number_of_iterations=1, save_interval=10):
         for i in range(number_of_iterations):
             verbose_print(f"Training iteration {i + 1} of {number_of_iterations}", self.verbose)
-            current_length = self.adjust_rollout_fragment_length(i, 200, 2000, number_of_iterations)
-            self.config["rollout_fragment_length"] = current_length
             verbose_print(f"Episode reward mean:{self.algo.train()['episode_reward_mean']}", self.verbose)
-            verbose_print(f"Current rollout fragment length: {current_length}", self.verbose)
-            verbose_print(f"Current epsilon: {self.algo.get_policy('mr_x_policy').exploration.get_state()['cur_epsilon']}", self.verbose)
+            verbose_print(
+                f"Current epsilon: {self.algo.get_policy('mr_x_policy').get_exploration_state()['cur_epsilon']}",
+                self.verbose)
             if i % save_interval == 0 and i != 0:
                 verbose_print("Saving policies", self.verbose)
                 self.save_export()
@@ -114,7 +96,5 @@ class TrainerDQN:
 
 
 if __name__ == "__main__":
-    (TrainerDQN(max_iterations=100, directory="trained_policies_dqn", verbose=True)
-               .train(number_of_iterations=100, save_interval=10)
-               .cleanup())
+    TrainerDQN(max_iterations=50, directory="trained_policies_dqn", verbose=True).train(number_of_iterations=50, save_interval=50).cleanup()
     print("Done")

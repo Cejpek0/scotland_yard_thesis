@@ -10,10 +10,10 @@ from src.helper import verbose_print
 
 
 class TrainerPPO:
-    def __init__(self, directory="trained_policies_ppo", verbose=False, simulation=False):
+    def __init__(self, directory="trained_policies_ppo", verbose=False, simulation=False, playing=False):
         self.directory = directory
         self.verbose = verbose
-        if not simulation:
+        if not simulation and not playing:
             ray.init(num_gpus=1)
 
         def policy_mapping_fn(agent_id, episode, worker):
@@ -32,13 +32,13 @@ class TrainerPPO:
             "cop_policy": scotland_yard_game.COP_POLICY_SPEC,
         }
 
+        my_config["num_iterations"] = 20
         my_config["policy_mapping_fn"] = policy_mapping_fn
-        repeat = 20
-        my_config["num_iterations"] = repeat
-        my_config["num_rollout_workers"] = 4
-        my_config["reuse_actors"] = True
+        my_config["reuse_actors"] = False
+        if not playing:
+            my_config["num_rollout_workers"] = 4
         if simulation:
-            my_config.resources(num_gpus=1, num_gpus_per_worker=0.2, num_cpus_per_worker=0.6)
+            my_config.resources(num_cpus_per_worker=0.6)
         else:
             my_config.resources(num_gpus=1, num_gpus_per_worker=0.2)
         my_config.framework("torch")
@@ -74,7 +74,8 @@ class TrainerPPO:
         ray.shutdown()
         return self
 
+
 if __name__ == "__main__":
     (TrainerPPO(directory="trained_policies_ppo", verbose=True)
-     .train(number_of_iterations=20, save_interval=1)
+     .train(number_of_iterations=40, save_interval=1)
      .cleanup())
