@@ -14,7 +14,7 @@ class TrainerPPO:
         self.directory = directory
         self.verbose = verbose
         if not simulation and not playing:
-            ray.init(num_gpus=1)
+            ray.init(num_gpus=0)
 
         def policy_mapping_fn(agent_id, episode, worker):
             return "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
@@ -39,8 +39,6 @@ class TrainerPPO:
             my_config["num_rollout_workers"] = 4
         if simulation:
             my_config = my_config.resources(num_cpus_per_worker=0.6)
-        else:
-            my_config = my_config.resources(num_gpus=1, num_gpus_per_worker=0.2)
         my_config = my_config.framework("torch")
         self.config = my_config
         # Set the config object's env.

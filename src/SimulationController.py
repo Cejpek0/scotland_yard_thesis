@@ -16,7 +16,7 @@ from src.helper import verbose_print
 class SimulationController:
     def __init__(self, save_dir, verbose=False, experiment_training_iteration_count=10_000,
                  test_games_every_n_trainings=10, test_games_count_per_pause=100):
-        ray.init(num_gpus=1, num_cpus=4)
+        ray.init(num_gpus=0, num_cpus=4)
         self.verbose = verbose
         verbose_print("Simulation Controller initializing", self.verbose)
         self.save_dir = save_dir
@@ -31,7 +31,7 @@ class SimulationController:
         self.game = scotland_yard_game_logic.ScotlandYardGameLogic()
         self.current_game_id = 0
         self.train_experiment_training_count = experiment_training_iteration_count
-        self.test_games_every_n_simulation = test_games_every_n_trainings
+        self.test_games_every_n_trainings = test_games_every_n_trainings
         self.number_of_test_games_per_pause = test_games_count_per_pause
         self.ppo_trainer = TrainerPPO(simulation=True)
         self.dqn_trainer = TrainerDQN(self.train_experiment_training_count, simulation=True)
@@ -97,11 +97,52 @@ class SimulationController:
             if use_game_id:
                 self.current_game_id = self.current_game_id + 1
 
+    def simulate_all_variants(self):
+        save_dir_train_experiment = self.save_dir + "/train_experiment/"
+        self.batch_simulation(self.number_of_test_games_per_pause,
+                              self.dqn_trainer.algo, DefinedAlgorithms.DQN,
+                              self.ppo_trainer.algo, DefinedAlgorithms.PPO,
+                              use_game_id=False, save_dir=save_dir_train_experiment + "cop_dqn_mrx_ppo")
+        self.batch_simulation(self.number_of_test_games_per_pause,
+                              self.ppo_trainer.algo, DefinedAlgorithms.PPO,
+                              self.dqn_trainer.algo, DefinedAlgorithms.DQN,
+                              use_game_id=False, save_dir=save_dir_train_experiment + "cop_ppo_mrx_dqn")
+        self.batch_simulation(self.number_of_test_games_per_pause,
+                              self.dqn_trainer.algo, DefinedAlgorithms.DQN,
+                              self.dqn_trainer.algo, DefinedAlgorithms.DQN,
+                              use_game_id=False, save_dir=save_dir_train_experiment + "cop_dqn_mrx_dqn")
+        self.batch_simulation(self.number_of_test_games_per_pause,
+                              self.ppo_trainer.algo, DefinedAlgorithms.PPO,
+                              self.ppo_trainer.algo, DefinedAlgorithms.PPO,
+                              use_game_id=False, save_dir=save_dir_train_experiment + "cop_ppo_mrx_ppo")
+        self.batch_simulation(self.number_of_test_games_per_pause,
+                              None, DefinedAlgorithms.RANDOM,
+                              self.ppo_trainer.algo, DefinedAlgorithms.PPO,
+                              use_game_id=False, save_dir=save_dir_train_experiment + "cop_random_mrx_ppo")
+        self.batch_simulation(self.number_of_test_games_per_pause,
+                              self.ppo_trainer.algo, DefinedAlgorithms.PPO,
+                              None, DefinedAlgorithms.RANDOM,
+                              use_game_id=False, save_dir=save_dir_train_experiment + "cop_ppo_mrx_random")
+        self.batch_simulation(self.number_of_test_games_per_pause,
+                              self.dqn_trainer.algo, DefinedAlgorithms.DQN,
+                              None, DefinedAlgorithms.RANDOM,
+                              use_game_id=False, save_dir=save_dir_train_experiment + "cop_dqn_mrx_random")
+        self.batch_simulation(self.number_of_test_games_per_pause,
+                              None, DefinedAlgorithms.RANDOM,
+                              self.dqn_trainer.algo, DefinedAlgorithms.DQN,
+                              use_game_id=False, save_dir=save_dir_train_experiment + "cop_random_mrx_dqn")
+        self.batch_simulation(self.number_of_test_games_per_pause,
+                              None, DefinedAlgorithms.RANDOM,
+                              None, DefinedAlgorithms.RANDOM,
+                              use_game_id=False, save_dir=save_dir_train_experiment + "cop_random_mrx_random")
+
     def run_train_experiment(self):
         self.simulation_start_time = datetime.now()
         verbose_print("Running train experiment", self.verbose)
-        save_dir_train_experiment = self.save_dir + "/train_experiment/"
+
         current_train_iteration = 0
+        self.simulate_all_variants()
+        self.merge_csv_train_experiment_results(current_train_iteration)
         while current_train_iteration < self.train_experiment_training_count:
             verbose_print(f"Training iteration {current_train_iteration + 1} of {self.train_experiment_training_count}",
                           self.verbose)
@@ -112,44 +153,9 @@ class SimulationController:
                 f"Training iteration {current_train_iteration + 1} of {self.train_experiment_training_count} done in {datetime.now() - self.last_simulation_time}",
                 self.verbose)
             current_train_iteration += 1
-            if current_train_iteration % self.test_games_every_n_simulation == 0:
+            if current_train_iteration % self.test_games_every_n_trainings == 0:
                 self.last_simulation_time = datetime.now()
-                self.batch_simulation(self.number_of_test_games_per_pause,
-                                      self.dqn_trainer.algo, DefinedAlgorithms.DQN,
-                                      self.ppo_trainer.algo, DefinedAlgorithms.PPO,
-                                      use_game_id=False, save_dir=save_dir_train_experiment + "cop_dqn_mrx_ppo")
-                self.batch_simulation(self.number_of_test_games_per_pause,
-                                      self.ppo_trainer.algo, DefinedAlgorithms.PPO,
-                                      self.dqn_trainer.algo, DefinedAlgorithms.DQN,
-                                      use_game_id=False, save_dir=save_dir_train_experiment + "cop_ppo_mrx_dqn")
-                self.batch_simulation(self.number_of_test_games_per_pause,
-                                      self.dqn_trainer.algo, DefinedAlgorithms.DQN,
-                                      self.dqn_trainer.algo, DefinedAlgorithms.DQN,
-                                      use_game_id=False, save_dir=save_dir_train_experiment + "cop_dqn_mrx_dqn")
-                self.batch_simulation(self.number_of_test_games_per_pause,
-                                      self.ppo_trainer.algo, DefinedAlgorithms.PPO,
-                                      self.ppo_trainer.algo, DefinedAlgorithms.PPO,
-                                      use_game_id=False, save_dir=save_dir_train_experiment + "cop_ppo_mrx_ppo")
-                self.batch_simulation(self.number_of_test_games_per_pause,
-                                      None, DefinedAlgorithms.RANDOM,
-                                      self.ppo_trainer.algo, DefinedAlgorithms.PPO,
-                                      use_game_id=False, save_dir=save_dir_train_experiment + "cop_random_mrx_ppo")
-                self.batch_simulation(self.number_of_test_games_per_pause,
-                                      self.ppo_trainer.algo, DefinedAlgorithms.PPO,
-                                      None, DefinedAlgorithms.RANDOM,
-                                      use_game_id=False, save_dir=save_dir_train_experiment + "cop_ppo_mrx_random")
-                self.batch_simulation(self.number_of_test_games_per_pause,
-                                      self.dqn_trainer.algo, DefinedAlgorithms.DQN,
-                                      None, DefinedAlgorithms.RANDOM,
-                                      use_game_id=False, save_dir=save_dir_train_experiment + "cop_dqn_mrx_random")
-                self.batch_simulation(self.number_of_test_games_per_pause,
-                                      None, DefinedAlgorithms.RANDOM,
-                                      self.dqn_trainer.algo, DefinedAlgorithms.DQN,
-                                      use_game_id=False, save_dir=save_dir_train_experiment + "cop_random_mrx_dqn")
-                self.batch_simulation(self.number_of_test_games_per_pause,
-                                      None, DefinedAlgorithms.RANDOM,
-                                      None, DefinedAlgorithms.RANDOM,
-                                      use_game_id=False, save_dir=save_dir_train_experiment + "cop_random_mrx_random")
+                self.simulate_all_variants()
                 verbose_print(f"Simulations took {datetime.now() - self.last_simulation_time}", self.verbose)
                 self.last_simulation_time = datetime.now()
                 self.merge_csv_train_experiment_results(current_train_iteration)
@@ -236,7 +242,6 @@ class SimulationController:
         game_stats["avg_distance_between_cops"] = rounds_df["avg_distance_between_cops"].mean()
         game_stats["mr_x_avg_reward"] = rounds_df["mr_x_reward"].mean()
         game_stats["cops_avg_reward"] = rounds_df["cops_avg_reward"].mean()
-        print(game_stats)
         result_df = pandas.DataFrame([game_stats])
 
         result_df.to_csv(file_name, index=False)

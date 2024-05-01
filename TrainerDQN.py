@@ -16,7 +16,7 @@ class TrainerDQN:
         self.directory = directory
         self.verbose = verbose
         if not simulation and not playing:
-            ray.init()
+            ray.init(num_gpus=0)
 
         def policy_mapping_fn(agent_id, episode, worker):
             return "mr_x_policy" if agent_id == "mr_x" else "cop_policy"

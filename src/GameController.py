@@ -59,7 +59,7 @@ class GameController():
             self.user_actions[action.name] = False
         self.dt, self.prev_time = 0, 0
 
-        ray.init()
+        ray.init(num_gpus=0)
 
         trainer_ppo = TrainerPPO(playing=True)
         trainer_dqn = TrainerDQN(1, playing=True)
