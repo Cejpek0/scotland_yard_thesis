@@ -3,9 +3,9 @@ from src.SimulationController import SimulationController
 if __name__ == '__main__':
     simulation = SimulationController(save_dir="simulations",
                                       verbose=True,
-                                      experiment_training_iteration_count=4,
-                                      test_games_every_n_trainings=2,
-                                      test_games_count_per_pause=20)
+                                      experiment_training_iteration_count=2,
+                                      test_games_every_n_trainings=1,
+                                      test_games_count_per_pause=10)
     config = {
         "turns_ppo_vs_ppo": 1,
         "turns_random_vs_ppo": 1,

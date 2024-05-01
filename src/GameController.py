@@ -64,7 +64,10 @@ class GameController():
         trainer_ppo = TrainerPPO(playing=True)
         trainer_dqn = TrainerDQN(1, playing=True)
         self.algo_ppo = trainer_ppo.algo
-        self.algo_dqn = trainer_dqn.algo
+        
+        algo_dqn = trainer_dqn.algo
+        algo_dqn.reset_config(trainer_dqn.play_config)
+        self.algo_dqn = algo_dqn
 
     def game_loop(self):
         while self.running:

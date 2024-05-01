@@ -44,10 +44,7 @@ class ScotlandYardEnvironment(MultiAgentEnv):
         rewards = {agent: 0 for agent in self._agent_ids}
         direction = scotland_yard_game.Direction(action)
 
-        invalid_move = False
-
-        if self.game.is_valid_move(current_agent, direction) is False:
-            invalid_move = True
+        invalid_move = not self.game.is_valid_move(current_agent, direction)
 
         # If any action is invalid, do not proceed with the step. Do not update the game, and heavily penalize agents
         # that made invalid actions
@@ -68,7 +65,11 @@ class ScotlandYardEnvironment(MultiAgentEnv):
 
         # Calculate rewards
         turn_reward = self.get_rewards()
-        rewards[current_agent.name] = turn_reward[current_agent.name]
+        if self.game.get_game_status() == scotland_yard_game.GameStatus.ONGOING:
+            rewards[current_agent.name] = turn_reward[current_agent.name]
+        else:
+            rewards = turn_reward
+
         # Check if the game is over
         terminates = self.getTerminations()
 
@@ -99,7 +100,7 @@ class ScotlandYardEnvironment(MultiAgentEnv):
         """
         if invalid_actions_player is not None:
             return {invalid_actions_player: -20}
-        minimum_distance = scotland_yard_game.MAX_DISTANCE // 2
+        minimum_distance = 4
         rewards = {agent: 0.0 for agent in self._agent_ids}
         win_rewards = {agent: 0.0 for agent in self._agent_ids}
         inactivity_penalty = {agent: 0.0 for agent in self._agent_ids}
@@ -130,11 +131,13 @@ class ScotlandYardEnvironment(MultiAgentEnv):
 
         # __ MR X __ #
         # Distance to cops capped at 20 and - 20
+        closest_cop_distance = scotland_yard_game.MAX_DISTANCE
         for cop in self.game.get_cops():
             distance = self.game.get_mr_x().get_distance_to(cop.position)
-            if distance > 0:
-                distance_rewards["mr_x"] = round(
-                    (((distance - minimum_distance) / scotland_yard_game.MAX_DISTANCE) * 10) / 3, 10)
+            if distance < closest_cop_distance:
+                closest_cop_distance = distance
+        distance_rewards["mr_x"] = round(
+            (((closest_cop_distance - minimum_distance) / (scotland_yard_game.MAX_DISTANCE - minimum_distance)) * 20), 10)
 
         # __ COPS __ #
         possible_mr_x_positions = self.game.get_possible_mr_x_positions()

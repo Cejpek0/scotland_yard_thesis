@@ -20,6 +20,8 @@ class SimulationController:
         self.verbose = verbose
         verbose_print("Simulation Controller initializing", self.verbose)
         self.save_dir = save_dir
+        if not os.path.exists(self.save_dir):
+            os.makedirs(self.save_dir)
         self.experiment_directories = ["cop_dqn_mrx_ppo", "cop_ppo_mrx_dqn", "cop_dqn_mrx_dqn",
                                        "cop_ppo_mrx_ppo", "cop_random_mrx_ppo", "cop_ppo_mrx_random",
                                        "cop_dqn_mrx_random", "cop_random_mrx_dqn", "cop_random_mrx_random"]
@@ -75,7 +77,7 @@ class SimulationController:
             self.current_game_id += 1
         print("Random vs Random done")
 
-        files = glob.glob(os.path.join(self.save_dir, "simulation*"))
+        files = glob.glob(os.path.join(self.save_dir + "/", "simulation*"))
         simulation_count = len(files)
         self.last_simulation_time = datetime.now()
         self.merge_csv_results(simulation_count)
@@ -104,10 +106,10 @@ class SimulationController:
             verbose_print(f"Training iteration {current_train_iteration + 1} of {self.train_experiment_training_count}",
                           self.verbose)
             self.last_simulation_time = datetime.now()
-            self.dqn_trainer.train()
-            self.ppo_trainer.train()
+            self.dqn_trainer.train(number_of_iterations=1, save_interval=1)
+            self.ppo_trainer.train(number_of_iterations=1, save_interval=1)
             verbose_print(
-                f"Training iteration {current_train_iteration + 1} done in {datetime.now() - self.last_simulation_time}",
+                f"Training iteration {current_train_iteration + 1} of {self.train_experiment_training_count} done in {datetime.now() - self.last_simulation_time}",
                 self.verbose)
             current_train_iteration += 1
             if current_train_iteration % self.test_games_every_n_simulation == 0:
@@ -161,8 +163,8 @@ class SimulationController:
     def cleanup(self):
         ray.shutdown()
         for directory in self.experiment_directories:
-            files = glob.glob(os.path.join(self.save_dir + "/train_experiment/" + directory, '/game*.csv'))
-            files2 = glob.glob(os.path.join(self.save_dir + "/train_experiment/" + directory, '/iteration_*.csv'))
+            files = glob.glob(os.path.join(self.save_dir + "/train_experiment/" + directory + "/", 'game_*.csv'))
+            files2 = glob.glob(os.path.join(self.save_dir + "/train_experiment/" + directory + "/", 'iteration_*.csv'))
             for file in files:
                 os.remove(file)
             for file in files2:
@@ -172,11 +174,11 @@ class SimulationController:
         merged_data = pandas.DataFrame()
         for directory in self.experiment_directories:
             directory = self.save_dir + "/train_experiment/" + directory
-            game_files = glob.glob(os.path.join(directory, 'game*.csv'))
+            iteration_files = glob.glob(os.path.join(directory + "/", 'iteration_*.csv'))
 
-            for file in game_files:
+            for file in iteration_files:
                 data = pandas.read_csv(file)
-                merged_data = pandas.concat([merged_data, data], ignore_index=True)
+                merged_data = pandas.concat([merged_data, data], ignore_index=False)
 
         merged_data.to_csv(self.save_dir + "/train_experiment/results.csv", index=False)
 
@@ -184,18 +186,20 @@ class SimulationController:
         for directory in self.experiment_directories:
             merged_data = pandas.DataFrame()
             directory = self.save_dir + "/train_experiment/" + directory
-            game_files = glob.glob(os.path.join(directory, 'game*.csv'))
+            game_files = glob.glob(os.path.join(directory + "/", 'game_*.csv'))
 
             for file in game_files:
                 data = pandas.read_csv(file)
                 merged_data = pandas.concat([merged_data, data], ignore_index=True)
 
             merged_data["train_iteration"] = current_train_iteration
-            merged_data.to_csv(directory + f"/iteration_{current_train_iteration}", index=False)
-            self.cleanup()
+            merged_data.to_csv(directory + f"/iteration_{current_train_iteration}.csv", index=False)
+            game_files = glob.glob(os.path.join(self.save_dir + "/train_experiment/" + directory + "/", 'game_*.csv'))
+            for file in game_files:
+                os.remove(file)
 
     def merge_csv_results(self, sim_number):
-        game_files = glob.glob(os.path.join(self.save_dir, 'game*.csv'))
+        game_files = glob.glob(os.path.join(self.save_dir + "/", 'game_*.csv'))
         merged_data = pandas.DataFrame()
 
         for file in game_files:
@@ -232,7 +236,8 @@ class SimulationController:
         game_stats["avg_distance_between_cops"] = rounds_df["avg_distance_between_cops"].mean()
         game_stats["mr_x_avg_reward"] = rounds_df["mr_x_reward"].mean()
         game_stats["cops_avg_reward"] = rounds_df["cops_avg_reward"].mean()
-        result_df = pandas.DataFrame.from_dict(turn_stats, orient='index')
+        print(game_stats)
+        result_df = pandas.DataFrame([game_stats])
 
         result_df.to_csv(file_name, index=False)
 

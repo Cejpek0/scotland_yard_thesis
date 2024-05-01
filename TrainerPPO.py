@@ -38,11 +38,11 @@ class TrainerPPO:
         if not playing:
             my_config["num_rollout_workers"] = 4
         if simulation:
-            my_config.resources(num_cpus_per_worker=0.6)
+            my_config = my_config.resources(num_cpus_per_worker=0.6)
         else:
-            my_config.resources(num_gpus=1, num_gpus_per_worker=0.2)
-        my_config.framework("torch")
-
+            my_config = my_config.resources(num_gpus=1, num_gpus_per_worker=0.2)
+        my_config = my_config.framework("torch")
+        self.config = my_config
         # Set the config object's env.
         algo = PPO(env="scotland_env", config=my_config)
 
@@ -51,7 +51,7 @@ class TrainerPPO:
             verbose_print("Loading policies", self.verbose)
             algo.restore(directory)
         self.algo = algo
-        self.config = my_config
+        
 
     def train(self, number_of_iterations=1, save_interval=10):
         for i in range(number_of_iterations):
@@ -77,5 +77,5 @@ class TrainerPPO:
 
 if __name__ == "__main__":
     (TrainerPPO(directory="trained_policies_ppo", verbose=True)
-     .train(number_of_iterations=40, save_interval=1)
+     .train(number_of_iterations=10, save_interval=5)
      .cleanup())

@@ -8,7 +8,7 @@ from pandas import DataFrame
 from src.game.scotland_yard_game_logic import DefinedAlgorithms
 
 
-class SimulationController:
+class SimulationProcessor:
     def __init__(self):
         #relevant cols: cop_algo, mr_x_algo, game_result, game_id, mr_x_avg_distance_to_cop, avg_distance_between_cops, mr_x_reward,cops_avg_reward
         self.sim_dir = "../simulations/graphs"
@@ -51,7 +51,7 @@ class SimulationController:
 
 
 if __name__ == '__main__':
-    simulation = SimulationController()
+    simulation = SimulationProcessor()
     dataframe = simulation.get_dataframe_for(DefinedAlgorithms.PPO, DefinedAlgorithms.PPO)
     simulation.generate_graph_for(dataframe, DefinedAlgorithms.PPO, DefinedAlgorithms.PPO)
 

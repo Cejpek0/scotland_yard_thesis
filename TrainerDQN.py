@@ -1,7 +1,7 @@
 import os
 
 from ray.rllib.algorithms import DQN, DQNConfig
-from ray.rllib.algorithms.ppo import PPOConfig, PPO
+from ray.rllib.utils.checkpoints import get_checkpoint_info
 from ray.util.client import ray
 from ray.tune.registry import register_env
 from src.game import scotland_yard_game_logic as scotland_yard_game
@@ -11,7 +11,8 @@ from src.helper import verbose_print
 
 
 class TrainerDQN:
-    def __init__(self, max_iterations, directory="trained_policies_dqn", verbose=False, simulation=False, playing=False):
+    def __init__(self, max_iterations, directory="trained_policies_dqn", verbose=False, simulation=False,
+                 playing=False):
         self.directory = directory
         self.verbose = verbose
         if not simulation and not playing:
@@ -26,20 +27,36 @@ class TrainerDQN:
         register_env("scotland_env", env_creator)
 
         my_config = (DQNConfig()
-                     .training(model={"fcnet_hiddens": [64, 64]},
-                               lr=0.0005,
-                               gamma=0.999,
-                               target_network_update_freq=10,
+                     .training(model={"fcnet_hiddens": [128, 64]},
+                               lr=0.0002,
+                               gamma=0.99,
+                               target_network_update_freq=200,
                                double_q=True,
                                num_atoms=1,
                                noisy=True,
-                               n_step=3, )
+                               n_step=5)
                      .rollouts(batch_mode="complete_episodes"))
 
-        if not playing and not simulation:
-            my_config.exploration(explore=True, exploration_config={"type": "EpsilonGreedy", "initial_epsilon": 1.0,
-                                                                "final_epsilon": 0.05,
-                                                                "epsilon_timesteps": max_iterations * 1000})
+        if not playing:
+            my_config = my_config.exploration(explore=True,
+                                              exploration_config={"type": "EpsilonGreedy", "initial_epsilon": 0.8,
+                                                                  "final_epsilon": 0.05,
+                                                                  "epsilon_timesteps": max_iterations / 10 * 9 * 1000})
+        else:
+            my_config = my_config.exploration(explore=True,
+                                              exploration_config={"type": "EpsilonGreedy", "initial_epsilon": 0.05,
+                                                                  "final_epsilon": 0.05,
+                                                                  "epsilon_timesteps": 1})
+        replay_config = {
+            "_enable_replay_buffer_api": True,
+            "type": "MultiAgentPrioritizedReplayBuffer",
+            "capacity": 100000,
+            "prioritized_replay_alpha": 0.5,
+            "prioritized_replay_beta": 0.5,
+            "prioritized_replay_eps": 3e-6,
+        }
+
+        my_config.replay_buffer_config = replay_config
 
         my_config.evaluation_config = {
             "evaluation_interval": 10,
@@ -52,21 +69,27 @@ class TrainerDQN:
         }
 
         my_config["policy_mapping_fn"] = policy_mapping_fn
-
+        my_config["entropy_coeff"] = 0.01
         my_config["reuse_actors"] = False
+        my_config["train_batch_size"] = 128
         my_config.framework("torch")
         if simulation:
-            my_config.resources(num_cpus_per_worker=0.2)
-
+            my_config = my_config.resources(num_cpus_per_worker=0.2)
+        self.play_config = my_config.copy()
         # Set the config object's env.
         algo = DQN(env="scotland_env", config=my_config)
 
         # check if trained policies exist
-        if os.path.exists(directory):
+        if not playing and os.path.exists(directory):
             verbose_print("Loading policies", self.verbose)
             algo.restore(directory)
         self.algo = algo
         self.config = my_config
+
+        self.play_config = self.play_config.exploration(explore=True, exploration_config={"type": "EpsilonGreedy",
+                                                                                          "initial_epsilon": 0.05,
+                                                                                          "final_epsilon": 0.05,
+                                                                                          "epsilon_timesteps": 1})
 
     def adjust_rollout_fragment_length(self, iteration, start_length, max_length, total_iterations):
         progress = iteration / total_iterations
@@ -96,5 +119,6 @@ class TrainerDQN:
 
 
 if __name__ == "__main__":
-    TrainerDQN(max_iterations=50, directory="trained_policies_dqn", verbose=True).train(number_of_iterations=50, save_interval=50).cleanup()
+    TrainerDQN(max_iterations=200, directory="trained_policies_dqn", verbose=True).train(number_of_iterations=200,
+                                                                                          save_interval=10).cleanup()
     print("Done")

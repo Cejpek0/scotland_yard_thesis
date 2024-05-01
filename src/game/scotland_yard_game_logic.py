@@ -6,6 +6,7 @@ from enum import Enum
 import numpy as np
 from gymnasium import spaces
 from jinja2.nodes import Name
+from ray.rllib.algorithms import PPO
 from ray.rllib.policy.policy import PolicySpec
 
 from src.Cop import Cop
@@ -318,7 +319,7 @@ class ScotlandYardGameLogic:
         else:
             raise Exception("Generated action is not valid")
 
-    def get_action_for_player(self, player: Player, cop_algo, mr_x_algo) -> Direction:
+    def get_action_for_player(self, player: Player, cop_algo:PPO, mr_x_algo) -> Direction:
         # Use the policy to obtain an action for the given player and observation
         observations = self.get_observations()
 
@@ -332,13 +333,15 @@ class ScotlandYardGameLogic:
                         generated_action = self.get_random_action()
                     else:
                         generated_action = mr_x_algo.compute_single_action(observations[player.name],
-                                                                           policy_id="mr_x_policy", explore=False)
+                                                                           policy_id="mr_x_policy",
+                                                                           explore=True if mr_x_algo.__class__ == PPO else False)
                 else:
                     if cop_algo is None:
                         generated_action = self.get_random_action()
                     else:
                         generated_action = cop_algo.compute_single_action(observations[player.name],
-                                                                          policy_id="cop_policy", explore=False)
+                                                                          policy_id="cop_policy",
+                                                                          explore=True if cop_algo.__class__ == PPO else False)
             else:
                 generated_action = self.get_random_action()
                 verbose_print(f"Generated random action after 100 tries", self.verbose)
@@ -373,31 +376,18 @@ class ScotlandYardGameLogic:
     def play_turn(self, action: Direction | Name = None, cop_algo=None, mr_x_algo=None, verbose=False):
         if self.playing_player_index == 0:
             self.round_number += 1
-
+            
         player = self.get_current_player()
-        verbose_print(f"Player {player.name} is playing and player {'is' if player.is_mr_x() else 'is not'} mr x",
-                      self.verbose)
-        verbose_print(f"Generated action: {action}", self.verbose)
-        verbose_print(
-            f"Mrx_algo is {'None' if mr_x_algo is None else mr_x_algo.__class__} and cop_algo is {'None' if cop_algo is None else cop_algo.__class__}",
-            self.verbose)
-
         if action is None:
             if player.is_mr_x():
-                verbose_print("Player is really mr_x", self.verbose)
                 if mr_x_algo is None:
-                    verbose_print("His algo is random", self.verbose)
                     action = self.get_random_action()
                 else:
-                    verbose_print("His algo is not random", self.verbose)
                     action = self.get_action_for_player(player, cop_algo, mr_x_algo)
             elif player.is_cop():
-                verbose_print("Player is really cop", self.verbose)
                 if cop_algo is None:
-                    verbose_print("His algo is random", self.verbose)
                     action = self.get_random_action()
                 else:
-                    verbose_print("His algo is not random", self.verbose)
                     action = self.get_action_for_player(player, cop_algo, mr_x_algo)
 
         self.move_player(player, action)
@@ -412,7 +402,8 @@ class ScotlandYardGameLogic:
             self.get_mr_x().mr_x_reveal_position()
         self.playing_player_index = (self.playing_player_index + 1) % len(self.players)
 
-        #verbose_print(self.get_rewards_fake(), self.verbose)
+        #verbose_print(self.get_simulation_rewards_fake(), self.verbose)
+        #print(self.get_simulation_rewards())
 
         return self
 
@@ -571,17 +562,20 @@ class ScotlandYardGameLogic:
                         possible_mr_x_positions.append(position)
         return possible_mr_x_positions
 
-    def get_simulation_rewards(self) -> {str: float | None}:
+    def get_simulation_rewards(self, invalid_actions_player: str | None = None) -> {str: float | None}:
         """
         Calculate rewards for all agents
-        win_rewards: Rewards for winning the game: 50 for direct win. 30 for indirect win. -50 for losing
+        win_rewards: Rewards for winning the game: 50 for direct win. 30 for indirect win. -20 for losing
         distance_rewards: Rewards for being close to the target: capped at 10
         inactivity_penalty: Penalty for being inactive: starts after 5 turns: -0.5 per turn including the 5 turns
-        inside_rewards: Rewards for being inside the area of interest: 20
+        inside_rewards: Rewards for being inside the area of interest: 12
         invalid_actions_player: Penalize the agent that made an invalid action: -20
+        :param invalid_actions_player: Player that made an invalid action
         :return: Dictionary of rewards for all agents: {agent_id: reward}
         """
-        minimum_distance = MAX_DISTANCE // 2
+        if invalid_actions_player is not None:
+            return {invalid_actions_player: -20}
+        minimum_distance = 4
         rewards = {agent: 0.0 for agent in self.get_players_names()}
         win_rewards = {agent: 0.0 for agent in self.get_players_names()}
         inactivity_penalty = {agent: 0.0 for agent in self.get_players_names()}
@@ -596,11 +590,12 @@ class ScotlandYardGameLogic:
                     win_rewards[cop.name] = 50
                 else:
                     win_rewards[cop.name] = 30
+            win_rewards["mr_x"] = -50
         elif self.get_game_status() == GameStatus.MR_X_WON:
             win_rewards["mr_x"] = 50
-            win_rewards["cop_1"] = -50
-            win_rewards["cop_2"] = -50
-            win_rewards["cop_3"] = -50
+            win_rewards["cop_1"] = -20
+            win_rewards["cop_2"] = -20
+            win_rewards["cop_3"] = -20
 
         # Inactivity penalty #
         for agent in self.get_players_names():
@@ -611,11 +606,13 @@ class ScotlandYardGameLogic:
 
         # __ MR X __ #
         # Distance to cops capped at 20 and - 20
+        closest_cop_distance = MAX_DISTANCE
         for cop in self.get_cops():
             distance = self.get_mr_x().get_distance_to(cop.position)
-            if distance > 0:
-                distance_rewards["mr_x"] = round(
-                    (((distance - minimum_distance) / MAX_DISTANCE) * 10) / 3, 10)
+            if distance < closest_cop_distance:
+                closest_cop_distance = distance
+        distance_rewards["mr_x"] = round(
+            (((closest_cop_distance - minimum_distance) / (MAX_DISTANCE - minimum_distance)) * 20), 10)
 
         # __ COPS __ #
         possible_mr_x_positions = self.get_possible_mr_x_positions()
@@ -624,7 +621,7 @@ class ScotlandYardGameLogic:
             # If the cop is inside the area of interest
             if cop.position in possible_mr_x_positions:
                 # Being inside the area of interest
-                inside_rewards[cop.name] = 20
+                inside_rewards[cop.name] = 12
             else:
                 # Closer to the area of interest, the more reward is gained
                 # Maximum reward is 10, so being inside location of interest is more beneficial
