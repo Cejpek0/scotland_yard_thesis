@@ -16,7 +16,7 @@ from src.helper import verbose_print
 class SimulationController:
     def __init__(self, save_dir, verbose=False, experiment_training_iteration_count=10_000,
                  test_games_every_n_trainings=10, test_games_count_per_pause=100):
-        ray.init(num_gpus=0, num_cpus=4)
+        ray.init(num_gpus=0, num_cpus=8)
         self.verbose = verbose
         verbose_print("Simulation Controller initializing", self.verbose)
         self.save_dir = save_dir
@@ -49,7 +49,7 @@ class SimulationController:
 
         self.simulation_start_time = datetime.now()
 
-        # PPO_cop vs PPO_x 
+        # PPO_cop vs PPO_x
         for i in range(games_ppo_vs_ppo):
             self.simulate_game(self.ppo_trainer.algo, DefinedAlgorithms.PPO,
                                self.ppo_trainer.algo, DefinedAlgorithms.PPO)
@@ -141,6 +141,7 @@ class SimulationController:
         verbose_print("Running train experiment", self.verbose)
 
         current_train_iteration = 0
+        verbose_print("Running simulations with 0 training", self.verbose)
         self.simulate_all_variants()
         self.merge_csv_train_experiment_results(current_train_iteration)
         while current_train_iteration < self.train_experiment_training_count:
@@ -200,7 +201,7 @@ class SimulationController:
 
             merged_data["train_iteration"] = current_train_iteration
             merged_data.to_csv(directory + f"/iteration_{current_train_iteration}.csv", index=False)
-            game_files = glob.glob(os.path.join(self.save_dir + "/train_experiment/" + directory + "/", 'game_*.csv'))
+            game_files = glob.glob(os.path.join(directory + "/", 'game_*.csv'))
             for file in game_files:
                 os.remove(file)
 

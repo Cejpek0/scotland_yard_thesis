@@ -71,10 +71,12 @@ class TrainerDQN:
         my_config["policy_mapping_fn"] = policy_mapping_fn
         my_config["entropy_coeff"] = 0.01
         my_config["reuse_actors"] = False
+        if not playing:
+            my_config["num_rollout_workers"] = 4
         my_config["train_batch_size"] = 128
         my_config.framework("torch")
         if simulation:
-            my_config = my_config.resources(num_cpus_per_worker=0.2)
+            my_config = my_config.resources(num_cpus_per_worker=0.8)
         self.play_config = my_config.copy()
         # Set the config object's env.
         algo = DQN(env="scotland_env", config=my_config)

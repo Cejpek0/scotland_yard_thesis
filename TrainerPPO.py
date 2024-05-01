@@ -38,7 +38,7 @@ class TrainerPPO:
         if not playing:
             my_config["num_rollout_workers"] = 4
         if simulation:
-            my_config = my_config.resources(num_cpus_per_worker=0.6)
+            my_config = my_config.resources(num_cpus_per_worker=1.2)
         my_config = my_config.framework("torch")
         self.config = my_config
         # Set the config object's env.
