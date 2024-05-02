@@ -100,12 +100,10 @@ class SimulationController:
 
     def simulate_all_variants(self):
         save_dir_train_experiment = self.save_dir + "/train_experiment/"
-        proc_1 = Process(target=self.batch_simulation(self.number_of_test_games_per_pause,
+        self.batch_simulation(self.number_of_test_games_per_pause,
                               self.dqn_trainer.algo, DefinedAlgorithms.DQN,
                               self.ppo_trainer.algo, DefinedAlgorithms.PPO,
-                              use_game_id=False, save_dir=save_dir_train_experiment + "cop_dqn_mrx_ppo"))
-
-
+                              use_game_id=False, save_dir=save_dir_train_experiment + "cop_dqn_mrx_ppo")
         self.batch_simulation(self.number_of_test_games_per_pause,
                               self.ppo_trainer.algo, DefinedAlgorithms.PPO,
                               self.dqn_trainer.algo, DefinedAlgorithms.DQN,
