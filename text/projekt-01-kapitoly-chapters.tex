@@ -3,7 +3,7 @@
 \chapter{Úvod}
 \label{ch:uvod}
 
-V dnešní době, je umělá inteligence(AI), postupem let všudypřítomnější a její vliv ovlivňuje sloustu aspektů našeho života.
+V dnešní době, je obor umělé inteligence(AI), postupem let všudypřítomnější a její vliv ovlivňuje sloustu aspektů našeho života.
 
 Pokrok umělé inteligence je často a nejlépe měřen její aplikováním v oblasti her.
 A to proto, že právě hry nabízí jasně definovaná pravidla a cíle, čímž se stávají ideálním testovacím prostorem pro algoritmy umělé inteligence.
@@ -17,7 +17,7 @@ Policisté, avšak nevědí, kde na herním poli se Pan X nachází.
 A musí tedy odhadovat jeho pozici a spolupracovat mezi sebou, aby ho mohli polapit.
 Pozice Pana X je policistům odhalena pouze v určitých kolech.
 Hra je u konce, když Pan X chycen policisty (vyhrávají policisté), nebo když je dosažen maximální počet kol (vyhrává Pan X).
-Scotland Yard je ideální hrou ke studování umělé inteligence, protože se jedná o hru s nedokonalou informací a k vítězství policistů je zapotřebí spolupráce a strategie.
+Scotland Yard je ideální hrou ke studování neučitosti ve hrách hranýmy systémy umělé inteligence, protože se jedná o hru s nedokonalou informací a k vítězství policistů je zapotřebí spolupráce a strategie.
 
 Tato práce zkoumá algoritmy posilovaného učení, jejich použití na hry s neurčitostí a jejich porovnání s klasickými metodami hraní her.
 Algoritmus proximální optimalizace politiky (Proximal Policy Optimization--PPO) je hlavním zkoumaným algoritmem této práce.
@@ -30,7 +30,7 @@ Jelikož tento typ hry přesně odpovídá i hře Scotland Yard, zdá se být vh
 Také další studie~\cite{Manille} a \cite{Dota2} tento výrok dále podporují a dokazují vhodnost algoritmu PPO pro tuto práci.
 
 Zaměření této práce jsem si vybral, jelikož mi vždy byla umělá inteligence blízká a vždy jsem chtěl začít tomuto odvětví více věnovat i po praktické stránce.
-Algoritmus je pro mě zajímavý a zkušenost s tímto algoritmém by se dala využít v mém dalším pracovním životě.\page
+Algoritmus je pro mě zajímavý a zkušenost s tímto algoritmém by se dala využít v mém dalším pracovním životě.\newpage
 
 Pro zpracování práce byly využity tyto hlavní knihovny:
 \begin{itemize}
@@ -54,15 +54,6 @@ Scotland Yard je populární hra pro tři a více hráčů, která kombinuje prv
 Jeden hráč hraje za Pana X, který se snaží uniknout policistům a ty ovládají zbylí hráči.
 Hra končí, když je Pan X chycen (vyhrávají policisté), nebo když je dosažen maximální počet kol (vyhrává Pan X).
 Originální hra se odehrává v na mapě Londýna.
-Na této herní mapě nachází 200 polí, které jsou vzájemně propojené náhodnými cestami.
-Každá z těchto cest povoluje pouze určitý způsob dopravy (např. pouze taxíkem, pouze autobusem atd.).
-Jednotliví hráči využívají prvky veřejné dopravy k pohybu po herní ploše, kterými jsou:
-\begin{itemize}
-  \item \emph{Taxi}
-  \item \emph{Autobus}
-  \item \emph{Metro}
-  \item \emph{Trajekt}
-\end{itemize}
 
 \begin{figure}[H]
 	\centering
@@ -70,6 +61,19 @@ Jednotliví hráči využívají prvky veřejné dopravy k pohybu po herní plo�
 	\caption{Ukázka herní mapy hry Scotland Yard.
   Zdroj: \cite{scotland_original_image}}\label{fig:figure}
 \end{figure}
+\newpage
+
+Na této herní mapě nachází 200 polí, které jsou vzájemně propojené náhodnými cestami.
+Každá z těchto cest povoluje pouze určitý způsob dopravy (např. pouze taxíkem, pouze autobusem atd.).
+Jednotliví hráči využívají prvky veřejné dopravy k pohybu po herní ploše, kterými jsou:
+
+\begin{itemize}
+  \item \emph{Taxi}\vspace{-0.3cm}
+  \item \emph{Autobus}\vspace{-0.3cm}
+  \item \emph{Metro}\vspace{-0.3cm}
+  \item \emph{Trajekt}\vspace{-0.3cm}
+\end{itemize}
+
 
 Každému hráči je na začátku hry přidělen pouze určitý počet jízdenek na tyto dopravní prostředky.
 K využití dopravy je potřebná právě tato jízdenka.
@@ -80,18 +84,18 @@ Hlavní zápletkou hry je, že po většinu kol je pozice Pana X policistům uta
 Odhaluje se jim pouze určená kola.
 To znamená, že policisté pro polapení Pana X musí odhadovat jeho pozici a spolupracovat mezi sebou.
 Tímto se ze hry Scotland Yard stává hra s nedokonalou informací, jelikož policisté nevidí přesnou pozici Pana X\@.
-Tento fakt ji činí vhodnou pro studování a rozvíjení oboru umělé inteligence.
+Tento fakt ji činí vhodnou pro studování metod hraní her s neurčitostí.
 
 \section{Další hry s nedokonalou informací}\label{sec:dalsi-hry-s-nedokonalou-informaci}
 V oblasti umělé inteligence hraje důležitou roli modelování a řešení her.
 Hry představují formalizaci konfliktních interakcí mezi aktéry.
 Klasická teorie her se zaměřuje na hry s úplnou informací, kde mají všechny strany v daném okamžiku přístup ke všem relevantním informacím z herního prostředí.
 Znají strategie a cíle ostatních hráčů.
-V praxi se však častěji setkáváme se situacemi, kde jednotlivým stranám chybí spousta informací, ať už se jedná o prostředí či cíli soupeře.
+V praxi se však častěji setkáváme se situacemi, kde jednotlivým stranám chybí některé informace, ať už se jedná o prostředí či cíli soupeře.
 
 \subsection{Bayesovské hry}
 Tyto případy lze modelovat pomocí her s neúplnou či nedokonalou informací, kde hráči nemají úplné znalosti o prostředí nebo soupeřích.
-Neúplnou informaci můžeme sledovat například v:
+Neúplnou informaci můžeme sledovat například u Bayesovských her.
 
 \begin{definition}[Bayesovská hra]
 \cite{Y_Narahari} je definována pěticí $(N, A_i, \theta_i, p(\theta_i), u_i)$, kde:
@@ -105,7 +109,7 @@ Neúplnou informaci můžeme sledovat například v:
 \end{itemize}
 \end{definition}
 
-Bayesovské hry představují formální rámec sloužící k modelování her s neúplnou informací.
+Bayesovské hry představují formální rámec sloužící k modelování a popisu her s neúplnou informací.
 
 \subsection{Stratego}\label{subsec:stratego}
 Stratego je desková strategická hra pro dva hráče
@@ -138,7 +142,7 @@ To můžou hráči učinit například obětováním slabších figur, aby odhal
   Zdroj: \cite{Stratego_image}}\label{fig:figure2}
 \end{figure}
 
-Z pohledu umělé inteligence je Stratego zapeklitý problém.
+Z pohledu umělé inteligence je Stratego zajímavý problém.
 Nejenže je hra s nedokonalou informací a je tedy zapotřebí odhadovat oponentovy tahy a blafovat.
 Hra ale také má obrovský stavový prostor $10^{535}$\cite{Perolat_2022}, čímž je prakticky neřešitelná klasickými metodami, které prochází celý stavový prostor.
 Až do roku 2022 nebyla umělá inteligence v této hře velmi úspěšná a nedokázala se rovnat expertním hráčům.
@@ -169,7 +173,7 @@ Dota 2 je pro umělou inteligenci náročnou výzvou z těchto důvodů:
   \item Složitost hry
   Dota 2 je komplexní hra s mnoha proměnnými a možnostmi.
   Její stav se mění velmi rychle a je tedy těžké předpovědět vývoj hry.
-  Agenti umělé inteligence tedy musí být schopni rychle reagovat na změny a tím přizpůsobit svoji strategii.
+  Agenti tedy musí být schopni rychle reagovat na změny a tím přizpůsobit svoji strategii.
   \item Nedokonalá informace
   Právě kvůli válečné mlze nemají hráči úplnou informaci o pozici nepřátelských jednotek a musí tedy pouze odhadovat kde na mapě se nachází.
   Neznají ani jestli jsou nepřátelé schopni použít své schopnosti a předměty.
@@ -177,11 +181,14 @@ Dota 2 je pro umělou inteligenci náročnou výzvou z těchto důvodů:
 
 Dota 2 sama o sobě obsahuje implementaci chování umělé inteligence.
 Její výkon však není dostatečný a nebyla schopna ani zdaleka porazit nejlepší hráče světa.
-Použité metody pro vytvoření této umělé inteligence bohužel nejsou zveřejněny.
+Použité metody pro vytvoření těchto agentů bohužel nejsou zveřejněny.
 
+\ref{subsec:dota}
 Inovaci umělé inteligence v této hře opět přinesla společnost OpenAI a jejich projekt \emph{OpenAI Five}\cite{Dota2}.
-Tento projekt se zaměřil na vytvoření umělé inteligence, která by byla schopna porazit nejlepší hráče světa ve hře Dota 2.
-OpenAi nepřišel se žádným novým algoritmem, ale pouze s novým přístupem k trénování a využití algoritmu \textbf{PPO} v doposud neviděném velkém měřítku. 
+Tento projekt se zaměřil na vytvoření agenta, který by byl schopna porazit nejlepší hráče světa ve hře Dota 2.
+OpenAi nepřišel se žádným novým algoritmem, ale pouze s novým přístupem k trénování a využití algoritmu \textbf{PPO} v doposud neviděném měřítku. 
+Algoritmus PPO a posilované učení bodou blíže popsáni v následujících sekcích \ref{sec:proximalni-optimalizace-politiky} a \ref{sec:klicove-koncepty-posilovaneho-uceni}.
+
 OpenAi Five porazil tehdejší nejlepší tým světa během exibice na nejprestižnejším turnaji Dota2 \textit{The International}.
 Hrála se klasická turnajová verze, a to tedy nejlepší ze tří.
 OpenAI Five byl schopen porazit nejlepší tým světa s rozhodným výsledkem 2:0.
@@ -239,8 +246,16 @@ Ta definuje, které akce jsou v momentálním stavu prostředí proveditelné.
 
 \subsection{Diskrétní a spojitý prostor}\label{subsec:diskretni-a-spojity-prostor}
 
-Pokud se bavíme o \textbf{diskrétním prostoru} v oblasti umělé inteligence, bavíme se o prostoru kde jeho hodnoty mohou nabývat pouze celočíselných hodnot.
-Například, pokud máme prostor kde se agent může hýbat pouze 4 směry (nahoru, dolů, doleva a doprava) jedná se o diskrétní akční prostor.
+Pokud se bavíme o \textbf{diskrétním prostoru} v oboru umělé inteligence, bavíme se o konečném prostoru prostoru. 
+Skládá se tedy z konečného počtu prvků.
+Příkladem takového prostoru je například pozorovací prostor, jehož vstupem je fotka.
+Ta se dělí na přesně daný pošet pixelů a je tedy diskrétní.
+Dískrétní akční prostory jsou počítatelné a často se jedná o konečnou množinu možných akcí.
+
+Zato \textbf{spojitý prostor} je nekonečný prostor, který může obsahovat nekonečný počet prvků. 
+Spojitý pozorovací prostor je například ten, jehož vstupem je audio stopa.
+Spojité akční prostory jsou nekonečné a často je definuje nekonečná množina akcí.
+Na prostředí se spojitýmy prostory se často používají jiné algoritmy, například algoritmus DDPG (Hluboký deterministický gradient politiky).
 
 \bigskip
 
@@ -260,6 +275,7 @@ Díky tomuto můžeme například schovat agentovi \textit{A} určité informace
 \subsection{Politika}\label{subsec:politika}
 
 Pomocí posilovaného učení vzniká takzvaná politika.
+V češtině se také může pojem politika přeložit jako strategie.
 Politika je matematická funkce, která definuje agentovo chování na základě jeho pozorování (stavu).
 Snaží se definovat takové chování, které vede k maximální kumulativní odměně.
 Politika může být deterministická nebo stochastická.
@@ -294,9 +310,12 @@ Politika může být deterministická nebo stochastická.
 
 \subsection{Akce}\label{subsec:akce}
 
-Akce je přechod z aktuálního stavu, do následujícího stavu z množiny možných stavů.
+Akce je aktivita, proces či funkce kterou agent vykoná ve specifickém stavu \cite{ActionCo67}.
+Výsledkem provedení akce je tedy změna z aktuálního stavu, do jiného, či stejného stavu z množiny možných stavů.
 Zjednodušeně, je to rozhodnutí, které agent vykonává v prostředí a toto rozhodnutí ovlivňuje prostředí.
-Akce je zvolena dle politiky a je závislá na aktuálním stavu agenta.
+
+Akce může být také nedeterministická či stochastická.
+Výsledný stav tedy může být stejný pro stejný stav a akci.
   
 \subsection{Odměna}\label{subsec:odmena}
 
@@ -363,6 +382,8 @@ Dociluje toho tak, že rozděluje hodnotovou funkci na dvě části: \emph{okam�
 \begin{equation}
   Q(s, a) = E[R_{t+1} + \gamma E_{a\sim\pi}Q(S_{t+1}, a) | S_t = s, A_t = a]\label{eq:bellman2}
 \end{equation}
+
+
 
 \subsection{Rovnováha mezi explorací a exploatací (exploration-exploitation dillemma)}
 \label{subsec:exploration-exploitation-dillemma}
@@ -648,7 +669,7 @@ Tato úprava vede k tomu, že se zjednodušila strategie agentů, jelikož se ne
 Změny, avšak nemění základní podstatu hry, zachovává neurčitost, ale značně zjednodušuje implementaci.
 Stavový prostor je tedy zjednodušený a tím se i snižují nároky na výkon.
 
-\section{Implementace umělé inteligence do hry Scotland Yard pomocí algoritmu PPO}
+\section{Implementace modelu a agentů do hry Scotland Yard pomocí algoritmu PPO}
 \label{sec:implementace}
 
 \subsection{Použité technologie}\label{subsec:pouzite-technologie}
@@ -660,6 +681,7 @@ Pro tuto práci byla vybrána knihovna \emph{Pytorch}.
 
 Před finálním rozhodnutím pro využití frameworku Ray byly zkoumány i další možnosti.
 Knihovna Stable Baselines 3, která byla zavrhnuta, jelikož neumožňuje učení více politik souběžně při hraním agentů proti sobě.
+Knihovna \textit{CleanRL} byla také zavrhnuta, jelikož nemá dostatečně implementované trénování více politik souběžně.
 
 \subsection{Implementace uživatelského rozraní a herních mechanizmů}\label{subsec:implementace-uzivatelskeho-rozrani-a-hernich-mechanizmu}
 
@@ -848,14 +870,21 @@ Pro ověření výkonu algoritmu PPO bylo provedeno několik experimentů.
 Experimenty byly prováděny na systému s následujícími parametry:
 
 \begin{itemize}
-  \item Operační systém: Windows 11 (64-bit)
+  \item Operační systém: Windows 10 (64-bit)
   \item Procesor: Intel Core i5--9300H
   \item Paměť: 16GB DDR4
   \item Grafická karta: NVIDIA GeForce GTX 1660 Ti
 \end{itemize}
 
-Všechny experiment, kromě experimentu 3~\nameref{sec:experiment-3}, byly provedeny za těchto podmínek:\\
-Všichni agenti se učili ve stejném prostředí, za stejných počátečních podmínek, měli totožný stavový i akční prostor a stejné odměny.
+Agenti DQN i PPO se učili ve stejném prostředí, za stejných počátečních podmínek, měli totožný stavový i akční prostor a stejné odměny.
+
+Pro experimenty byl vytvořen skript v jazyce Python.
+Sbírání dat pro experimenty probíhali následovně:
+Celkově bylo provedeno 5000 trénovacích cyklů.
+Mezi trénováním byly každých 10 cyklů provedeny simulace.
+Simulace byly provedeny 100 krát pro každou kombinaci algoritmů.
+Testovany byly algoritmy PPO, DQN a náhodné chování.
+Celkově tedy 
 
 \bigskip
 \noindent Pomocí algoritmu \textbf{PPO} byl agent trénován \emph{1000} krát.\\
@@ -872,7 +901,7 @@ Také porovnává agenty trénované pomocí PPO s DQN\@.
 \section{Experiment 2: Blízkost policistů k Panu X}
 \label{sec:experiment-2}
 
-Měřit výkonnost agentů pomocí pouze výsledků není dostačující.
+Měřit výkonnost agentů pouze pomocí průměrné odměny není dostačující.
 Co ale zásadně prokazuje schopnost agenta porozumět hře a prostředí je v tomto případ průměrná hodnota vzdálenosti policistů od Pana X.
 Čím je tato průměrná vzdálenost nižší tím jasnější je že policisté úspěšně odhadují pohyby Pana X a tím výrazně zvětšují své šance na jeho polapení.
 
@@ -882,19 +911,27 @@ Co ale zásadně prokazuje schopnost agenta porozumět hře a prostředí je v t
 Kromě optimálních výsledků je také důležité brát zřetel za jakou dobu agent tohoto stavu dosáhl.
 Tento experiment zkoumá, jak se vyvíjí odměny agentů v průběhu trénování
 
+1 trénovací cyklus algoritmu PPO a DQN zároveň trval průměrně 15 vteřin.
+Následná simulace 100 her pro všechny varianty agentů trvaly průměrně 75 vteřin.
 
 \chapter{Závěr}
 \label{ch:zaver}
 
 Experimenty ukázali že algoritmus PPO je skutečně vhodný na hry s neúplnou informací.
 Zkoumaní agenti dokázali pochopit koncept a cíl hry Scotland Yard a naučili se, jak se v ní optimálně chovat, přestože začínali s nulovým věděním a hráli jen proti sobě.
-
+Bylo příjemným překvapením, že již po pouhých 10 iterací trénování byli agenti schopni projevovat náznaky pochopení cíle hry..
 
 \section*{Možná vylepšení}
 \label{sec:mozna-vylepseni}
 
 Bohužel se během experimentu nepovedlo separovat výslednou politiku od frameworku Ray.Rlib a extrahovat ji do podoby kde by již Rlib nebyl potřeba pro její zpracování.
 Při spouštění hry se tedy načítá i celý framework Ray.Rlib, toto velmi zpomaluje načítání hry kdy prvotní načtení trvá několik desítek sekund.
+Toto a spoustu dalších potíží jsou důvody proč zvolení knihovny Ray.Rllib zpětně lituji.
+Měl jsem spíše algoritmus PPO implementovat sám za pomocí Pytorch či Tensorflow.
+Nebo využít knihovnu CleanRl a učení více politik naráz vyřešit jiným způsobem.
+Ač se Ray.Rllib navenek jeví jako velmi propracovaná a komplexní knihovna.
+V praxi se ukázalo, že obsahuje mnoho chyb a nekompletních řešení.
+Tuto zkutečnost jsem avšak odhalil až příliš pozdě na změnu směru této práce a pokračoval jsem s knihovnou Ray.Rlib.
 
 Původním plánem bylo také realizovat možnost hraní hry mezi hráčem a umělou inteligencí.
 Tuto implementaci jsem, avšak nestihl dokončit.
