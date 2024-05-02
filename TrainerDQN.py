@@ -5,7 +5,7 @@ from ray.rllib.utils.checkpoints import get_checkpoint_info
 from ray.util.client import ray
 from ray.tune.registry import register_env
 from src.game import scotland_yard_game_logic as scotland_yard_game
-from src.environments.rlib.scotland_yard_environment import ScotlandYardEnvironment
+from src.environments.rlib.scotland_yard_environment import ScotlandYardEnvironment, policy_mapping_fn
 
 from src.helper import verbose_print
 
@@ -17,9 +17,6 @@ class TrainerDQN:
         self.verbose = verbose
         if not simulation and not playing:
             ray.init(num_gpus=0)
-
-        def policy_mapping_fn(agent_id, episode, worker):
-            return "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
 
         def env_creator(env_config):
             return ScotlandYardEnvironment({}, scotland_yard_game.DefinedAlgorithms.PPO, simulation=simulation)

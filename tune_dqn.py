@@ -7,7 +7,7 @@ from ray.tune.stopper import MaximumIterationStopper
 from ray.util.client import ray
 from ray.tune.registry import register_env
 from src.game import scotland_yard_game_logic as scotland_yard_game
-from src.environments.rlib.scotland_yard_environment import ScotlandYardEnvironment
+from src.environments.rlib.scotland_yard_environment import ScotlandYardEnvironment, policy_mapping_fn
 from ray.rllib.examples.models.centralized_critic_models import (
     TorchCentralizedCriticModel,
 )
@@ -86,11 +86,6 @@ if __name__ == "__main__":
         "mr_x_policy": scotland_yard_game.MR_X_POLICY_SPEC,
         "cop_policy": scotland_yard_game.COP_POLICY_SPEC,
     }
-
-
-    def policy_mapping_fn(agent_id, episode, worker):
-        return "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
-
 
     tune_config["policy_mapping_fn"] = policy_mapping_fn
 

@@ -167,14 +167,9 @@ class SimulationController:
                 self.last_simulation_time = None
 
             if current_train_iteration % 100 == 0:
-                print("copy")
-                print(os.path.exists("../trained_policies_dqn"))
-                print(os.path.exists("../trained_policies_dqn/"))
-                print(os.path.exists("trained_policies_dqn"))
-                print(os.path.exists("trained_policies_dqn/"))
                 from distutils.dir_util import copy_tree
-                copy_tree("../trained_policies_dqn", "../trained_policies_dqn_copy")
-                copy_tree("../trained_policies_ppo", "../trained_policies_ppo_copy")
+                copy_tree("trained_policies_dqn", "trained_policies_dqn_copy")
+                copy_tree("trained_policies_ppo", "trained_policies_ppo_copy")
 
         self.merge_final_train_experiment_results()
         verbose_print("Train experiment done", self.verbose)

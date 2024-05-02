@@ -6,6 +6,8 @@ from ray.rllib import MultiAgentEnv
 from ray.rllib.utils.typing import AgentID
 import src.game.scotland_yard_game_logic as scotland_yard_game
 
+def policy_mapping_fn(agent_id, episode, worker):
+    return "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
 
 class ScotlandYardEnvironment(MultiAgentEnv):
     _agent_ids = ["mr_x", "cop_1", "cop_2", "cop_3"]
