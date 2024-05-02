@@ -266,8 +266,6 @@ class ScotlandYardGameLogic:
 
         for cop_number in range(1, self.number_of_cops + 1):
             cop = self.get_player_by_number(cop_number)
-            if self.agents_is_in_previous_location_count[cop.name] > MAX_NUMBER_OF_TURNS:
-                verbose_print(f"ERROR:{self.agents_is_in_previous_location_count}", self.verbose)
             obs_list_cop = np.array([
                 self.get_current_round_number(),
                 self.get_max_rounds(),
@@ -319,7 +317,7 @@ class ScotlandYardGameLogic:
         else:
             raise Exception("Generated action is not valid")
 
-    def get_action_for_player(self, player: Player, cop_algo:PPO, mr_x_algo) -> Direction:
+    def get_action_for_player(self, player: Player, cop_algo: PPO, mr_x_algo) -> Direction:
         # Use the policy to obtain an action for the given player and observation
         observations = self.get_observations()
 
@@ -376,7 +374,7 @@ class ScotlandYardGameLogic:
     def play_turn(self, action: Direction | Name = None, cop_algo=None, mr_x_algo=None, verbose=False):
         if self.playing_player_index == 0:
             self.round_number += 1
-            
+
         player = self.get_current_player()
         if action is None:
             if player.is_mr_x():
@@ -403,8 +401,6 @@ class ScotlandYardGameLogic:
         self.playing_player_index = (self.playing_player_index + 1) % len(self.players)
 
         #verbose_print(self.get_simulation_rewards_fake(), self.verbose)
-        #print(self.get_simulation_rewards())
-
         return self
 
     # -- END: GAMEPLAY FUNCTIONS -- #
