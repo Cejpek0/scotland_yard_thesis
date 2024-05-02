@@ -2,6 +2,7 @@ import csv
 import glob
 import os
 from datetime import datetime
+from multiprocessing import Process
 
 import pandas
 import ray
@@ -99,10 +100,12 @@ class SimulationController:
 
     def simulate_all_variants(self):
         save_dir_train_experiment = self.save_dir + "/train_experiment/"
-        self.batch_simulation(self.number_of_test_games_per_pause,
+        proc_1 = Process(target=self.batch_simulation(self.number_of_test_games_per_pause,
                               self.dqn_trainer.algo, DefinedAlgorithms.DQN,
                               self.ppo_trainer.algo, DefinedAlgorithms.PPO,
-                              use_game_id=False, save_dir=save_dir_train_experiment + "cop_dqn_mrx_ppo")
+                              use_game_id=False, save_dir=save_dir_train_experiment + "cop_dqn_mrx_ppo"))
+
+
         self.batch_simulation(self.number_of_test_games_per_pause,
                               self.ppo_trainer.algo, DefinedAlgorithms.PPO,
                               self.dqn_trainer.algo, DefinedAlgorithms.DQN,
@@ -162,6 +165,16 @@ class SimulationController:
                 self.merge_csv_train_experiment_results(current_train_iteration)
                 verbose_print(f"Merge took {datetime.now() - self.last_simulation_time}", self.verbose)
                 self.last_simulation_time = None
+
+            if current_train_iteration % 100 == 0:
+                print("copy")
+                print(os.path.exists("../trained_policies_dqn"))
+                print(os.path.exists("../trained_policies_dqn/"))
+                print(os.path.exists("trained_policies_dqn"))
+                print(os.path.exists("trained_policies_dqn/"))
+                from distutils.dir_util import copy_tree
+                copy_tree("../trained_policies_dqn", "../trained_policies_dqn_copy")
+                copy_tree("../trained_policies_ppo", "../trained_policies_ppo_copy")
 
         self.merge_final_train_experiment_results()
         verbose_print("Train experiment done", self.verbose)

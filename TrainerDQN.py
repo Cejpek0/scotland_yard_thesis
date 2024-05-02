@@ -82,7 +82,7 @@ class TrainerDQN:
         algo = DQN(env="scotland_env", config=my_config)
 
         # check if trained policies exist
-        if not playing and os.path.exists(directory):
+        if os.path.exists(directory):
             verbose_print("Loading policies", self.verbose)
             algo.restore(directory)
         self.algo = algo
