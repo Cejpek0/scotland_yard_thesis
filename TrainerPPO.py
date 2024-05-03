@@ -12,6 +12,7 @@ from src.helper import verbose_print
 class TrainerPPO:
     def __init__(self, directory="trained_policies_ppo", verbose=False, simulation=False, playing=False):
         self.directory = directory
+        self.simulation = simulation
         self.verbose = verbose
         if not simulation and not playing:
             ray.init(num_gpus=0)
@@ -31,7 +32,7 @@ class TrainerPPO:
 
         my_config["num_iterations"] = 20
         my_config["policy_mapping_fn"] = policy_mapping_fn
-        my_config["reuse_actors"] = False
+        my_config["reuse_actors"] = True
         if not playing:
             my_config["num_rollout_workers"] = 4
         if simulation:
@@ -46,13 +47,12 @@ class TrainerPPO:
             verbose_print("Loading policies", self.verbose)
             algo.restore(directory)
         self.algo = algo
-        
 
     def train(self, number_of_iterations=1, save_interval=10):
         for i in range(number_of_iterations):
             verbose_print(f"Training iteration {i + 1} of {number_of_iterations}", self.verbose)
             verbose_print(f"Episode reward mean:{self.algo.train()['episode_reward_mean']}", self.verbose)
-            if i % save_interval == 0 and i != 0:
+            if not self.simulation and i % save_interval == 0 and i != 0:
                 verbose_print("Saving policies", self.verbose)
                 self.save_export()
         verbose_print("Done", self.verbose)
@@ -61,8 +61,8 @@ class TrainerPPO:
 
     def save_export(self):
         self.algo.save(self.directory)
-        self.algo.get_policy("mr_x_policy").export_model(f"{self.directory}/trained_models/policy_model_mrx_ppo")
-        self.algo.get_policy("cop_policy").export_model(f"{self.directory}/trained_models/policy_model_cop_ppo")
+        #self.algo.get_policy("mr_x_policy").export_model(f"{self.directory}/trained_models/policy_model_mrx_ppo")
+        #self.algo.get_policy("cop_policy").export_model(f"{self.directory}/trained_models/policy_model_cop_ppo")
         return self
 
     def cleanup(self):

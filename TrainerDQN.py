@@ -13,6 +13,7 @@ from src.helper import verbose_print
 class TrainerDQN:
     def __init__(self, max_iterations, directory="trained_policies_dqn", verbose=False, simulation=False,
                  playing=False):
+        self.simulation = simulation
         self.directory = directory
         self.verbose = verbose
         if not simulation and not playing:
@@ -38,7 +39,7 @@ class TrainerDQN:
             my_config = my_config.exploration(explore=True,
                                               exploration_config={"type": "EpsilonGreedy", "initial_epsilon": 0.8,
                                                                   "final_epsilon": 0.05,
-                                                                  "epsilon_timesteps": max_iterations / 10 * 9 * 1000})
+                                                                  "epsilon_timesteps": max_iterations / 10 * 6 * 1000})
         else:
             my_config = my_config.exploration(explore=True,
                                               exploration_config={"type": "EpsilonGreedy", "initial_epsilon": 0.05,
@@ -67,7 +68,7 @@ class TrainerDQN:
 
         my_config["policy_mapping_fn"] = policy_mapping_fn
         my_config["entropy_coeff"] = 0.01
-        my_config["reuse_actors"] = False
+        my_config["reuse_actors"] = True
         if not playing:
             my_config["num_rollout_workers"] = 4
         my_config["train_batch_size"] = 128
@@ -101,7 +102,7 @@ class TrainerDQN:
             verbose_print(
                 f"Current epsilon: {self.algo.get_policy('mr_x_policy').get_exploration_state()['cur_epsilon']}",
                 self.verbose)
-            if i % save_interval == 0 and i != 0:
+            if not self.simulation and i % save_interval == 0 and i != 0:
                 verbose_print("Saving policies", self.verbose)
                 self.save_export()
         verbose_print("Done", self.verbose)
@@ -118,6 +119,6 @@ class TrainerDQN:
 
 
 if __name__ == "__main__":
-    TrainerDQN(max_iterations=200, directory="trained_policies_dqn", verbose=True).train(number_of_iterations=200,
+    TrainerDQN(max_iterations=50, directory="trained_policies_dqn", verbose=True).train(number_of_iterations=50,
                                                                                           save_interval=10).cleanup()
     print("Done")
