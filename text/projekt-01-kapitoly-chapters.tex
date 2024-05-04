@@ -910,7 +910,7 @@ Jedná se o diskrétní prostor, jehož výstupem je hodnota 1 má--li být akce
 \chapter{Experimenty}
 \label{ch:experimenty}
 
-Pro ověření výkonu algoritmu PPO byly provedeny dva experimenty.
+Pro ověření vlastností algoritmu PPO byly provedeny dva experimenty.
 Experimenty byly prováděny na systému s následujícími parametry:
 
 \begin{itemize}
@@ -920,25 +920,32 @@ Experimenty byly prováděny na systému s následujícími parametry:
   \item Grafická karta: NVIDIA GeForce GTX 1660 Ti
 \end{itemize}
 
+Agenti DQN i PPO se učili ve stejném prostředí, za stejných počátečních podmínek, měli totožný stavový i akční prostor a od prostředí získavaly stejné odměny.
 
-Agenti DQN i PPO se učili ve stejném prostředí, za stejných počátečních podmínek, měli totožný stavový i akční prostor a stejné odměny.
+Pro uzkutečnění těchto experimentů byly vytvořeny skripty v jazyce Python.
+Jeden pro sběr dat a druhý pro jejich následné vyhodnocení a zpracování do grafů a textové podoby.
 
-Pro tyto experimenty byly vytvořen skripty v jazyce Python.
-Jeden pro sběr dat a druhý pro jejich následné vyhodnocení a zpracování do grafu a textové podoby.
-
-\section{Experiment trénování}
+\section{Experiment 1: Pozorování vývoje chování během tréninku}
 \label{sec:experiment-1}
 
-Sbírání dat pro experimenty probíhalo následovně:
-Celkově bylo provedeno 1000 trénovacích iterací.
-To znamená, že každý agent byl trénován právě 1000 krát.
-Postupem trénování byly spouštěny testovací simulace her mezi agenty, jejichž, průběh byl zaznamenáván.
-Sledovanýmy parametry byly průměrná odměna Pana X i Policistů, průměrná vzdálenost policistů od Pana X.
-Sledována byla také průměrná vzdálenost policistů mezi sebou, ale tato hodnota se ukázala jako nerelavantní, jelikož na začátku experimentu byla velmi vysoká a postupem trénování se zmenšovala na stabilní hodnotu.
+Experiment trénování spočívá v tom ukázat jak se agenti zlepšují postupem tréninku.
+U agentů DQN a PPO je očekáván nárůst průměrné odměny a snížení průměrné vzdálenosti policistů od Pana X\@.
+Experiment v průběhu tréninku periodicky provádí simulace her mezi agenty a zaznamenává jejich průběh.
+
+\bigskip
+\noindent Hlavními sledovanýmy parametry jsou:
+\begin{itemize}
+  \item Průměrná odměna Pana X
+  \item Průměrná odměna policistů
+  \item Průměrná vzdálenost policistů od Pana X
+  \item Počet vyhraných her Pana X
+  \item Počet vyhraných her policistů
+\end{itemize}
+Experiment sleduje vývoj těchto hodnot po \textbf{1000 iterací}.
+Což znamená, že na konci experimentu, podstoupili všichni agenti 1000 iteraí tréninku
 
 Simulační hry byly prováděny ve všech možných kombinací algoritmů.
 Zkoušeny tedy byly všechny algoritmy jak v roli Pana X, tak v roli policistů.
-
 Simulace se spouštěly po různém počtu trénovacích iterací v závislosti na aktuálním počtu již provedených iterací.
 Počet simulací byl následovný:
 \begin{itemize}
@@ -947,18 +954,16 @@ Počet simulací byl následovný:
   \item 50 simulací každých 50 iterací, od 500 do 1000 trénovacích iterací
 \end{itemize}
 
-Při učení je nejzajímavější sledovat jak se vyvyjí chování agentů nejvíce na začátku trénování.
-Proto byly simulace prováděny s větší četností na začátku a postupem trénování byla četnost snižována.
-Tím bylo zajištěno, že experiment vyobrazuje jak rychle agenti byly schopni pochopit cíl hry.
-A také experiment nebyl tak časově náročný.
-Sběr dat pro tento experiment trval přibližně 12 hodin.
+Při učení je nejzajímavější sledovat vyvoj chování agentů na začátku trénování.
+Proto byly simulace prováděny s větší četností právě na začátku a postupem trénování byla četnost snižována pro snížění výpočetní a časové zátěže.
+Tím bylo zajištěno, že experiment správně a efektivně vyobrazuje jak rychle a jestli, agenti byly schopni pochopit cíl hry.
+Sběr dat pro tento experiment trval přibližně 18 hodin.
 Při četnějším sběru dat by rapidně narostla časová náročnost experimentu a trval by několik dní.
 
 \subsection{Výsledky experimentu}
 \label{subsec:vysledky-experimentu-1}
 
-Tento experiment byl proveden za účelem ověření zda jsou agenti trénováni pomocí algoritmu PPO schopni pochopit cíl hry a naučit se optimální strategii.
-Porovnává jestli se agenti, trénování tímto způsobem, výrazně liší od agenta který volí pouze náhodné akce a tím prokázat že se chová způsobem, který vede k vítězství.
+
 
 Při sledování tohoto experimentu je důležité si uvědomit že díky základní premise hry Scotland Yard je pro pro policisty vyhrát mnohem složitější než pro Pana X\@.
 A to z toho důvodu, že pokud se policisté dokáží vyhrát pouze pokud chytí Pana X, zato Pan X může výhrát pouze na základě uplynutí možných kol.
@@ -1082,7 +1087,11 @@ Je tedy možné, že 1000 iterací není dostatečné pro naučení dobré strat
 
 \emph{Trénování z tohoto experimentu poslouží jako základ pro další experiment, kde budou simulovány hry s již natrénovanými agenty.}
 
-\section{Simulace hry s již natrénovanými agenty}
+\section{Experiment 2: Simulace hry s již natrénovanými agenty}
+\label{sec:experiment-2}
+
+Tento experiment byl proveden za účelem ověření zda jsou agenti trénováni pomocí algoritmu PPO schopni pochopit cíl hry a naučit se optimální strategii.
+Porovnává jestli již natránovaní agenti z experimentu 1 , trénování tímto způsobem, výrazně liší od agenta který volí pouze náhodné akce a tím prokázat že se chová způsobem, který vede k vítězství.
 
 Pro ověření zkůtečného výkonu agentů byly provedeny simulace hry mezi již natrénovanými agenty.
 Ačkoli již předchozí experiment dokazuje, že agenti trénovaní pomocí algoritmu PPO jsou schopni pochopit cíl hry, je důležité získat zkutečné data o výkonu jednotlivých metod, bez zkreslených výsledků kvůli trénování.
