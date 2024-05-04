@@ -8,16 +8,15 @@ This code was inspired by the following source: https://github.com/ChristianD37/
 Idea has been adopted, changed and expanded to fit the needs of the project.
 """
 
-import os, time, pygame
+import pygame
+import time
 from enum import Enum
+
 import ray
-from ray.rllib.algorithms import PPOConfig, PPO, DQNConfig, DQN
-from ray.tune import register_env
 
 from TrainerDQN import TrainerDQN
 from TrainerPPO import TrainerPPO
 from src.GuiController import GuiController
-from src.game.scotland_yard_game_logic import MR_X_POLICY_SPEC, COP_POLICY_SPEC
 
 
 # Enumerations
@@ -39,7 +38,7 @@ class GameController():
         print("GameController init")
         pygame.init()
         print("Pygame init")
-        
+
         self.verbose = verbose
         self.font = None
         self.gui_controller = GuiController()
@@ -64,7 +63,7 @@ class GameController():
         trainer_ppo = TrainerPPO(playing=True)
         trainer_dqn = TrainerDQN(1, playing=True)
         self.algo_ppo = trainer_ppo.algo
-        
+
         algo_dqn = trainer_dqn.algo
         algo_dqn.reset_config(trainer_dqn.play_config)
         self.algo_dqn = algo_dqn

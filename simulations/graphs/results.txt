@@ -1,0 +1,8 @@
+Výsledky simulace:
+        Počet výher PPO proti Random: 3202/4100
+        Počet výher PPO proti DQN: 3181/4100
+        Počet výher DQN proti Random: 2033/4100
+        Průměrná vzdálenost mezi Panem X a policisty (PPO): 4.749637370532474
+        Průměrná vzdálenost mezi Panem X a policisty (Random): 7.570281607081609
+        Průměrná vzdálenost mezi Panem X a policisty (DQN): 7.824608117095189
+        
