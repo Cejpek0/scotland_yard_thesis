@@ -907,8 +907,8 @@ Agent také může zůstat na místě a neprovést žádnou akci.
 Celková velikost akčního prostoru je 9.
 Jedná se o diskrétní prostor, jehož výstupem je hodnota 1 má--li být akce zvolena.
 
-\chapter{Experimenty}
-\label{ch:experimenty}
+\chapter{Experiment}
+\label{ch:experiment}
 
 Pro ověření výkonu algoritmu PPO bylo provedeno několik experimentů.
 Experimenty byly prováděny na systému s následujícími parametry:
@@ -922,41 +922,57 @@ Experimenty byly prováděny na systému s následujícími parametry:
 
 Agenti DQN i PPO se učili ve stejném prostředí, za stejných počátečních podmínek, měli totožný stavový i akční prostor a stejné odměny.
 
-Pro experimenty byl vytvořen skript v jazyce Python.
-Sbírání dat pro experimenty probíhali následovně:
-Celkově bylo provedeno 5000 trénovacích cyklů.
-Mezi trénováním byly každých 10 cyklů provedeny simulace.
-Simulace byly provedeny 100 krát pro každou kombinaci algoritmů.
-Testovany byly algoritmy PPO, DQN a náhodné chování.
-Celkově tedy 
+Pro tento experimenty byly vytvořen skripty v jazyce Python.
+Jeden pro sběr dat a druhý pro jejich následné vyhodnocení a zpracování do grafu a textové podoby.
 
-\bigskip
-\noindent Pomocí algoritmu \textbf{PPO} byl agent trénován \emph{1000} krát.\\
-Stejně pak pomocí algoritmus \textbf{DQN} byl agent trénován \emph{10000} s postupným zvětšováním trénovací sady.\\
-Náhodný agent vždy vybírá jednu náhodnou akci z validních akcí.
+Sbírání dat pro experimenty probíhalo následovně:
+Celkově bylo provedeno 1000 trénovacích iterací.
+To znamená, že každý agent byl trénován právě 1000 krát.
+Postupem trénování byly spouštěny testovací simulace her mezi agenty, jejichž, průběh byl zaznamenáván.
+Sledovanýmy parametry byly průměrná odměna Pana X i Policistů, průměrná vzdálenost policistů od Pana X.
+Sledována byla také průměrná vzdálenost policistů mezi sebou, ale tato hodnota se ukázala jako nerelavantní, jelikož na začátku experimentu byla velmi vysoká a postupem trénování se zmenšovala na stabilní hodnotu.
 
-\section{Experiment 1: Výsledky algoritmu PPO při hraní hry Scotland Yard}
+Simulační hry byly prováděny ve všech možných kombinací algoritmů.
+Zkoušeny tedy byly všechny algoritmy jak v roli Pana X, tak v roli policistů.
+
+Simulace se spouštěly po různém počtu trénovacích iterací v závislosti na aktuálním počtu již provedených iterací.
+Počet simulací byl následovný:
+\begin{itemize}
+  \item 50 simulací každých 10 iterací, do 100 trénovacích iterací
+  \item 50 simulací každých 20 iterací, od 100 do 500 trénovacích iterací
+  \item 50 simulací každých 50 iterací, od 500 do 1000 trénovacích iterací
+\end{itemize}
+
+Při učení je nejzajímavější sledovat jak se vyvyjí chování agentů nejvíce na začátku trénování.
+Proto byly simulace prováděny s větší četností na začátku a postupem trénování byla četnost snižována.
+Tím bylo zajištěno, že experiment vyobrazuje jak rychle agenti byly schopni pochopit cíl hry.
+A také experiment nebyl tak časově náročný.
+Sběr dat pro tento experiment trval přibližně 12 hodin.
+Při četnějším sběru dat by rapidně narostla časová náročnost experimentu a trval by několik dní.
+
+\section{Výsledky experimentu}
 \label{sec:experiment-1}
 
-Tento experiment byl proveden za účelem ověření výkonu agentů učených pomocí algoritmu PPO při hraní hry Scotland Yard.
-Snaží se zjistit jestli jsou agenti trénování tímto způsobem schopni se výrazně odlišit od agenta který používá pouze náhodné akce a tím prokázat že se chová způsobem vedoucím k vítězství.
-Také porovnává agenty trénované pomocí PPO s DQN\@.
+Tento experiment byl proveden za účelem ověření zda jsou agenti trénováni pomocí algoritmu PPO schopni pochopit cíl hry a naučit se optimální strategii.
+Porovnává jestli se agenti, trénování tímto způsobem, výrazně liší od agenta který volí pouze náhodné akce a tím prokázat že se chová způsobem, který vede k vítězství.
 
-\section{Experiment 2: Blízkost policistů k Panu X}
-\label{sec:experiment-2}
+Všechny následující grafy vyobrazují průměrnou odměnu Pana X a policistů, průměrnou vzdálenost policistů od Pana X a to vše v závislosti na počtu trénovacích iterací.
 
-Měřit výkonnost agentů pouze pomocí průměrné odměny není dostačující.
-Co ale zásadně prokazuje schopnost agenta porozumět hře a prostředí je v tomto případ průměrná hodnota vzdálenosti policistů od Pana X.
-Čím je tato průměrná vzdálenost nižší tím jasnější je že policisté úspěšně odhadují pohyby Pana X a tím výrazně zvětšují své šance na jeho polapení.
+\begin{figure}[H]\label{fig:cop_ppo_mrx_random}
+	\centering
+	\includegraphics[width=0.95\textwidth]{obrazky-figures/graphs/cop_PPO_mrx_RANDOM.png}
+	\caption{Graf simulace hry mezi policisty trénovanými pomocí PPO a Panem X volícím náhodné akce}
+\end{figure}
 
-\section{Experiment 3: Závislost odměn na počtu trénovacích cyklů}
-\label{sec:experiment-3}
+\begin{figure}[H]\label{fig:cop_random_mrx_ppo}
+  \centering
+  \includegraphics[width=0.95\textwidth]{obrazky-figures/graphs/cop_RANDOM_mrx_PPO.png}
+  \caption{Graf simulace hry mezi Panem X trénovaným pomocí PPO a policisty volícími náhodné akce}
+\end{figure}
 
-Kromě optimálních výsledků je také důležité brát zřetel za jakou dobu agent tohoto stavu dosáhl.
-Tento experiment zkoumá, jak se vyvíjí odměny agentů v průběhu trénování
-
-1 trénovací cyklus algoritmu PPO a DQN zároveň trval průměrně 15 vteřin.
-Následná simulace 100 her pro všechny varianty agentů trvaly průměrně 75 vteřin.
+Jak jde vidět na grafu~\ref{fig:cop_ppo_mrx_random}, policisté jsou velmi úspěšní ve své strategii.
+Vzdálenost mezi policisty, trénovanými pomocí PPO a Panem X je po celou dobu velmi malá.
+Odměna kterou policisté získávají je velmi vysoká a po celou dobu trénování pouze zřídka klesla do záporných hodnot.
 
 \chapter{Závěr}
 \label{ch:zaver}
