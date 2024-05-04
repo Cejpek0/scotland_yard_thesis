@@ -529,8 +529,6 @@ Ten je řešen dvěma mechanizmy:
   
 
   \item \textbf{\emph{Periodická aktualizace}}
-
-  {\color{red}[DOPSAT!]}
   Síť je naklonována a změny se provádí pouze na duplikátní verzi.
   Do hlavní originální sítě se změny klonují po určitém počtu kroků.
 
@@ -573,41 +571,83 @@ Trénované politiky jsou často velmi náchylné na změny.
 Kde i malá náhlá změna v jednom kroku může způsobit velké změny v chování agenta a zamezit dalšímu učení správné strategie.
 Během učení totiž chceme, aby učení probýhalo plynule a ne skokově.
 Pokud se politika změní příliš rychle protože následovala nějvětší růst, může se stát, že mine cestu vedoucí k optimální strategii.
-Zasekne se tedy v lokálním optimu.
+Uváznutí se tedy v lokálním optimu.\pagebreak
 
-TRPO je optimalizační algoritmus, který se snaží tento problém řešit tím, že definuje omezení rozdílu mezi novou aktualizovanou politikou a starou politikou z předešlého kroku.
+TRPO je optimalizační algoritmus, který se snaží tento problém řešit tím, že definuje omezení rozdílu mezi novou aktualizovanou politikou $\textbf{p}$ a starou politikou z předešlého kroku $\textbf{q}$.
 Tento rozdíl mezi dvěma pravděpodobnostními rozděleními je definován jako Kullback-Leiblerova divergence (K-L divergence)\cite{KL_divergence}.
+Vzorec pro K-L divergenci je následující:
+\begin{equation}
+  D_{KL}(p \| q) = \int_x p(x) \log \frac{p(x)}{q(x)} dx
+\end{equation}
 Vzniká tak region důvěry, ve kterém musí nová politika setrvat.
 Politika se tedy nemůže skokově měnit na lokální maximum, ale pouze následuje směr lokálního maxima.
 
 K tomu využívá Hesenská matice.
 Kdy pomocí těchto matic hledá optimální směr změny politiky.
 Tím, že se hledá lokální maximum pouze v oblasti důvěry, řeší problém se zaseknutím v těchto lokálních optimech.
+Hesenská matice je vždy čtvercového tvaru.
+Její hodnoty obsahují druhé parciální derivace funkce a popisuje tím její lokální zakřivení.
+Jelikož je politika pravděpodobnostní funkce, jsou tyto matice ideální pro hledání optimálního směru změny politiky.
 
 Díky tomuto řešení se učení stává robustním a stabilním.
 Avšak výměnou za to, je náročnost aproximace pomocí Hesenských matic a s tím související náročnost na implementaci.
+\begin{equation}
+  H_{ij} = \frac{\partial^2 f}{\partial x_i \partial x_j}
+\end{equation}
+Kde $i$ značí řádek a $j$ sloupec matice.
+Výsledná matice tak poté může vypadat takto:
 
-\section{Zkoumaný algoritmus proximální optimalizace politiky}
+\begin{equation}
+  \begin{bmatrix}
+      \frac{\partial^2 f}{\partial x_1^2} & \frac{\partial^2 f}{\partial x_1 \partial x_2} \\
+      \frac{\partial^2 f}{\partial x_2 \partial x_1} & \frac{\partial^2 f}{\partial x_2^2}
+    \end{bmatrix}
+\end{equation}
+
+\section{Proximální optimalizace politiky (PPO)}
 \label{sec:proximalni-optimalizace-politiky}
 
 %\textsuperscript {\ref{sec:trust-region-policy-optimization}}
 
-Metoda proximální optimalizace politiky (Proximal policy optimization - PPO) byla představen roku 2017\cite{PPO_paper}.
-Tato metoda je vylepšeným následník algoritmu TRPO, popsaný v předchozí sekci~\ref{sec:trust-region-policy-optimization}.
+Metoda proximální optimalizace politiky (Proximal policy optimization - PPO) byla představena roku 2017\cite{PPO_paper}.
+Tato metoda je vylepšeným následníkem algoritmu TRPO, popsaný v předchozí sekci~\ref{sec:trust-region-policy-optimization}.
 
 Co výrazné odlišuje tuto metodu od předchůdců, je její jednoduchost a efektivita.
 Dosahuje lepších výsledků než metoda TRPO a srovnatelných výsledků s metodou ACER.
 Je avšak mnohem jednodušší na implementaci, má nižší nároky na výkon a je mnohem lepší co se týče efektivity dat pro trénování.\cite{PPO_paper}.
 
+Nechť $r_t(\theta)$ je pravděpodobnostní poměr mezi novou a starou politikou.
+\begin{equation}
+  r_t(\theta) = \frac{\pi_\theta(a_t \vert s_t)}{\pi_{\theta_{old}}(a_t \vert s_t)}
+\end{equation}
+
+Pokud tento vzorec dosadíme do rovnice pro výpočet gradientu politiky TRPO. Kde TRPO využívá K-L divergenci a maximalizuje vedlejší cíle, vznikne následnovná rovnice:
+
+\begin{equation}
+  L^{CLIP}(\theta) = \mathbb{E}_t \Big[ \min \Big( r_t(\theta) \hat{A}_t, \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon) \hat{A}_t \Big) \Big]
+\end{equation}
+
+\begin{equation}
+  L^{CLIP}(\theta) = \mathbb{E}_t \Big[ \min \Big( r_t(\theta) \hat{A}_t, \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon) \hat{A}_t \Big) \Big]
+\end{equation}
+V této rovnici je $r_t(\theta)$ relativní podobnost nové a staré politiky.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\textwidth]{obrazky-figures/clip.png}
+	\caption{Grafy zobrazují 1 časový krok funkce $L^{CLIP}$. Červeným bodem je označen počáteční stav omptimalizace. Levý graf zobrazuje kladnou změnu a pravý zápornou změnu.
+  Zdroj: \cite{RL_basics}}\label{fig:markov}
+\end{figure}
+
 K dosažení těchto výsledků, využívá PPO techniku ořezávání náhradních cílů vloženou do algoritmu TRPO\@.
-Vynucuje, aby K-L divergence mezi novou a starou politikou byla v rozmezí $[1-\epsilon, 1+\epsilon]$ kde $\epsilon$ je modifikovatelný parametr.
+Vynucuje, aby K-L divergence byla mezi novou a starou politikou byla v rozmezí $[1-\epsilon, 1+\epsilon]$ kde $\epsilon$ je modifikovatelný parametr.
 
 PPO má však i své nedostatky.
 \label{PPO_weakness}
 Dle studie~\cite{PPO_weakness} se ukázalo, že PPO nefunguje optimálně za 3 podmínek:
 \begin{enumerate}
   \item V prostředí se spojitým prostorem akcí je nemodifikované PPO nestabilní, pokud odměna náhle zmizí mimo ohraničenou podporu.
-  \item V diskrétním akčním prostoru s řídkými vysokými odměnami PPO volí neoptimální akce.
+  \item V diskrétním akčním prostoru s řídkými a vysokými odměnami PPO volí neoptimální akce.
   \item V době těsně po inicializaci je náchylné k předčasné volení strategie, pokud je některá z optimálních akcí po inicializaci blízko a snadno dosažitelná.
 \end{enumerate}
 
@@ -615,6 +655,9 @@ Tato studie také navrhla tyto řešení a prokázala jejich účinnost.
 Bod 1 a 3 je řešen buď převedením spojitého akčního prostoru na diskrétní nebo zavedením \emph{Beta parametrizace politiky}.
 \emph{KL regulováním cíle} je řešen bod 2.
 
+Podmínka číslo 1 je v mé implementaci prostředí hry Scotland Yard implicitně neplatná, jelikož akční prostor je diskrétní.\\
+Podmínka číslo 2 je řešena přídáním menších dílčích odměn.
+Agenti tak získávají odměny i za menší kroky, nejen například za vítězství/ prohru či blízkost, viz. podsekce \nameref{subsec:odmena}.\\
 \subsection{Experiment OpenAI}\label{subsec:experiment-openai}
 Důležitým zdrojem pro tuto práci byla studie studie~\cite{PPO_Hide_Seek_paper}, od společnosti OpenAI, vyplývá, že algoritmus je vhodný pro řešení problémů s nedokonalou informací.
 V dané studii byl algoritmus implementován na komplexní hru schovávané.
@@ -625,7 +668,7 @@ Mohou je přesouvat a následně \uv{zamrazit} na místě, takže s objektem nel
 Modří hráči se na začátku hry objevují ve své pevnosti, která má několik děr.
 Červeným hráčům je na začátku hry znemožněn pohyb, což dává modrým hráčům čas připravit se na jejich útok.
 
-Po přes 8 miliónů epizod učení se modří hráči naučili efektivně blokovat vstup do jejich pevnosti, takže je červení hráči nebyli schopni dostihnout.
+Po více než 8 miliónech epizodách učení se modří hráči naučili efektivně blokovat vstup do jejich pevnosti, takže je červení hráči nebyli schopni dostihnout.
 Poté se, avšak červení hráči adaptovali, naučili se totiž využívat rampy a přelézt opevnění modrých hráčů.
 Jako finální, a ultimátní strategii se modří naučili po 43 miliónech epizod.
 Modří hráči na začátku kola ukradli červeným všechny rampy, a zabarikádovali se i s nimi v pevnosti.
@@ -700,7 +743,7 @@ Samotný kód hry je rozdělena na 3 částí.
   A následně provádí aktualizaci stavu aktuální scény a překreslení dané scény.
   \item \emph{Scény}~\cite{GameSceneController}
   
-  Jednotlivé scény následně definují své chování při aktualizaci a překreslení.
+  í/ prohru či blízkost  Jednotlivé scény následně definují své chování při aktualizaci a překreslení.
   Manipulace a přepínání mezi nimi je zajištěno pomocí zásobníků scén.
   Do tohoto zásobníku se ukládají nově otevřené scény a obsluhována je vždy ta nejnovější.
 
@@ -764,6 +807,7 @@ Takto uměle generovaná akce, nebyla za celou dobu testování použita, avšak
 Zavedení tohoto omezení pomocí systému odměn vedlo k positivním výsledkům a agenti se naučili jaké akce jsou nevalidní a nepoužívají je.
 
 \subsubsection*{Systém odměn}
+\label{subsec:odmena}
 
 Jednotlivým agentům jsou udělovány odměny na základě jejich chování.
 Jelikož policisté a Pan X mají odlišné protichůdné i jejich odměny jsou odlišné.
