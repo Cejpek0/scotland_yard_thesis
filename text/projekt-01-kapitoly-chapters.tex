@@ -956,6 +956,9 @@ Při četnějším sběru dat by rapidně narostla časová náročnost experime
 Tento experiment byl proveden za účelem ověření zda jsou agenti trénováni pomocí algoritmu PPO schopni pochopit cíl hry a naučit se optimální strategii.
 Porovnává jestli se agenti, trénování tímto způsobem, výrazně liší od agenta který volí pouze náhodné akce a tím prokázat že se chová způsobem, který vede k vítězství.
 
+Při sledování tohoto experimentu je důležité si uvědomit že díky základní premise hry Scotland Yard je pro pro policisty vyhrát mnohem složitější než pro Pana X\@.
+A to z toho důvodu, že pokud se policisté dokáží vyhrát pouze pokud chytí Pana X, zato Pan X může výhrát pouze na základě uplynutí možných kol.
+
 Všechny následující grafy vyobrazují průměrnou odměnu Pana X a policistů, průměrnou vzdálenost policistů od Pana X a to vše v závislosti na počtu trénovacích iterací.
 
 \begin{figure}[H]\label{fig:cop_ppo_mrx_random}
@@ -973,6 +976,32 @@ Všechny následující grafy vyobrazují průměrnou odměnu Pana X a policist�
 Jak jde vidět na grafu~\ref{fig:cop_ppo_mrx_random}, policisté jsou velmi úspěšní ve své strategii.
 Vzdálenost mezi policisty, trénovanými pomocí PPO a Panem X je po celou dobu velmi malá.
 Odměna kterou policisté získávají je velmi vysoká a po celou dobu trénování pouze zřídka klesla do záporných hodnot.
+
+\subsection*{Závěr experimentu pro algoritmus PPO}
+Agenti trénování pomocí algoritmu PPO proti náhodnému agentovi hráli 4100 her.
+Z toho 2050 jako policisté a 2050 jako Pan X\@.
+
+\begin{tabular}{|c|c|c|c|c|}
+  \hline
+  \textbf{Agent} & \textbf{Vyhrané hry} & \textbf{Prohra} & \textbf{Remíza} & \textbf{Procentuální úspěšnost} \\
+  \hline
+  Pan X & 682 & 1368 & 0 & 66.7\% \\
+  Policisté & 1834 & 216 & 0 & 89.5\% \\
+  \hline
+  
+\end{tabular}
+
+PPO policisté proti náhodnému Panu X vyhráli 1368 her, což je přibližně 66.7\%.
+To znamená, že Pan X vyhrál 682 her.
+PPO Pan X proti náhodným policistům vyhrál 1834 her, což je přibližně 89.5\%.
+A náhodní policisté vyhráli 216 her.
+Hry ve kterých proti sobě hráli 
+
+Pokud tyto výsledky porovnáme s náhodným agentem, který volí náhodné akce, je zřejmé že agenti trénování pomocí PPO jsou schopni pochopit cíl hry a naučit se optimální strategii.
+Výsledky náhodných agentů byly následující:
+
+
+
 
 \chapter{Závěr}
 \label{ch:zaver}
