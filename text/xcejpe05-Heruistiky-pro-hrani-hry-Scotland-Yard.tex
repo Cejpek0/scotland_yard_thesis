@@ -74,6 +74,9 @@
 \usepackage{url}
 \usepackage[export]{adjustbox}
 \usepackage{wrapfig}
+\usepackage{booktabs}% for \midrule and \cmidrule macros
+\newcommand\headercell[1]{%
+  \smash[b]{\begin{tabular}[t]{@{}c@{}} #1 \end{tabular}}}  
 % =======================================================================
 % balíček "hyperref" vytváří klikací odkazy v pdf, pokud tedy použijeme pdflatex
 % problém je, že balíček hyperref musí být uveden jako poslední, takže nemůže

@@ -599,9 +599,9 @@ Výsledná matice tak poté může vypadat takto:
 
 \begin{equation}
   \begin{bmatrix}
-      \frac{\partial^2 f}{\partial x_1^2} & \frac{\partial^2 f}{\partial x_1 \partial x_2} \\
-      \frac{\partial^2 f}{\partial x_2 \partial x_1} & \frac{\partial^2 f}{\partial x_2^2}
-    \end{bmatrix}
+     \frac{\partial^2 f}{\partial x_1^2} & \frac{\partial^2 f}{\partial x_1 \partial x_2} \\
+     \frac{\partial^2 f}{\partial x_2 \partial x_1} & \frac{\partial^2 f}{\partial x_2^2}
+   \end{bmatrix}
 \end{equation}
 
 \section{Proximální optimalizace politiky (PPO)}
@@ -907,10 +907,10 @@ Agent také může zůstat na místě a neprovést žádnou akci.
 Celková velikost akčního prostoru je 9.
 Jedná se o diskrétní prostor, jehož výstupem je hodnota 1 má--li být akce zvolena.
 
-\chapter{Experiment}
-\label{ch:experiment}
+\chapter{Experimenty}
+\label{ch:experimenty}
 
-Pro ověření výkonu algoritmu PPO bylo provedeno několik experimentů.
+Pro ověření výkonu algoritmu PPO byly provedeny dva experimenty.
 Experimenty byly prováděny na systému s následujícími parametry:
 
 \begin{itemize}
@@ -920,10 +920,14 @@ Experimenty byly prováděny na systému s následujícími parametry:
   \item Grafická karta: NVIDIA GeForce GTX 1660 Ti
 \end{itemize}
 
+
 Agenti DQN i PPO se učili ve stejném prostředí, za stejných počátečních podmínek, měli totožný stavový i akční prostor a stejné odměny.
 
-Pro tento experimenty byly vytvořen skripty v jazyce Python.
+Pro tyto experimenty byly vytvořen skripty v jazyce Python.
 Jeden pro sběr dat a druhý pro jejich následné vyhodnocení a zpracování do grafu a textové podoby.
+
+\section{Experiment trénování}
+\label{sec:experiment-1}
 
 Sbírání dat pro experimenty probíhalo následovně:
 Celkově bylo provedeno 1000 trénovacích iterací.
@@ -950,8 +954,8 @@ A také experiment nebyl tak časově náročný.
 Sběr dat pro tento experiment trval přibližně 12 hodin.
 Při četnějším sběru dat by rapidně narostla časová náročnost experimentu a trval by několik dní.
 
-\section{Výsledky experimentu}
-\label{sec:experiment-1}
+\subsection{Výsledky experimentu}
+\label{subsec:vysledky-experimentu-1}
 
 Tento experiment byl proveden za účelem ověření zda jsou agenti trénováni pomocí algoritmu PPO schopni pochopit cíl hry a naučit se optimální strategii.
 Porovnává jestli se agenti, trénování tímto způsobem, výrazně liší od agenta který volí pouze náhodné akce a tím prokázat že se chová způsobem, který vede k vítězství.
@@ -961,45 +965,127 @@ A to z toho důvodu, že pokud se policisté dokáží vyhrát pouze pokud chyt�
 
 Všechny následující grafy vyobrazují průměrnou odměnu Pana X a policistů, průměrnou vzdálenost policistů od Pana X a to vše v závislosti na počtu trénovacích iterací.
 
-\begin{figure}[H]\label{fig:cop_ppo_mrx_random}
-	\centering
-	\includegraphics[width=0.95\textwidth]{obrazky-figures/graphs/cop_PPO_mrx_RANDOM.png}
-	\caption{Graf simulace hry mezi policisty trénovanými pomocí PPO a Panem X volícím náhodné akce}
-\end{figure}
-
-\begin{figure}[H]\label{fig:cop_random_mrx_ppo}
-  \centering
-  \includegraphics[width=0.95\textwidth]{obrazky-figures/graphs/cop_RANDOM_mrx_PPO.png}
-  \caption{Graf simulace hry mezi Panem X trénovaným pomocí PPO a policisty volícími náhodné akce}
-\end{figure}
+\subsection*{Srovnání s náhodným agentem}
+\begin{figure}[H]
+  \begin{minipage}{.45\textwidth}
+    \centering
+    \includegraphics[width=1\textwidth]{obrazky-figures/graphs/cop_PPO_mrx_RANDOM.png}
+    \caption{Graf simulace her mezi policisty trénovanými pomocí PPO a Panem X volícím náhodné akce}
+    \label{fig:cop_ppo_mrx_random}
+  \end{minipage}\hfill
+  \begin{minipage}{.45\textwidth}
+    \centering
+    \includegraphics[width=1\textwidth]{obrazky-figures/graphs/cop_RANDOM_mrx_PPO.png}
+      \caption{Graf simulace hher mezi Panem X trénovaným pomocí PPO a policisty volícími náhodné akce}
+      \label{fig:cop_random_mrx_ppo}
+  \end{minipage}
+  \end{figure}
 
 Jak jde vidět na grafu~\ref{fig:cop_ppo_mrx_random}, policisté jsou velmi úspěšní ve své strategii.
 Vzdálenost mezi policisty, trénovanými pomocí PPO a Panem X je po celou dobu velmi malá.
-Odměna kterou policisté získávají je velmi vysoká a po celou dobu trénování pouze zřídka klesla do záporných hodnot.
+Odměna kterou policisté získávají je velmi vysoká.
+Odměna Pana X je naopak velmi nízká.
+Na grafu lze také sledovat že průměrná vzdálenost policistů od Pana X postupně klesá, stejně tak jako klesá odměna Pana X tím, že se zlepšuje politika policistů.
+
+Naopak z grafu~\ref{fig:cop_random_mrx_ppo} lze pozorovat, že je odměna Pana X kladná, a průměrně vyšší než odměna policistů, ktěří se chovají náhodně.
+Odměna policistů se pohybuje kolem nuly a odměna Pana X je stále kladná.
+Také vzdálenost policistů od Pana x je výrazně vyšší než v předchozím případě.
+
+\begin{figure}[H]
+  \centering
+  \begin{minipage}{.45\textwidth}
+    \centering
+    \includegraphics[width=1\textwidth]{obrazky-figures/graphs/cop_RANDOM_mrx_RANDOM.png}
+    \caption{Graf simulace her mezi policisty a Panem X, kde oba volí náhodné akce}
+    \label{fig:cop_random_mrx_random}
+  \end{minipage}\hfill
+  \begin{minipage}{.45\textwidth}
+    \centering
+    \includegraphics[width=1\textwidth]{obrazky-figures/graphs/cop_PPO_mrx_PPO.png}
+      \caption{Graf simulace her, kde oba agenti volí akce dle modelu PPO}
+      \label{fig:cop_ppo_mrx_ppo}
+  \end{minipage}
+  \caption{Srovnání PPO agenty s agenty volící náhodné akce}
+  \label{fig:srovnani_random_ppo}
+  \end{figure}
+
+Na srovnání \ref{fig:srovnavani_random_ppo} lze vidět, že na jak PPO tak náhodný algoritmus ústí ve velice stabilní chování.
+U náhodné chování je to kvůli základní pravděpodobnosti, která musí být průměrně stejná.
+U grafu agentů PPO to avšak vypovídá o tom, že policisté dokáží stabilně odhadovat pozici Pana X a přinejmenším se pohybovat v jeho blízkém okolí.
+Je také vidět, že co se odměn týče, tak jak hodnoty odměn policistů, tak Pana X se vzájemně střídají.
+Odvozuji, že to vypovídá o tom, že se agenti postupně učí strategii protivníka a snaží se podle ní upravit svoji politiku aby byli opět lepší.
+Perioda mezi těmito změnami se postupně jemně rozšiřuje.
+Což by mohlo značit, že se obě politiky se pomalu přibližují k optimální strategii.
+
+Předpokládám, že dalším trénováním, by se tento trend potvrdil.
+Avšak k tomu by bylo potřeba zapotřebí větší výpočetní výkon a spoustu času.
+Ale jak lze vidět z výsledků experimentu, i přes relativně malý počet trénovacích iterací se objevuje očekávané chování trénování.
+
 
 \subsection*{Závěr experimentu pro algoritmus PPO}
 Agenti trénování pomocí algoritmu PPO proti náhodnému agentovi hráli 4100 her.
 Z toho 2050 jako policisté a 2050 jako Pan X\@.
 
-\begin{tabular}{|c|c|c|c|c|}
-  \hline
-  \textbf{Agent} & \textbf{Vyhrané hry} & \textbf{Prohra} & \textbf{Remíza} & \textbf{Procentuální úspěšnost} \\
-  \hline
-  Pan X & 682 & 1368 & 0 & 66.7\% \\
-  Policisté & 1834 & 216 & 0 & 89.5\% \\
-  \hline
-  
-\end{tabular}
+\begin{table}[H]
+\centering
+\begin{tabular}{@{} c|c|c|c @{}}
+\headercell{\\Policisté} & \multicolumn{3}{c@{}}{Pan X}\\
+\cmidrule(l){2-4}
+& \multicolumn{1}{c}{PPO}&\multicolumn{1}{c}{Random}&
+\multicolumn{1}{c}{DQN} \\ 
+\hline
+PPO                                    & 38\% & 67\% & 65\% \\ \hline
+Random                                    & 11\% & 20\% & 18\% \\ \hline
+DQN                                    & 10\% & 17\% & 19\% \\ \hline
+\end{tabular}\caption{Zobrazuje procentuální počet výher policistů proti Panu X s vybraným algoritmem během experimentu}
+\end{table}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{} c|c|c|c @{}}
+\headercell{\\Policisté} & \multicolumn{3}{c@{}}{Pan X}\\
+\cmidrule(l){2-4}
+& \multicolumn{1}{c}{PPO}&\multicolumn{1}{c}{Random}&
+\multicolumn{1}{c}{DQN} \\
+\hline
+PPO                                    & 62\% & 33\% & 35\% \\ \hline
+Random                                    & 89\% & 80\% & 82\% \\ \hline
+DQN                                    & 90\% & 83\% & 81\% \\ \hline
+\end{tabular}\caption{Zobrazuje procentuální počet výher Panu X proti policistům s vybraným algoritmem během experimentu}
+\end{table}
 
 PPO policisté proti náhodnému Panu X vyhráli 1368 her, což je přibližně 66.7\%.
 To znamená, že Pan X vyhrál 682 her.
 PPO Pan X proti náhodným policistům vyhrál 1834 her, což je přibližně 89.5\%.
 A náhodní policisté vyhráli 216 her.
-Hry ve kterých proti sobě hráli 
 
-Pokud tyto výsledky porovnáme s náhodným agentem, který volí náhodné akce, je zřejmé že agenti trénování pomocí PPO jsou schopni pochopit cíl hry a naučit se optimální strategii.
-Výsledky náhodných agentů byly následující:
+\subsubsection{Ostatní výsledky}
 
+\begin{figure}[H]\label{fig:cop_dqn_mrx_random}
+	\centering
+	\includegraphics[width=0.8\textwidth]{obrazky-figures/graphs/cop_DQN_mrx_RANDOM.png}
+	\caption{Graf simulace hry mezi policisty trénovanými pomocí DQN a Panem X volícím náhodné akce}
+\end{figure}
+
+\begin{figure}[H]\label{fig:cop_random_mrx_dqn}
+	\centering
+	\includegraphics[width=0.8\textwidth]{obrazky-figures/graphs/cop_RANDOM_mrx_DQN.png}
+	\caption{Graf simulace hry mezi Panem X trénovaným pomocí DQN a policisty volícími náhodné akce}
+\end{figure}
+
+Výsledky trénování agentů pomocí algoritmu DQN bohužel nemají dobré výsledky.
+Výsledné chování se velmi podobá náhodnému agentovi.
+Z předchozích prací je známo, že by algoritmus DQN měl mít znatelně lepší výsledky než náhodná metoda \cite{Hrklova2023thesis}.
+Algoritmus DQN je velice citlivý na hyperparametry a je možné, že bylo zvoleno nevhodné nastavení.
+Potřebuje také mnohem více trénovacích iterací než PPO\@.
+Je tedy možné, že 1000 iterací není dostatečné pro naučení dobré strategie pro algoritmus DQN.
+
+\emph{Trénování z tohoto experimentu poslouží jako základ pro další experiment, kde budou simulovány hry s již natrénovanými agenty.}
+
+\section{Simulace hry s již natrénovanými agenty}
+
+Pro ověření zkůtečného výkonu agentů byly provedeny simulace hry mezi již natrénovanými agenty.
+Ačkoli již předchozí experiment dokazuje, že agenti trénovaní pomocí algoritmu PPO jsou schopni pochopit cíl hry, je důležité získat zkutečné data o výkonu jednotlivých metod, bez zkreslených výsledků kvůli trénování.
 
 
 
@@ -1007,8 +1093,9 @@ Výsledky náhodných agentů byly následující:
 \label{ch:zaver}
 
 Experimenty ukázali že algoritmus PPO je skutečně vhodný na hry s neúplnou informací.
-Zkoumaní agenti dokázali pochopit koncept a cíl hry Scotland Yard a naučili se, jak se v ní optimálně chovat, přestože začínali s nulovým věděním a hráli jen proti sobě.
-Bylo příjemným překvapením, že již po pouhých 10 iterací trénování byli agenti schopni projevovat náznaky pochopení cíle hry..
+Agenti se učili formou hraní proti sobě a dokázali pochopit koncept a cíl hry Scotland Yard.
+Naučili se, jak se v ní optimálně chovat, přestože začínali s nulovým věděním o prostředí.
+Bylo příjemným překvapením, že již po pouhých 10 iterací trénování byli agenti schopni projevovat náznaky pochopení cíle hry.
 
 \section*{Možná vylepšení}
 \label{sec:mozna-vylepseni}
@@ -1028,13 +1115,11 @@ Mám za to, že by tato možnost nadále prohloubila výsledky této studie o za
 
 Algoritmus DQN nebyl plně prozkoumán, a tak jeho využití v tomto projektu nemuselo být optimální.
 Navrhuji změnu stavového a akčního prostoru, aby byl kompatibilní s verzemi studentů z minulých let, kteří realizovali bakalářskou práci na podobné téma.
+A následně využít jejich implementaci pro další experimenty \cite{Hrklova2023thesis}.
 
 Dále je zde možnost rozšířit hratelnost hry o jednotlivé druhy dopravy a k nim příslušící jízdenky.
 Tím by výrazně vzrostla složitost hry a stavový prostor.
 Jak ale ukázala práce OpenAI~\cite{Dota2}, algoritmus PPO nemá problém s obrovským stavovým prostorem a naučit se i komplikované hry.
-
-\chapter{Přílohy}
-\label{ch:prilohy}
 
 
 
