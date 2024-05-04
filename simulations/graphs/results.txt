@@ -6,8 +6,8 @@ Výsledky simulace:
         Počet výher PPO proti náhodnému agentovi: 3202/4100
         
         Počet výher náhodných agentů proti PPO agentům (do 100 iterace): 241/898
-        Z toho počet výher Pana X: 181/898
-        Z toho počet výher policistů: 60/898
+        Z toho počet výher Pana X: 181/241
+        Z toho počet výher policistů: 60/241
         
         
         Počet výher PPO policistů proti PPO Panu X: 782/4100

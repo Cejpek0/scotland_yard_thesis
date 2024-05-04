@@ -131,8 +131,8 @@ class SimulationProcessor:
         Počet výher PPO proti náhodnému agentovi: {victories_ppo_vs_random}/{total_games_ppo_vs_random}
         
         Počet výher náhodných agentů proti PPO agentům (do 100 iterace): {random_ppo_early_wins_mrx + random_ppo_early_wins_cops}/{total_games_ppo_vs_random - victories_ppo_vs_random}
-        Z toho počet výher Pana X: {random_ppo_early_wins_mrx}/{total_games_ppo_vs_random - victories_ppo_vs_random}
-        Z toho počet výher policistů: {random_ppo_early_wins_cops}/{total_games_ppo_vs_random - victories_ppo_vs_random}
+        Z toho počet výher Pana X: {random_ppo_early_wins_mrx}/{random_ppo_early_wins_mrx + random_ppo_early_wins_cops}
+        Z toho počet výher policistů: {random_ppo_early_wins_cops}/{random_ppo_early_wins_mrx + random_ppo_early_wins_cops}
         
         
         Počet výher PPO policistů proti PPO Panu X: {victories_ppo_cop_vs_mrx_ppo}/{total_games_ppo_vs_ppo}
