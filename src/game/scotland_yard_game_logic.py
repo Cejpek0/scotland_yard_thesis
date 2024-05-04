@@ -317,7 +317,7 @@ class ScotlandYardGameLogic:
         else:
             raise Exception("Generated action is not valid")
 
-    def get_action_for_player(self, player: Player, cop_algo: PPO, mr_x_algo) -> Direction:
+    def get_action_for_player(self, player: Player, cop_algo: PPO, mr_x_algo, verbose=False) -> Direction:
         # Use the policy to obtain an action for the given player and observation
         observations = self.get_observations()
 
@@ -342,7 +342,7 @@ class ScotlandYardGameLogic:
                                                                           explore=True if cop_algo.__class__ == PPO else False)
             else:
                 generated_action = self.get_random_action()
-                verbose_print(f"Generated random action after 100 tries", self.verbose)
+                verbose_print(f"Generated random action after 100 tries", verbose)
             direction = Direction(generated_action)
             if self.is_valid_move(player, direction):
                 action_is_valid = True
@@ -371,7 +371,10 @@ class ScotlandYardGameLogic:
     def get_current_player(self) -> Player:
         return self.players[self.playing_player_index]
 
-    def play_turn(self, action: Direction | Name = None, cop_algo=None, mr_x_algo=None, verbose=False):
+    def play_turn(self, action: Direction | Name = None, cop_algo=None, mr_x_algo=None, verbose=None):
+        if verbose is None:
+            verbose = self.verbose
+
         if self.playing_player_index == 0:
             self.round_number += 1
 
@@ -381,7 +384,7 @@ class ScotlandYardGameLogic:
                 if mr_x_algo is None:
                     action = self.get_random_action()
                 else:
-                    action = self.get_action_for_player(player, cop_algo, mr_x_algo)
+                    action = self.get_action_for_player(player, cop_algo, mr_x_algo, verbose=verbose)
             elif player.is_cop():
                 if cop_algo is None:
                     action = self.get_random_action()

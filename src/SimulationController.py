@@ -33,12 +33,22 @@ class SimulationController:
         self.current_game_id = 0
         self.train_experiment_training_count = experiment_training_iteration_count
         self.test_games_every_n_trainings = test_games_every_n_trainings
+        self.test_games_every_n_trainings_mapping = {100: 10, 500: 20, 1000: 50}
         self.number_of_test_games_per_pause = test_games_count_per_pause
         self.ppo_trainer = TrainerPPO(simulation=True)
         self.dqn_trainer = TrainerDQN(self.train_experiment_training_count, simulation=True)
         verbose_print("Simulation Controller initialized", self.verbose)
         self.simulation_start_time = None
         self.last_simulation_time = None
+
+    def get_current_test_game_every_n_trainings(self, current_training_iteration):
+        test_games_every_n_trainings = 50
+        for key in self.test_games_every_n_trainings_mapping.keys():
+            if current_training_iteration <= key:
+                if test_games_every_n_trainings > self.test_games_every_n_trainings_mapping[key]:
+                    test_games_every_n_trainings = self.test_games_every_n_trainings_mapping[key]
+        return test_games_every_n_trainings
+
 
     def run(self, config):
         # number of simulations to run
@@ -155,7 +165,7 @@ class SimulationController:
                 f"Training iteration {current_train_iteration + 1} of {self.train_experiment_training_count} done in {datetime.now() - self.last_simulation_time}",
                 self.verbose)
             current_train_iteration += 1
-            if current_train_iteration % self.test_games_every_n_trainings == 0:
+            if current_train_iteration % self.get_current_test_game_every_n_trainings(current_train_iteration) == 0:
                 self.last_simulation_time = datetime.now()
                 self.simulate_all_variants()
                 verbose_print(f"Simulations took {datetime.now() - self.last_simulation_time}", self.verbose)
@@ -164,7 +174,7 @@ class SimulationController:
                 verbose_print(f"Merge took {datetime.now() - self.last_simulation_time}", self.verbose)
                 self.last_simulation_time = None
 
-            if current_train_iteration % 100 == 0:
+            if current_train_iteration % 50 == 0:
                 from distutils.dir_util import copy_tree
                 copy_tree("trained_policies_dqn", "trained_policies_dqn_copy")
                 copy_tree("trained_policies_ppo", "trained_policies_ppo_copy")
@@ -228,7 +238,7 @@ class SimulationController:
         self.game.reset()
         turn_stats = {}
         while self.game.get_game_status() is scotland_yard_game_logic.GameStatus.ONGOING:
-            self.game.play_turn(cop_algo=cop_algo, mr_x_algo=mr_x_algo)
+            self.game.play_turn(cop_algo=cop_algo, mr_x_algo=mr_x_algo, verbose=True)
             if self.game.playing_player_index == len(self.game.players) - 1:
                 if self.game.get_game_status() is scotland_yard_game_logic.GameStatus.ONGOING:
                     turn_stats[self.game.get_current_round_number()] = self.get_round_statistics()
