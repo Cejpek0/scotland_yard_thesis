@@ -1,0 +1,2 @@
+game_result,game_id,mr_x_algo,cop_algo,mr_x_avg_distance_to_cop,avg_distance_between_cops,mr_x_avg_reward,cops_avg_reward
+2,8007,2,2,4.786252738716457,7.683791278765675,-6.269778143033332,2.6301697077667026

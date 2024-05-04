@@ -13,6 +13,8 @@ from src.helper import verbose_print
 class TrainerDQN:
     def __init__(self, max_iterations, directory="trained_policies_dqn", verbose=False, simulation=False,
                  playing=False):
+        if playing:
+            assert os.path.exists(directory), "No trained policies found"
         self.simulation = simulation
         self.directory = directory
         self.verbose = verbose
@@ -120,5 +122,5 @@ class TrainerDQN:
 
 if __name__ == "__main__":
     TrainerDQN(max_iterations=50, directory="trained_policies_dqn", verbose=True).train(number_of_iterations=50,
-                                                                                          save_interval=10).cleanup()
+                                                                                        save_interval=10).cleanup()
     print("Done")

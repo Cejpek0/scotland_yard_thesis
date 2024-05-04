@@ -11,6 +11,8 @@ from src.helper import verbose_print
 
 class TrainerPPO:
     def __init__(self, directory="trained_policies_ppo", verbose=False, simulation=False, playing=False):
+        if playing:
+            assert os.path.exists(directory), "No trained policies found"
         self.directory = directory
         self.simulation = simulation
         self.verbose = verbose

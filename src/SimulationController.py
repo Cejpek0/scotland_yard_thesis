@@ -16,9 +16,10 @@ from src.helper import verbose_print
 
 class SimulationController:
     def __init__(self, save_dir, verbose=False, experiment_training_iteration_count=10_000,
-                 test_games_every_n_trainings=10, test_games_count_per_pause=100):
+                 test_games_every_n_trainings=10, test_games_count_per_pause=100, simulation_experiment=False):
         ray.init(num_gpus=0, num_cpus=8)
         self.verbose = verbose
+        self.simulation_experiment = simulation_experiment
         verbose_print("Simulation Controller initializing", self.verbose)
         self.save_dir = save_dir
         if not os.path.exists(self.save_dir):
@@ -26,17 +27,27 @@ class SimulationController:
         self.experiment_directories = ["cop_dqn_mrx_ppo", "cop_ppo_mrx_dqn", "cop_dqn_mrx_dqn",
                                        "cop_ppo_mrx_ppo", "cop_random_mrx_ppo", "cop_ppo_mrx_random",
                                        "cop_dqn_mrx_random", "cop_random_mrx_dqn", "cop_random_mrx_random"]
+        self.simulation_experiment_dir = self.save_dir + "/simulation_experiment/"
+        if not os.path.exists(self.simulation_experiment_dir):
+            os.makedirs(self.simulation_experiment_dir)
         for directory in self.experiment_directories:
             if not os.path.exists(self.save_dir + "/train_experiment/" + directory):
                 os.makedirs(self.save_dir + "/train_experiment/" + directory)
+            if not os.path.exists(self.simulation_experiment_dir + directory):
+                os.makedirs(self.simulation_experiment_dir + directory)
         self.game = scotland_yard_game_logic.ScotlandYardGameLogic()
         self.current_game_id = 0
         self.train_experiment_training_count = experiment_training_iteration_count
         self.test_games_every_n_trainings = test_games_every_n_trainings
-        self.test_games_every_n_trainings_mapping = {100: 10, 500: 20, 1000: 50}
+        self.test_games_every_n_trainings_mapping = {20: 1, 100: 10, 500: 30, 1000: 50}
         self.number_of_test_games_per_pause = test_games_count_per_pause
-        self.ppo_trainer = TrainerPPO(simulation=True)
-        self.dqn_trainer = TrainerDQN(self.train_experiment_training_count, simulation=True)
+        if not simulation_experiment:
+            self.ppo_trainer = TrainerPPO(simulation=True)
+            self.dqn_trainer = TrainerDQN(self.train_experiment_training_count, simulation=True)
+        else:
+            self.ppo_trainer = TrainerPPO(playing=True)
+            self.dqn_trainer = TrainerDQN(self.train_experiment_training_count, playing=True)
+            self.dqn_trainer.algo.reset_config(self.dqn_trainer.play_config)
         verbose_print("Simulation Controller initialized", self.verbose)
         self.simulation_start_time = None
         self.last_simulation_time = None
@@ -48,7 +59,6 @@ class SimulationController:
                 if test_games_every_n_trainings > self.test_games_every_n_trainings_mapping[key]:
                     test_games_every_n_trainings = self.test_games_every_n_trainings_mapping[key]
         return test_games_every_n_trainings
-
 
     def run(self, config):
         # number of simulations to run
@@ -97,6 +107,7 @@ class SimulationController:
 
     def batch_simulation(self, number_of_simulations, cop_algo, cop_selected_algo: DefinedAlgorithms, mr_x_algo,
                          mr_x_selected_algo: DefinedAlgorithms, use_game_id=True, save_dir=None):
+        now = datetime.now()
         for i in range(number_of_simulations):
             if not use_game_id:
                 self.current_game_id = i + 1
@@ -107,45 +118,65 @@ class SimulationController:
                                save_dir)
             if use_game_id:
                 self.current_game_id = self.current_game_id + 1
+            if i % 100 == 0:
+                print(f"Simulated {i} games in {datetime.now() - now}")
+                now = datetime.now()
 
-    def simulate_all_variants(self):
-        save_dir_train_experiment = self.save_dir + "/train_experiment/"
+    def simulate_all_variants(self, save_dir=None):
+        now = datetime.now()
         self.batch_simulation(self.number_of_test_games_per_pause,
                               self.dqn_trainer.algo, DefinedAlgorithms.DQN,
                               self.ppo_trainer.algo, DefinedAlgorithms.PPO,
-                              use_game_id=False, save_dir=save_dir_train_experiment + "cop_dqn_mrx_ppo")
+                              use_game_id=False, save_dir=save_dir + "cop_dqn_mrx_ppo")
+        print(f"Simulations took {datetime.now() - now}")
+        now = datetime.now()
         self.batch_simulation(self.number_of_test_games_per_pause,
                               self.ppo_trainer.algo, DefinedAlgorithms.PPO,
                               self.dqn_trainer.algo, DefinedAlgorithms.DQN,
-                              use_game_id=False, save_dir=save_dir_train_experiment + "cop_ppo_mrx_dqn")
+                              use_game_id=False, save_dir=save_dir + "cop_ppo_mrx_dqn")
+        print(f"Simulations took {datetime.now() - now}")
+        now = datetime.now()
         self.batch_simulation(self.number_of_test_games_per_pause,
                               self.dqn_trainer.algo, DefinedAlgorithms.DQN,
                               self.dqn_trainer.algo, DefinedAlgorithms.DQN,
-                              use_game_id=False, save_dir=save_dir_train_experiment + "cop_dqn_mrx_dqn")
+                              use_game_id=False, save_dir=save_dir + "cop_dqn_mrx_dqn")
+        print(f"Simulations took {datetime.now() - now}")
+        now = datetime.now()
         self.batch_simulation(self.number_of_test_games_per_pause,
                               self.ppo_trainer.algo, DefinedAlgorithms.PPO,
                               self.ppo_trainer.algo, DefinedAlgorithms.PPO,
-                              use_game_id=False, save_dir=save_dir_train_experiment + "cop_ppo_mrx_ppo")
+                              use_game_id=False, save_dir=save_dir + "cop_ppo_mrx_ppo")
+        print(f"Simulations took {datetime.now() - now}")
+        now = datetime.now()
         self.batch_simulation(self.number_of_test_games_per_pause,
                               None, DefinedAlgorithms.RANDOM,
                               self.ppo_trainer.algo, DefinedAlgorithms.PPO,
-                              use_game_id=False, save_dir=save_dir_train_experiment + "cop_random_mrx_ppo")
+                              use_game_id=False, save_dir=save_dir + "cop_random_mrx_ppo")
+        print(f"Simulations took {datetime.now() - now}")
+        now = datetime.now()
         self.batch_simulation(self.number_of_test_games_per_pause,
                               self.ppo_trainer.algo, DefinedAlgorithms.PPO,
                               None, DefinedAlgorithms.RANDOM,
-                              use_game_id=False, save_dir=save_dir_train_experiment + "cop_ppo_mrx_random")
+                              use_game_id=False, save_dir=save_dir + "cop_ppo_mrx_random")
+        print(f"Simulations took {datetime.now() - now}")
+        now = datetime.now()
         self.batch_simulation(self.number_of_test_games_per_pause,
                               self.dqn_trainer.algo, DefinedAlgorithms.DQN,
                               None, DefinedAlgorithms.RANDOM,
-                              use_game_id=False, save_dir=save_dir_train_experiment + "cop_dqn_mrx_random")
+                              use_game_id=False, save_dir=save_dir + "cop_dqn_mrx_random")
+        print(f"Simulations took {datetime.now() - now}")
+        now = datetime.now()
         self.batch_simulation(self.number_of_test_games_per_pause,
                               None, DefinedAlgorithms.RANDOM,
                               self.dqn_trainer.algo, DefinedAlgorithms.DQN,
-                              use_game_id=False, save_dir=save_dir_train_experiment + "cop_random_mrx_dqn")
+                              use_game_id=False, save_dir=save_dir + "cop_random_mrx_dqn")
+        print(f"Simulations took {datetime.now() - now}")
+        now = datetime.now()
         self.batch_simulation(self.number_of_test_games_per_pause,
                               None, DefinedAlgorithms.RANDOM,
                               None, DefinedAlgorithms.RANDOM,
-                              use_game_id=False, save_dir=save_dir_train_experiment + "cop_random_mrx_random")
+                              use_game_id=False, save_dir=save_dir + "cop_random_mrx_random")
+        print(f"Simulations took {datetime.now() - now}")
 
     def run_train_experiment(self):
         self.simulation_start_time = datetime.now()
@@ -153,7 +184,7 @@ class SimulationController:
 
         current_train_iteration = 0
         verbose_print("Running simulations with 0 training", self.verbose)
-        self.simulate_all_variants()
+        self.simulate_all_variants(self.save_dir + "/train_experiment/")
         self.merge_csv_train_experiment_results(current_train_iteration)
         while current_train_iteration < self.train_experiment_training_count:
             verbose_print(f"Training iteration {current_train_iteration + 1} of {self.train_experiment_training_count}",
@@ -167,7 +198,7 @@ class SimulationController:
             current_train_iteration += 1
             if current_train_iteration % self.get_current_test_game_every_n_trainings(current_train_iteration) == 0:
                 self.last_simulation_time = datetime.now()
-                self.simulate_all_variants()
+                self.simulate_all_variants(self.save_dir + "/train_experiment/")
                 verbose_print(f"Simulations took {datetime.now() - self.last_simulation_time}", self.verbose)
                 self.last_simulation_time = datetime.now()
                 self.merge_csv_train_experiment_results(current_train_iteration)
@@ -231,14 +262,29 @@ class SimulationController:
 
         # Save the merged DataFrame to a new CSV file
         merged_data.to_csv(f"{self.save_dir}/simulation_{sim_number}", index=False)
-        pass
+
+    def merge_csv_simulation_experiment_results(self):
+        merged_data = pandas.DataFrame()
+        for directory in self.experiment_directories:
+            directory = self.simulation_experiment_dir + "/" + directory
+            game_files = glob.glob(os.path.join(directory + "/", 'game_*.csv'))
+
+            for file in game_files:
+                data = pandas.read_csv(file)
+                merged_data = pandas.concat([merged_data, data], ignore_index=True)
+
+            game_files = glob.glob(os.path.join(directory + "/", 'game_*.csv'))
+            for file in game_files:
+                os.remove(file)
+        merged_data.to_csv(self.simulation_experiment_dir + "/results.csv", index=False)
 
     def simulate_game(self, cop_algo, cop_algo_selected: DefinedAlgorithms, mr_x_algo,
                       mr_x_algo_selected: DefinedAlgorithms, save_dir=None):
         self.game.reset()
         turn_stats = {}
         while self.game.get_game_status() is scotland_yard_game_logic.GameStatus.ONGOING:
-            self.game.play_turn(cop_algo=cop_algo, mr_x_algo=mr_x_algo, verbose=True)
+            self.game.play_turn(cop_algo=cop_algo, mr_x_algo=mr_x_algo, verbose=True,
+                                train_simulation=not self.run_simulation_experiment)
             if self.game.playing_player_index == len(self.game.players) - 1:
                 if self.game.get_game_status() is scotland_yard_game_logic.GameStatus.ONGOING:
                     turn_stats[self.game.get_current_round_number()] = self.get_round_statistics()
@@ -280,6 +326,11 @@ class SimulationController:
                 "avg_distance_between_cops": avg_distance_between_cops,
                 "mr_x_reward": rewards["mr_x"],
                 "cops_avg_reward": sum([rewards[cop.name] for cop in self.game.get_cops()]) / len(self.game.get_cops())}
+
+    def run_simulation_experiment(self):
+        self.number_of_test_games_per_pause = 10000
+        self.simulate_all_variants(self.simulation_experiment_dir)
+        self.merge_csv_simulation_experiment_results()
 
     def get_game_statistics(self):
         game_result = self.game.get_game_status().value

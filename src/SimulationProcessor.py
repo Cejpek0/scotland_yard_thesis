@@ -9,11 +9,15 @@ from src.game.scotland_yard_game_logic import DefinedAlgorithms, GameStatus
 
 
 class SimulationProcessor:
-    def __init__(self):
+    def __init__(self, train_simulation):
         #relevant cols: cop_algo, mr_x_algo, game_result, game_id, mr_x_avg_distance_to_cop, avg_distance_between_cops, mr_x_reward,cops_avg_reward
         self.graphs_dir = "../simulations/graphs"
-        self.experiment_dir = "../simulations/train_experiment"
-        self.dataframe = self.load_experiment()
+        self.train_experiment_dir = "../simulations/train_experiment"
+        self.simulation_experiment_dir = "../simulations/simulation_experiment/"
+        if train_simulation:
+            self.dataframe = self.load_train_experiment()
+        else:
+            self.dataframe = self.load_simulation_experiment()
         sns.set_style()
         if not os.path.exists(self.graphs_dir):
             os.makedirs(self.graphs_dir)
@@ -31,7 +35,7 @@ class SimulationProcessor:
     def generate_graph_for(self, dataframe: DataFrame, cop_selected_algo: DefinedAlgorithms,
                            mr_x_selected_algo: DefinedAlgorithms):
         label_mapping = {
-            'mr_x_avg_distance_to_cop': 'Vzdálenost mezi Panem X a policisty',
+            'mr_x_avg_distance_to_cop': 'Vzdálenost policistů a Pana X',
             'mr_x_avg_reward': 'Odměna Pana X',
             'cops_avg_reward': 'Odměna policistů',
         }
@@ -42,7 +46,7 @@ class SimulationProcessor:
             hue='variable',
             style='variable',
             kind='line',
-            errorbar=("pi", 100),
+            errorbar=False,
             facet_kws=dict(legend_out=False),
             data=dataframe.melt(id_vars='train_iteration',
                                 value_vars=['mr_x_avg_reward', 'cops_avg_reward',
@@ -56,7 +60,7 @@ class SimulationProcessor:
         g.set_xlabels("Počet trénovacích iterací")
         plt.title(f"Policisté - {cop_selected_algo.name}\nPan X - {mr_x_selected_algo.name}")
 
-        sns.move_legend(g, "upper left", bbox_to_anchor=(1, 1))
+        sns.move_legend(g, "bottom right")
         ax = g.ax
         ax.patch.set_edgecolor('black')
         ax.patch.set_linewidth(1)
@@ -64,11 +68,15 @@ class SimulationProcessor:
             os.makedirs(self.graphs_dir)
         g.savefig(f"{self.graphs_dir}/cop_{cop_selected_algo.name}_mrx_{mr_x_selected_algo.name}", bbox_inches="tight")
 
-    def load_experiment(self) -> DataFrame:
-        assert os.path.exists(self.experiment_dir + "/results.csv"), "Experiment results file not found"
-        return pd.read_csv(self.experiment_dir + "/results.csv")
+    def load_train_experiment(self) -> DataFrame:
+        assert os.path.exists(self.train_experiment_dir + "/results.csv"), "Experiment results file not found"
+        return pd.read_csv(self.train_experiment_dir + "/results.csv")
 
-    def print_results(self):
+    def load_simulation_experiment(self) -> DataFrame:
+        assert os.path.exists(self.simulation_experiment_dir), "Experiment results file not found"
+        return pd.read_csv(self.train_experiment_dir + "/results.csv")
+
+    def print_results(self, train_simulation):
         dataframe_cop_ppo_mr_x_ppo = self.get_dataframe_for(DefinedAlgorithms.PPO, DefinedAlgorithms.PPO)
         dataframe_cop_ppo_mr_x_random = self.get_dataframe_for(DefinedAlgorithms.PPO, DefinedAlgorithms.RANDOM)
         dataframe_cop_ppo_mr_x_dqn = self.get_dataframe_for(DefinedAlgorithms.PPO, DefinedAlgorithms.DQN)
@@ -94,8 +102,15 @@ class SimulationProcessor:
             dataframe_cop_ppo_mr_x_ppo[dataframe_cop_ppo_mr_x_ppo["game_result"] == GameStatus.MR_X_WON.value])
         total_games_ppo_vs_ppo = len(dataframe_cop_ppo_mr_x_ppo) + len(dataframe_cop_ppo_mr_x_ppo)
 
-        random_ppo_early_wins_mrx = len(dataframe_cop_ppo_mr_x_random[(dataframe_cop_ppo_mr_x_random['train_iteration'] < 100) & (dataframe_cop_ppo_mr_x_random['game_result'] == GameStatus.MR_X_WON.value)])
-        random_ppo_early_wins_cops = len(dataframe_cop_random_mr_x_ppo[(dataframe_cop_random_mr_x_ppo['train_iteration'] < 100) & (dataframe_cop_random_mr_x_ppo['game_result'] == GameStatus.COPS_WON.value)])
+        if train_simulation:
+            random_ppo_early_wins_mrx = len(dataframe_cop_ppo_mr_x_random[
+                                                (dataframe_cop_ppo_mr_x_random['train_iteration'] < 100) & (
+                                                        dataframe_cop_ppo_mr_x_random[
+                                                            'game_result'] == GameStatus.MR_X_WON.value)])
+            random_ppo_early_wins_cops = len(dataframe_cop_random_mr_x_ppo[
+                                                 (dataframe_cop_random_mr_x_ppo['train_iteration'] < 100) & (
+                                                         dataframe_cop_random_mr_x_ppo[
+                                                             'game_result'] == GameStatus.COPS_WON.value)])
 
         victories_ppo_cop_vs_mrx_dqn = len(
             dataframe_cop_ppo_mr_x_dqn[dataframe_cop_ppo_mr_x_dqn["game_result"] == GameStatus.COPS_WON.value])
@@ -120,7 +135,6 @@ class SimulationProcessor:
         total_games_dqn_vs_random = len(dataframe_cop_dqn_mr_x_dqn) + len(dataframe_cop_dqn_mr_x_dqn)
         victories_dqn_mrx_vs_cop_dqn = len(
             dataframe_cop_dqn_mr_x_dqn[dataframe_cop_dqn_mr_x_dqn["game_result"] == GameStatus.MR_X_WON.value])
-        
 
         random_vs_random_cop_wins = len(
             dataframe_cop_random_mr_x_random[
@@ -130,19 +144,19 @@ class SimulationProcessor:
         ppo_avg_distance_to_cop = dataframe_cop_ppo_mr_x_ppo["mr_x_avg_distance_to_cop"].mean()
         random_avg_distance_to_cop = dataframe_cop_random_mr_x_random["mr_x_avg_distance_to_cop"].mean()
         dqn_avg_distance_to_cop = dataframe_cop_dqn_mr_x_dqn["mr_x_avg_distance_to_cop"].mean()
-        
 
+        string_early_wins = ""
+        if train_simulation:
+            string_early_wins = f"Počet výher náhodných agentů proti PPO agentům (do 100 iterace): {random_ppo_early_wins_mrx + random_ppo_early_wins_cops}/{total_games_ppo_vs_random - victories_ppo_vs_random}"
         text = f"""Výsledky simulace:
         Počet výher PPO policistů proti náhodnému Panu X: {victories_ppo_cop_vs_mrx_random}/{games_ppo_cop_vs_mrx_random}
         Počet výher náhodného Pana X proti PPO policistům: {games_ppo_cop_vs_mrx_random - victories_ppo_cop_vs_mrx_random}/{games_ppo_cop_vs_mrx_random}
         Počet výher PPO Panu X proti náhodným policistům: {victories_ppo_mrx_vs_cop_random}/{games_ppo_mrx_vs_cop_random}
         Počet výher náhodných policistů proti PPO Panu X: {games_ppo_mrx_vs_cop_random - victories_ppo_mrx_vs_cop_random}/{games_ppo_mrx_vs_cop_random}
         Počet výher PPO proti náhodnému agentovi: {victories_ppo_vs_random}/{total_games_ppo_vs_random}
-        
-        Počet výher náhodných agentů proti PPO agentům (do 100 iterace): {random_ppo_early_wins_mrx + random_ppo_early_wins_cops}/{total_games_ppo_vs_random - victories_ppo_vs_random}
+        {string_early_wins}
         Z toho počet výher Pana X: {random_ppo_early_wins_mrx}/{random_ppo_early_wins_mrx + random_ppo_early_wins_cops}
         Z toho počet výher policistů: {random_ppo_early_wins_cops}/{random_ppo_early_wins_mrx + random_ppo_early_wins_cops}
-        
         
         Počet výher PPO policistů proti PPO Panu X: {victories_ppo_cop_vs_mrx_ppo}/{total_games_ppo_vs_ppo}
         Počet výher PPO Panu X proti PPO policistům: {victories_ppo_mrx_vs_cop_ppo}/{total_games_ppo_vs_ppo}
