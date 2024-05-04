@@ -94,6 +94,9 @@ class SimulationProcessor:
             dataframe_cop_ppo_mr_x_ppo[dataframe_cop_ppo_mr_x_ppo["game_result"] == GameStatus.MR_X_WON.value])
         total_games_ppo_vs_ppo = len(dataframe_cop_ppo_mr_x_ppo) + len(dataframe_cop_ppo_mr_x_ppo)
 
+        random_ppo_early_wins_mrx = len(dataframe_cop_ppo_mr_x_random[(dataframe_cop_ppo_mr_x_random['train_iteration'] < 100) & (dataframe_cop_ppo_mr_x_random['game_result'] == GameStatus.MR_X_WON.value)])
+        random_ppo_early_wins_cops = len(dataframe_cop_random_mr_x_ppo[(dataframe_cop_random_mr_x_ppo['train_iteration'] < 100) & (dataframe_cop_random_mr_x_ppo['game_result'] == GameStatus.COPS_WON.value)])
+
         victories_ppo_cop_vs_mrx_dqn = len(
             dataframe_cop_ppo_mr_x_dqn[dataframe_cop_ppo_mr_x_dqn["game_result"] == GameStatus.COPS_WON.value])
         games_ppo_cop_vs_mrx_dqn = len(dataframe_cop_ppo_mr_x_dqn)
@@ -112,16 +115,22 @@ class SimulationProcessor:
         total_games_dqn_vs_random = len(dataframe_cop_dqn_mr_x_random) + len(dataframe_cop_random_mr_x_dqn)
         victories_dqn_vs_random = victories_dqn_cop_vs_mrx_random + victories_dqn_mrx_vs_cop_random
 
-        random_ppo_early_wins_mrx = len(dataframe_cop_ppo_mr_x_random[(dataframe_cop_ppo_mr_x_random['train_iteration'] < 100) & (dataframe_cop_ppo_mr_x_random['game_result'] == GameStatus.MR_X_WON.value)])
-        random_ppo_early_wins_cops = len(dataframe_cop_random_mr_x_ppo[(dataframe_cop_random_mr_x_ppo['train_iteration'] < 100) & (dataframe_cop_random_mr_x_ppo['game_result'] == GameStatus.COPS_WON.value)])
+        victories_dqn_cop_vs_mrx_dqn = len(
+            dataframe_cop_dqn_mr_x_dqn[dataframe_cop_dqn_mr_x_dqn["game_result"] == GameStatus.COPS_WON.value])
+        total_games_dqn_vs_random = len(dataframe_cop_dqn_mr_x_dqn) + len(dataframe_cop_dqn_mr_x_dqn)
+        victories_dqn_mrx_vs_cop_dqn = len(
+            dataframe_cop_dqn_mr_x_dqn[dataframe_cop_dqn_mr_x_dqn["game_result"] == GameStatus.MR_X_WON.value])
+        
 
-        ppo_avg_distance_to_cop = dataframe_cop_ppo_mr_x_ppo["mr_x_avg_distance_to_cop"].mean()
-        random_avg_distance_to_cop = dataframe_cop_random_mr_x_random["mr_x_avg_distance_to_cop"].mean()
-        dqn_avg_distance_to_cop = dataframe_cop_dqn_mr_x_dqn["mr_x_avg_distance_to_cop"].mean()
         random_vs_random_cop_wins = len(
             dataframe_cop_random_mr_x_random[
                 dataframe_cop_random_mr_x_random["game_result"] == GameStatus.COPS_WON.value])
         total_games_random_vs_random = len(dataframe_cop_random_mr_x_random)
+
+        ppo_avg_distance_to_cop = dataframe_cop_ppo_mr_x_ppo["mr_x_avg_distance_to_cop"].mean()
+        random_avg_distance_to_cop = dataframe_cop_random_mr_x_random["mr_x_avg_distance_to_cop"].mean()
+        dqn_avg_distance_to_cop = dataframe_cop_dqn_mr_x_dqn["mr_x_avg_distance_to_cop"].mean()
+        
 
         text = f"""Výsledky simulace:
         Počet výher PPO policistů proti náhodnému Panu X: {victories_ppo_cop_vs_mrx_random}/{games_ppo_cop_vs_mrx_random}
@@ -149,6 +158,9 @@ class SimulationProcessor:
         Počet výher DQN Panu X proti náhodným policistům: {victories_dqn_mrx_vs_cop_random}/{games_dqn_mrx_vs_cop_random}
         Počet výher náhodných policistů proti DQN Panu X: {games_dqn_mrx_vs_cop_random - victories_dqn_mrx_vs_cop_random}/{games_dqn_mrx_vs_cop_random}
         Počet výher DQN proti náhodnému agentovi: {victories_dqn_vs_random}/{total_games_dqn_vs_random}
+        
+        Počet výher DQN policistů proti DQN Panu X: {victories_dqn_cop_vs_mrx_dqn}/{total_games_dqn_vs_random}
+        Počet výher DQN Panu X proti DQN policistům: {victories_dqn_mrx_vs_cop_dqn}/{total_games_dqn_vs_random}
         
         Počet výher náhodných policistů proti náhodnému Panu X: {random_vs_random_cop_wins}/{total_games_random_vs_random}
         

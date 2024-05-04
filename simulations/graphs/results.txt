@@ -25,6 +25,9 @@ Výsledky simulace:
         Počet výher náhodných policistů proti DQN Panu X: 370/2050
         Počet výher DQN proti náhodnému agentovi: 2033/4100
         
+        Počet výher DQN policistů proti DQN Panu X: 389/4100
+        Počet výher DQN Panu X proti DQN policistům: 1661/4100
+        
         Počet výher náhodných policistů proti náhodnému Panu X: 413/2050
         
         Průměrná vzdálenost mezi Panem X a policisty (PPO): 4.749637370532474
