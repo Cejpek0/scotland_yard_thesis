@@ -20,12 +20,12 @@ Hra je u konce, když Pan X chycen policisty (vyhrávají policisté), nebo kdy�
 Scotland Yard je ideální hrou ke studování neučitosti ve hrách hranýmy systémy umělé inteligence, protože se jedná o hru s nedokonalou informací a k vítězství policistů je zapotřebí spolupráce a strategie.
 
 Tato práce zkoumá algoritmy posilovaného učení, jejich použití na hry s neurčitostí a jejich porovnání s klasickými metodami hraní her.
-Algoritmus proximální optimalizace politiky (Proximal Policy Optimization--PPO) je hlavním zkoumaným algoritmem této práce.
+Algoritmus proximální optimalizace strategie (Proximal Policy Optimization--PPO) je hlavním zkoumaným algoritmem této práce.
 Pro srovnání s jinýmy algoritmy slouží algoritmus Deep--Q--Learning (DQN).
 PPO je často používán k řešení problémů se spojitými veličinami a ve 3D prostoru.
 Algoritmus PPO byl vybrán z důvodu jeho úspěšnosti při použití ve složitých hrách s neurčitostí.
 Tyto tvrzení podporuje experiment OpenAI~\cite{PPO_Hide_Seek_page}, podrobně popsán zde\cite{PPO_Hide_Seek_paper}.
-V tomto experimentu byla proximální optimalizace politiky použita pro učení politiky ve hře typu \textit{schováváná} s několika agenty a neúplnou informací.
+V tomto experimentu byla proximální optimalizace strategie použita pro učení strategie ve hře typu \textit{schováváná} s několika agenty a neúplnou informací.
 Jelikož tento typ hry přesně odpovídá i hře Scotland Yard, zdá se být vhodný i pro řešení této hry.
 Také další studie~\cite{Manille} a \cite{Dota2} tento výrok dále podporují a dokazují vhodnost algoritmu PPO pro tuto práci.
 
@@ -187,7 +187,7 @@ Použité metody pro vytvoření těchto agentů bohužel nejsou zveřejněny.
 Inovaci umělé inteligence v této hře opět přinesla společnost OpenAI a jejich projekt \emph{OpenAI Five}\cite{Dota2}.
 Tento projekt se zaměřil na vytvoření agenta, který by byl schopna porazit nejlepší hráče světa ve hře Dota 2.
 OpenAi nepřišel se žádným novým algoritmem, ale pouze s novým přístupem k trénování a využití algoritmu \textbf{PPO} v doposud neviděném měřítku. 
-Algoritmus PPO a posilované učení bodou blíže popsáni v následujících sekcích \ref{sec:proximalni-optimalizace-politiky} a \ref{sec:klicove-koncepty-posilovaneho-uceni}.
+Algoritmus PPO a posilované učení bodou blíže popsáni v následujících sekcích \ref{sec:proximalni-optimalizace-strategie} a \ref{sec:klicove-koncepty-posilovaneho-uceni}.
 
 OpenAi Five porazil tehdejší nejlepší tým světa během exibice na nejprestižnejším turnaji Dota2 \textit{The International}.
 Hrála se klasická turnajová verze, a to tedy nejlepší ze tří.
@@ -205,7 +205,7 @@ Tyto akce mají 3 parametry, zpoždění, vybranou jednotku a offset cíle akce.
 Pokud tyto akce a jejich parametry zkombinujeme získáme akční prostor o velikosti 1,837,080 dimenzí.
 Výsledný reakční čas agenta je okolo 33ms, oproti tomu reakční čas profesionálních hráčů her je okolo 120ms\cite{reaction_time}
 
-Na začátku byla většina chování agenta uměle naprogramované a postupně mu byla předávána kontrola nad vlastním chováním s využití politiky.
+Na začátku byla většina chování agenta uměle naprogramované a postupně mu byla předávána kontrola nad vlastním chováním s využití strategie.
 Některé skriptované chování však bylo zachováno i ve finální verzi OpenAi Five a nebyly odstraněny, jelikož již agent byl dostatečně efektivní a nebylo třeba je odstranit.
 
 \section{Klíčové koncepty posilovaného učení}\label{sec:klicove-koncepty-posilovaneho-uceni}
@@ -223,7 +223,7 @@ Agent většinou volí takové akce, aby maximalizoval kumulativní odměnu.
 \label{subsec:prostory}
 
 \textbf{Pozorovací prostor} je jednou z nejdůležitějších součástí posilovaného učení.
-Bez jeho vhodného zvolení, je dosažení politiky s dobrými výsledky velmi obtížné.
+Bez jeho vhodného zvolení, je dosažení strategie s dobrými výsledky velmi obtížné.
 Pozorovací prostor je množina všech možných pozorování, které může agent získat z prostředí.
 Je to tedy forma, kterou prostředí předává informace agentovi.
 Velmi často se aktuální stav pozorovacího prostoru využívá jako stav.
@@ -236,7 +236,7 @@ Dodržování těchto standardů umožňuje použití libovolného algoritmu na 
 
 \bigskip
 
-\textbf{Akční prostor} je, jak název vypovídá, množina všech možných akcí, ze kterých může politika volit.
+\textbf{Akční prostor} je, jak název vypovídá, množina všech možných akcí, ze kterých může strategie volit.
 Často se jedná o množinu celočíselných hodnot, které reprezentují různé akce.
 Samozřejmě může být akční prostor i spojitého typu (blíže popsáno v další sekci).
 
@@ -255,7 +255,7 @@ Dískrétní akční prostory jsou počítatelné a často se jedná o konečnou
 Zato \textbf{spojitý prostor} je nekonečný prostor, který může obsahovat nekonečný počet prvků. 
 Spojitý pozorovací prostor je například ten, jehož vstupem je audio stopa.
 Spojité akční prostory jsou nekonečné a často je definuje nekonečná množina akcí.
-Na prostředí se spojitýmy prostory se často používají jiné algoritmy, například algoritmus DDPG (Hluboký deterministický gradient politiky).
+Na prostředí se spojitýmy prostory se často používají jiné algoritmy, například algoritmus DDPG (Hluboký deterministický gradient strategie).
 
 \bigskip
 
@@ -272,7 +272,7 @@ Odměna může být i záporná, pokud agent zvolil velmi nevhodnou akci.
 Pokud v prostředí existuje více agentů, může mít každý agent jiné pozorování.
 Díky tomuto můžeme například schovat agentovi \textit{A} určité informace, které agent \textit{B} vidí.
 
-\subsection{Policy (Strategie)}\label{subsec:politika}
+\subsection{Policy (Strategie)}\label{subsec:strategie}
 
 Pomocí posilovaného učení vzniká strategie.
 Strategie je matematická funkce, která definuje agentovo chování na základě jeho pozorování (stavu).
@@ -288,21 +288,21 @@ Strategie může být deterministická nebo stochastická.
   Nemůže se stát, aby byla šance, že agent zvolí akci, která teplotu ještě sníží.
   Další výhoda, je že je jednoduchá na interpretaci a implementaci.\cite{Policies}
 
-  Rovnice výsledné akce deterministické politiky je:
+  Rovnice výsledné akce deterministické strategie je:
   \begin{equation}
     \pi(s) = a\label{eq:policy_deterministic}
   \end{equation}
 
-  \subsubsection*{Stochastická politika}
+  \subsubsection*{Stochastická strategie}
   
-  Zato stochastická politika definuje pro každý stav pravděpodobnostní rozdělení nad množinou akcí.
+  Zato stochastická strategie definuje pro každý stav pravděpodobnostní rozdělení nad množinou akcí.
   Výsledná akce je tedy náhodná dle rozdělení pravděpodobnosti.
   Může tedy nastat situace kdy ve stejném stavu agent zvolí vždy jinou akci.
-  Tato politika je vhodná v situacích, kdy je potřeba zkoumat různé strategie a kdy agent nemá úplnou informaci o prostředí.
-  Například tam kde by deterministická politika zvolila jasnou akci \textit{A}, stochastická politika by mohla s malou pravděpodobností zvolit akci \textit{B}.
+  Tato strategie je vhodná v situacích, kdy je potřeba zkoumat různé strategie a kdy agent nemá úplnou informaci o prostředí.
+  Například tam kde by deterministická strategie zvolila jasnou akci \textit{A}, stochastická strategie by mohla s malou pravděpodobností zvolit akci \textit{B}.
   Čímž ale může odhalit, že stav \textit{B} je s ohledem na komulativní odměnu lepší než stav \textit{A}.\cite{Policies}
 
-  Rovnice výsledné akce stochastické politiky je:
+  Rovnice výsledné akce stochastické strategie je:
   \begin{equation}
     \pi(a \vert s) = \mathbb{P}_\pi [A=a \vert S=s]\label{eq:policy_stochastic}
   \end{equation}
@@ -478,7 +478,7 @@ Tento algoritmus se skvěle hodí na hry s nedokonalou či neúplnou informací,
 \subsection{Q-learning}\label{subsec:q-learning}
 
 Q-learning je jedním z nejznámějších algoritmů posilovaného učení.
-Učení tohoto algoritmu probíhá bez modelu a mimo politiku.
+Učení tohoto algoritmu probíhá bez modelu a mimo strategii.
 
 Jak už název vypovídá, Q-learning se zaměřuje na určení hodnoty hodnotové funkci akce $Q(s, a)$, viz. \nameref{subsubsec:q_function}.
 Tyto hodnoty se uchovávají v Q--tabulce, která na každou kombinaci stavu a akce uchovává hodnotu $Q(s, a)$.
@@ -526,8 +526,8 @@ Ten je řešen dvěma mechanizmy:
 
 Při vytváření neuronové sítě jsou váhy inicializovány náhodně.
 
-\subsection{Gradient politiky}\label{subsec:gradient-politiky}
-Oproti předchozím zmiňovaným algoritmům, které usilují o naučení hodnotové funkce či prohledávají stavový prostor, algoritmy gradientu politiky se snaží naučit politiku přímo.
+\subsection{Gradient strategie}\label{subsec:gradient-strategie}
+Oproti předchozím zmiňovaným algoritmům, které usilují o naučení hodnotové funkce či prohledávají stavový prostor, algoritmy gradientu strategie se snaží naučit strategii přímo.
 
 V diskrétním prostoru je odměnová funkce definována jako:
 \begin{equation}
@@ -541,43 +541,43 @@ V spojitém prostoru je odměnová funkce definována jako:
   \mathcal{J}(\theta) = \sum_{s \in \mathcal{S}} d_{\pi_\theta}(s) V_{\pi_\theta}(s) = \sum_{s \in \mathcal{S}} \Big( d_{\pi_\theta}(s) \sum_{a \in \mathcal{A}} \pi(a \vert s, \theta) Q_\pi(s, a) \Big)
   \end{equation}
 
-\subsubsection*{Věta o gradientu politiky}
+\subsubsection*{Věta o gradientu strategie}
 Výpočet gradientu matematicky je zaznamenán touto rovnicí:
 
 \begin{equation}
-  \label{eq:gradient_politiky}
+  \label{eq:gradient_strategie}
   \frac{\partial \mathcal{J}(\theta)}{\partial \theta_k} \approx \frac{\mathcal{J}(\theta + \epsilon u_k) - \mathcal{J}(\theta)}{\epsilon}
 \end{equation}
 Tento výpočet je velmi pomalý a náročný na výpočet.
-Avšak tento vzorec lze zjednodušit na rovnici zvanou \emph{věta o gradientu politiky}:
+Avšak tento vzorec lze zjednodušit na rovnici zvanou \emph{věta o gradientu strategie}:
 
 \begin{equation}
-    \label{eq:veta_o_gradientu_politiky}
+    \label{eq:veta_o_gradientu_strategie}
   \nabla \mathcal{J}(\theta) = \mathbb{E}_{\pi_\theta} [\nabla \ln \pi(a \vert s, \theta) Q_\pi(s, a)]
 \end{equation}
 
 \section{Trust Region Policy Optimization (TRPO)}\label{sec:trust-region-policy-optimization}
-Trénované politiky jsou často velmi náchylné na změny.
+Trénované strategie jsou často velmi náchylné na změny.
 Kde i malá náhlá změna v jednom kroku může způsobit velké změny v chování agenta a zamezit dalšímu učení správné strategie.
 Během učení totiž chceme, aby učení probýhalo plynule a ne skokově.
-Pokud se politika změní příliš rychle protože následovala nějvětší růst, může se stát, že mine cestu vedoucí k optimální strategii.
+Pokud se strategie změní příliš rychle protože následovala nějvětší růst, může se stát, že mine cestu vedoucí k optimální strategii.
 Uváznutí se tedy v lokálním optimu.\pagebreak
 
-TRPO je optimalizační algoritmus, který se snaží tento problém řešit tím, že definuje omezení rozdílu mezi novou aktualizovanou politikou $\textbf{p}$ a starou politikou z předešlého kroku $\textbf{q}$.
+TRPO je optimalizační algoritmus, který se snaží tento problém řešit tím, že definuje omezení rozdílu mezi novou aktualizovanou strategií $\textbf{p}$ a starou strategií z předešlého kroku $\textbf{q}$.
 Tento rozdíl mezi dvěma pravděpodobnostními rozděleními je definován jako Kullback-Leiblerova divergence (K-L divergence)\cite{KL_divergence}.
 Vzorec pro K-L divergenci je následující:
 \begin{equation}
   D_{KL}(p \| q) = \int_x p(x) \log \frac{p(x)}{q(x)} dx
 \end{equation}
-Vzniká tak region důvěry, ve kterém musí nová politika setrvat.
-Politika se tedy nemůže skokově měnit na lokální maximum, ale pouze následuje směr lokálního maxima.
+Vzniká tak region důvěry, ve kterém musí nová strategie setrvat.
+strategie se tedy nemůže skokově měnit na lokální maximum, ale pouze následuje směr lokálního maxima.
 
 K tomu využívá Hesenská matice.
-Kdy pomocí těchto matic hledá optimální směr změny politiky.
+Kdy pomocí těchto matic hledá optimální směr změny strategie.
 Tím, že se hledá lokální maximum pouze v oblasti důvěry, řeší problém se zaseknutím v těchto lokálních optimech.
 Hesenská matice je vždy čtvercového tvaru.
 Její hodnoty obsahují druhé parciální derivace funkce a popisuje tím její lokální zakřivení.
-Jelikož je politika pravděpodobnostní funkce, jsou tyto matice ideální pro hledání optimálního směru změny politiky.
+Jelikož je strategie pravděpodobnostní funkce, jsou tyto matice ideální pro hledání optimálního směru změny strategie.
 
 Díky tomuto řešení se učení stává robustním a stabilním.
 Avšak výměnou za to, je náročnost aproximace pomocí Hesenských matic a s tím související náročnost na implementaci.
@@ -594,24 +594,24 @@ Výsledná matice tak poté může vypadat takto:
    \end{bmatrix}
 \end{equation}
 
-\section{Proximální optimalizace politiky (PPO)}
-\label{sec:proximalni-optimalizace-politiky}
+\section{Proximální optimalizace strategie (PPO)}
+\label{sec:proximalni-optimalizace-strategie}
 
 %\textsuperscript {\ref{sec:trust-region-policy-optimization}}
 
-Metoda proximální optimalizace politiky (Proximal policy optimization - PPO) byla představena roku 2017\cite{PPO_paper}.
+Metoda proximální optimalizace strategie (Proximal policy optimization - PPO) byla představena roku 2017\cite{PPO_paper}.
 Tato metoda je vylepšeným následníkem algoritmu TRPO, popsaný v předchozí sekci~\ref{sec:trust-region-policy-optimization}.
 
 Co výrazné odlišuje tuto metodu od předchůdců, je její jednoduchost a efektivita.
 Dosahuje lepších výsledků než metoda TRPO a srovnatelných výsledků s metodou ACER.
 Je avšak mnohem jednodušší na implementaci, má nižší nároky na výkon a je mnohem lepší co se týče efektivity dat pro trénování.\cite{PPO_paper}.
 
-Nechť $r_t(\theta)$ je pravděpodobnostní poměr mezi novou a starou politikou.
+Nechť $r_t(\theta)$ je pravděpodobnostní poměr mezi novou a starou strategií.
 \begin{equation}
   r_t(\theta) = \frac{\pi_\theta(a_t \vert s_t)}{\pi_{\theta_{old}}(a_t \vert s_t)}
 \end{equation}
 
-Pokud tento vzorec dosadíme do rovnice pro výpočet gradientu politiky TRPO. Kde TRPO využívá K-L divergenci a maximalizuje vedlejší cíle, vznikne následnovná rovnice:
+Pokud tento vzorec dosadíme do rovnice pro výpočet gradientu strategie TRPO. Kde TRPO využívá K-L divergenci a maximalizuje vedlejší cíle, vznikne následnovná rovnice:
 
 \begin{equation}
   L^{CLIP}(\theta) = \mathbb{E}_t \Big[ \min \Big( r_t(\theta) \hat{A}_t, \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon) \hat{A}_t \Big) \Big]
@@ -620,7 +620,7 @@ Pokud tento vzorec dosadíme do rovnice pro výpočet gradientu politiky TRPO. K
 \begin{equation}
   L^{CLIP}(\theta) = \mathbb{E}_t \Big[ \min \Big( r_t(\theta) \hat{A}_t, \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon) \hat{A}_t \Big) \Big]
 \end{equation}
-V této rovnici je $r_t(\theta)$ relativní podobnost nové a staré politiky.
+V této rovnici je $r_t(\theta)$ relativní podobnost nové a staré strategie.
 
 \begin{figure}[H]
 	\centering
@@ -630,7 +630,7 @@ V této rovnici je $r_t(\theta)$ relativní podobnost nové a staré politiky.
 \end{figure}
 
 K dosažení těchto výsledků, využívá PPO techniku ořezávání náhradních cílů vloženou do algoritmu TRPO\@.
-Vynucuje, aby K-L divergence byla mezi novou a starou politikou byla v rozmezí $[1-\epsilon, 1+\epsilon]$ kde $\epsilon$ je modifikovatelný parametr.
+Vynucuje, aby K-L divergence byla mezi novou a starou strategií byla v rozmezí $[1-\epsilon, 1+\epsilon]$ kde $\epsilon$ je modifikovatelný parametr.
 
 PPO má však i své nedostatky.
 \label{PPO_weakness}
@@ -642,7 +642,7 @@ Dle studie~\cite{PPO_weakness} se ukázalo, že PPO nefunguje optimálně za 3 p
 \end{enumerate}
 
 Tato studie také navrhla tyto řešení a prokázala jejich účinnost.
-Bod 1 a 3 je řešen buď převedením spojitého akčního prostoru na diskrétní nebo zavedením \emph{Beta parametrizace politiky}.
+Bod 1 a 3 je řešen buď převedením spojitého akčního prostoru na diskrétní nebo zavedením \emph{Beta parametrizace strategie}.
 \emph{KL regulováním cíle} je řešen bod 2.
 
 Podmínka číslo 1 je v mé implementaci prostředí hry Scotland Yard implicitně neplatná, jelikož akční prostor je diskrétní.\\
@@ -706,15 +706,15 @@ Stavový prostor je tedy zjednodušený a tím se i snižují nároky na výkon.
 \label{sec:implementace}
 
 \subsection{Použité technologie}\label{subsec:pouzite-technologie}
-K učení politiky pro hru Scotland Yard byla využit open-source framework \texttt{Ray}~\cite{Ray}.
+K učení strategie pro hru Scotland Yard byla využit open-source framework \texttt{Ray}~\cite{Ray}.
 Konkrétně byla využita knihovna \texttt{Ray.Rllib}.
 Tato knihovna poskytuje nástroje pro posilované učení a samotné implementace jednotlivých algoritmů, včetně zkoumaného algoritmu \emph{PPO}.
 Rllib dokáže využívat obě populární knihovny pro strojové učení \texttt{Tensorflow} a \texttt{Pytorch}.
 Pro tuto práci byla vybrána knihovna \texttt{Pytorch}.
 
 Před finálním rozhodnutím pro využití frameworku \texttt{Ray} byly zkoumány i další možnosti.
-Knihovna Stable Baselines 3, která byla zavrhnuta, jelikož neumožňuje učení více politik souběžně při hraním agentů proti sobě.
-Knihovna \textit{CleanRL} byla také zavrhnuta, jelikož nemá dostatečně implementované trénování více politik souběžně.
+Knihovna Stable Baselines 3, která byla zavrhnuta, jelikož neumožňuje učení více strategií souběžně při hraním agentů proti sobě.
+Knihovna \textit{CleanRL} byla také zavrhnuta, jelikož nemá dostatečně implementované trénování více strategií souběžně.
 
 \subsection{Implementace uživatelského rozraní a herních mechanizmů}\label{subsec:implementace-uzivatelskeho-rozrani-a-hernich-mechanizmu}
 
@@ -794,7 +794,7 @@ Pokud hra skončila, je zobrazeno, kdo hru vyhrál.
 
 Vytvořit prostředí pro platformu \texttt{Ray.Rlib} bylo složité.
 Dokumentace vytváření prostředí není příliš komplexní, byl tedy problém zajistit správnou komunikaci prostředí a agentů.
-Prostředí a následné učení je komplikované, jelikož zde figuruje více agentů a dvě rozdílné politiky.
+Prostředí a následné učení je komplikované, jelikož zde figuruje více agentů a dvě rozdílné strategie.
 
 Agenti se již od začátku učí zásadně pouze hraním proti sobě.
 Důvodem pro toto rozhodnutí bylo, že se jedná o zajímavější experiment, kdy jsou agenti vpuštěni do absolutně neznámého prostředí a nemají se od koho učit strategii.
@@ -823,9 +823,9 @@ K vyřešení tohoto problému se nejčastěji využívá tzv.~ maska akcí (\em
 Framework Ray tuto možnost v omezené míře podporuje.
 Vytvořené prostředí je, avšak potřeba obalit v obalové třídě, která tuto funkcionalitu zprostředkuje.
 Bohužel se mi nepodařilo tuto funkcionalitu spojit s dalšími požadavky systému, které také vyžadují zabalení do jiné třídy.
-Mezi těmito požadavky je fungování více aktérů s různými politikami v jednom prostředí a různé pozorovací prostory agentů.
+Mezi těmito požadavky je fungování více aktérů s různými strategiemi v jednom prostředí a různé pozorovací prostory agentů.
 
-Politika, tedy může zvolit nevalidní akci, ale je velmi penalizována.
+strategie, tedy může zvolit nevalidní akci, ale je velmi penalizována.
 Agenti ji tedy zvolí opravdu zřídka, a to jen na základě velmi malé explorační šance.
 Pokud se i tak stane, je ve hře implementovaná funkcionalita, která se pokusí znovu vygenerovat další akce, dokud vygenerovaná akce není validní.
 Aby se zamezilo nekonečnému cyklu čekání na validní akci, je po 100 pokusech vygenerována náhodná validní akce.
@@ -874,7 +874,7 @@ Jakmile policista docílí oblastí zájmů dostává odměnu.
 PPO algoritmus může začít v prostředích s diskrétními akcemi volit velmi neoptimální akce.
 Toto nastává pokud má příliš málo podstatných odměn\cite{PPO_weakness}.
 To se dokonce ukázalo i během tohoto experimentu, kdy v raných fázích vývoje nebyla udělována odměna za vzdálenost od oblasti zájmu.
-Učení nebylo příliš úspěšné, ale přídáním této dílčí odměny za interakci s touto oblastí se učená politika značně zlepšila a agenti dosahovali lepších výsledků.
+Učení nebylo příliš úspěšné, ale přídáním této dílčí odměny za interakci s touto oblastí se učená strategie značně zlepšila a agenti dosahovali lepších výsledků.
 
 Tento styl odměňování policistů se ukázal jako velmi efektivní.
 Další varianta byla přidat do pozorování policistů pozice všech pozic, kde se může Pan X nacházet.
@@ -882,8 +882,8 @@ Toto by ale bylo velmi neefektivní, jelikož by se pozorovací prostor několik
 Tím by se zvýšila náročnost výpočtů a zpomalilo by se učení.
 \subsubsection*{Pozorovací a akční prostor agentů}
 
-\textbf{Pozorovací prostor} agentů je doopravdy velmi důležitý pro úspěšné naučení dobré politiky.
-V této práci vzájemně v prostředí vystupují dva agenti s různými politikami a různými pozorovacími prostory.
+\textbf{Pozorovací prostor} agentů je doopravdy velmi důležitý pro úspěšné naučení dobré strategie.
+V této práci vzájemně v prostředí vystupují dva agenti s různými strategiemi a různými pozorovacími prostory.
 Akční prostor je stejný jak pro policisty, tak pro Pana X\@.
 
 Struktury jednotlivých pozorovacích prostorů jsou následující:
@@ -1013,7 +1013,7 @@ Vzdálenost mezi policisty, trénovanými pomocí PPO a Panem X je po celou dobu
 Odměna kterou policisté získávají je velmi vysoká.
 Odměna Pana X je naopak velmi nízká.
 
-Na grafu lze také sledovat že průměrná vzdálenost policistů od Pana X na začátku trénování rapidně klesá, stejně tak jako klesá odměna Pana X tím, že se zlepšuje politika policistů.
+Na grafu lze také sledovat že průměrná vzdálenost policistů od Pana X na začátku trénování rapidně klesá, stejně tak jako klesá odměna Pana X tím, že se zlepšuje strategie policistů.
 Po tomto rapidním poklesu se vzdálenost policistů od Pana X stabilizuje a odměna Pana X se drží na nízké hodnotě.
 
 Naopak z grafu~\ref{fig:cop_random_mrx_ppo} lze pozorovat, že je odměna Pana X kladná, a až na odchylky vyšší než odměna policistů, ktěří se chovají náhodně.
@@ -1043,8 +1043,8 @@ U náhodného chování je to kvůli základní pravděpodobnosti, která musí 
 U grafu agentů PPO to avšak vypovídá o tom, že policisté dokáží stabilně odhadovat pozici Pana X a přinejmenším se pohybovat v jeho blízkém okolí.
 Z grafu\ref{fig:cop_ppo_mrx_ppo} lze pozorovat, že odměna policistů a Pana X kolísá.
 Frekvence tohoto kolísání se postupně jemně zmenšuje.
-Z toho odvozuji, že toto kolísání vypovídá o tom, že se agenti postupně učí strategii protivníka a snaží se podle ní upravit svoji politiku aby byli opět lepší.
-Což značí, že se obě politiky pomalu přibližují k optimu.
+Z toho odvozuji, že toto kolísání vypovídá o tom, že se agenti postupně učí strategii protivníka a snaží se podle ní upravit svoji strategii aby byli opět lepší.
+Což značí, že se obě strategie pomalu přibližují k optimu.
 Předpokládám, že dalším trénováním, by se tento trend potvrdil.
 Avšak k tomu by bylo potřeba zapotřebí větší výpočetní výkon a spoustu času.
 Ale jak lze vidět z výsledků experimentu, i přes relativně malý počet trénovacích iterací se objevuje očekávané chování a rozdíl s náhodným chováním je markantní.
@@ -1198,11 +1198,11 @@ Bylo příjemným překvapením, že již po pouhých 10 iterací trénování b
 \section*{Možná vylepšení}
 \label{sec:mozna-vylepseni}
 
-Bohužel se během experimentu nepovedlo separovat výslednou politiku od frameworku \texttt{Ray.Rlib} a extrahovat ji do podoby kde by již \texttt{Rlib} nebyl potřeba pro její zpracování.
+Bohužel se během experimentu nepovedlo separovat výslednou strategii od frameworku \texttt{Ray.Rlib} a extrahovat ji do podoby kde by již \texttt{Rlib} nebyl potřeba pro její zpracování.
 Při spouštění hry se tedy načítá i celý framework \texttt{Ray.Rlib}, toto velmi zpomaluje načítání hry kdy prvotní načtení trvá několik desítek sekund.
 Toto a spoustu dalších potíží jsou důvody proč zvolení knihovny Ray.Rllib zpětně lituji.
 Měl jsem spíše algoritmus PPO implementovat sám za pomocí \texttt{Pytorch} či \texttt{Tensorflow}.
-Nebo využít knihovnu CleanRl a učení více politik naráz vyřešit jiným způsobem.
+Nebo využít knihovnu CleanRl a učení více strategií naráz vyřešit jiným způsobem.
 Ač se Ray.Rllib navenek jeví jako velmi propracovaná a komplexní knihovna.
 V praxi se ukázalo, že obsahuje mnoho chyb a nekompletních řešení.
 Tuto zkutečnost jsem avšak odhalil až příliš pozdě na změnu směru této práce a pokračoval jsem s knihovnou \texttt{Ray.Rlib}.
