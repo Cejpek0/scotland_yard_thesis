@@ -1,8 +1,13 @@
-import csv
+"""
+File description: This file contains the SimulationController class, which is responsible for running the simulations
+of the game. It is responsible for running the simulations, saving the results, and merging the results into a single
+file.
+
+Author: Michal Cejpek (xcejpe05@stud.fit.vutbr.cz)
+"""
 import glob
 import os
 from datetime import datetime
-from multiprocessing import Process
 
 import pandas
 import ray
@@ -15,8 +20,8 @@ from src.helper import verbose_print
 
 
 class SimulationController:
-    def __init__(self, save_dir, verbose=False, experiment_training_iteration_count=10_000,
-                 test_games_every_n_trainings=10, test_games_count_per_pause=100, simulation_experiment=False):
+    def __init__(self, save_dir, verbose=False, experiment_training_iteration_count=1000,
+                 test_games_every_n_trainings=10, test_games_count_per_pause=50, simulation_experiment=False):
         ray.init(num_gpus=0, num_cpus=8)
         self.verbose = verbose
         self.simulation_experiment = simulation_experiment
@@ -24,6 +29,8 @@ class SimulationController:
         self.save_dir = save_dir
         if not os.path.exists(self.save_dir):
             os.makedirs(self.save_dir)
+
+        # directories with all possible combinations of cop and mr_x agents
         self.experiment_directories = ["cop_dqn_mrx_ppo", "cop_ppo_mrx_dqn", "cop_dqn_mrx_dqn",
                                        "cop_ppo_mrx_ppo", "cop_random_mrx_ppo", "cop_ppo_mrx_random",
                                        "cop_dqn_mrx_random", "cop_random_mrx_dqn", "cop_random_mrx_random"]
@@ -39,7 +46,7 @@ class SimulationController:
         self.current_game_id = 0
         self.train_experiment_training_count = experiment_training_iteration_count
         self.test_games_every_n_trainings = test_games_every_n_trainings
-        self.test_games_every_n_trainings_mapping = {20: 1, 100: 10, 500: 30, 1000: 50}
+        self.test_games_every_n_trainings_mapping = {10: 1, 50: 10, 500: 25, 1000: 50}
         self.number_of_test_games_per_pause = test_games_count_per_pause
         if not simulation_experiment:
             self.ppo_trainer = TrainerPPO(simulation=True)
@@ -53,6 +60,11 @@ class SimulationController:
         self.last_simulation_time = None
 
     def get_current_test_game_every_n_trainings(self, current_training_iteration):
+        """
+        Description: This function returns the number of test games to be played every n trainings.
+        :param current_training_iteration: int - current training iteration
+        :return: int - number of test games to be played every n trainings
+        """
         test_games_every_n_trainings = 50
         for key in self.test_games_every_n_trainings_mapping.keys():
             if current_training_iteration <= key:
@@ -61,8 +73,11 @@ class SimulationController:
         return test_games_every_n_trainings
 
     def run(self, config):
-        # number of simulations to run
-        # games[Mr_X agent]_vs_[cop agent]
+        """
+        Description: This function runs the simulation experiment based on the configuration.
+        :param config: dict - configuration of the simulation
+        :return: SimulationController - instance of the SimulationController
+        """
         games_ppo_vs_ppo = config["games_ppo_vs_ppo"]
         games_random_vs_ppo = config["games_random_vs_ppo"]
         games_ppo_vs_random = config["games_ppo_vs_random"]
@@ -107,7 +122,16 @@ class SimulationController:
 
     def batch_simulation(self, number_of_simulations, cop_algo, cop_selected_algo: DefinedAlgorithms, mr_x_algo,
                          mr_x_selected_algo: DefinedAlgorithms, use_game_id=True, save_dir=None):
-        now = datetime.now()
+        """
+        Description: This function runs a batch of simulations based on the configuration.
+        :param number_of_simulations: int - number of simulations to be run
+        :param cop_algo: Trainer - instance of the cop agent
+        :param cop_selected_algo: DefinedAlgorithms - selected algorithm for the cop agent
+        :param mr_x_algo: Trainer - instance of the mr_x agent
+        :param mr_x_selected_algo: DefinedAlgorithms - selected algorithm for the mr_x agent
+        :param use_game_id: bool - flag if the game id should be used
+        :param save_dir: str - directory to save the results
+        """
         for i in range(number_of_simulations):
             if not use_game_id:
                 self.current_game_id = i + 1
@@ -118,11 +142,13 @@ class SimulationController:
                                save_dir)
             if use_game_id:
                 self.current_game_id = self.current_game_id + 1
-            if i % 100 == 0:
-                print(f"Simulated {i} games in {datetime.now() - now}")
-                now = datetime.now()
 
     def simulate_all_variants(self, save_dir=None):
+        """
+        Description: This function runs simulations for all possible combinations of cop and mr_x agents.
+        :param save_dir: str - directory to save the results
+        :return: None
+        """
         now = datetime.now()
         self.batch_simulation(self.number_of_test_games_per_pause,
                               self.dqn_trainer.algo, DefinedAlgorithms.DQN,
@@ -179,6 +205,10 @@ class SimulationController:
         print(f"Simulations took {datetime.now() - now}")
 
     def run_train_experiment(self):
+        """
+        Description: This function runs the train experiment based on the configuration.
+        :return: SimulationController - instance of the SimulationController
+        """
         self.simulation_start_time = datetime.now()
         verbose_print("Running train experiment", self.verbose)
 
@@ -215,6 +245,10 @@ class SimulationController:
         return self
 
     def cleanup(self):
+        """
+        Description: This function cleans up after the simulation.
+        :return: None
+        """
         ray.shutdown()
         for directory in self.experiment_directories:
             files = glob.glob(os.path.join(self.save_dir + "/train_experiment/" + directory + "/", 'game_*.csv'))
@@ -225,6 +259,10 @@ class SimulationController:
                 os.remove(file)
 
     def merge_final_train_experiment_results(self):
+        """
+        Description: This function merges the final results of the train experiment.
+        :return: None
+        """
         merged_data = pandas.DataFrame()
         for directory in self.experiment_directories:
             directory = self.save_dir + "/train_experiment/" + directory
@@ -237,6 +275,11 @@ class SimulationController:
         merged_data.to_csv(self.save_dir + "/train_experiment/results.csv", index=False)
 
     def merge_csv_train_experiment_results(self, current_train_iteration):
+        """
+        Description: This function merges the results of the train experiment.
+        :param current_train_iteration:  int - current training iteration
+        :return: None
+        """
         for directory in self.experiment_directories:
             merged_data = pandas.DataFrame()
             directory = self.save_dir + "/train_experiment/" + directory
@@ -253,6 +296,11 @@ class SimulationController:
                 os.remove(file)
 
     def merge_csv_results(self, sim_number):
+        """
+        Description: This function merges the results of the simulation.
+        :param sim_number: int - current simulation number
+        :return: None
+        """
         game_files = glob.glob(os.path.join(self.save_dir + "/", 'game_*.csv'))
         merged_data = pandas.DataFrame()
 
@@ -264,6 +312,10 @@ class SimulationController:
         merged_data.to_csv(f"{self.save_dir}/simulation_{sim_number}", index=False)
 
     def merge_csv_simulation_experiment_results(self):
+        """
+        Description: This function merges the results of the simulation experiment.
+        :return: None
+        """
         merged_data = pandas.DataFrame()
         for directory in self.experiment_directories:
             directory = self.simulation_experiment_dir + "/" + directory
@@ -280,6 +332,15 @@ class SimulationController:
 
     def simulate_game(self, cop_algo, cop_algo_selected: DefinedAlgorithms, mr_x_algo,
                       mr_x_algo_selected: DefinedAlgorithms, save_dir=None):
+        """
+        Description: This function simulates a single game based on the configuration.
+        :param cop_algo: Trainer - instance of the cop agent
+        :param cop_algo_selected: DefinedAlgorithms - selected algorithm for the cop agent
+        :param mr_x_algo: Trainer - instance of the mr_x agent
+        :param mr_x_algo_selected: DefinedAlgorithms - selected algorithm for the mr_x agent
+        :param save_dir: str - directory to save the results
+        :return: None
+        """
         self.game.reset()
         turn_stats = {}
         while self.game.get_game_status() is scotland_yard_game_logic.GameStatus.ONGOING:
@@ -296,6 +357,13 @@ class SimulationController:
         self.save_statistics(game_stats, turn_stats, save_dir)
 
     def save_statistics(self, game_stats, turn_stats, save_dir):
+        """
+        Description: This function saves the statistics of the game.
+        :param game_stats: dict - game statistics
+        :param turn_stats: dict - turn statistics
+        :param save_dir: str - directory to save the results
+        :return: None
+        """
         if save_dir is None:
             save_dir = self.save_dir
         file_name = save_dir + "/game_" + str(self.current_game_id) + ".csv"
@@ -310,6 +378,10 @@ class SimulationController:
         result_df.to_csv(file_name, index=False)
 
     def get_round_statistics(self):
+        """
+        Description: This function returns the statistics of the round.
+        :return: dict - round statistics
+        """
         mr_x_avg_distance_to_cop = 0
         avg_distance_between_cops = 0
 
@@ -328,10 +400,17 @@ class SimulationController:
                 "cops_avg_reward": sum([rewards[cop.name] for cop in self.game.get_cops()]) / len(self.game.get_cops())}
 
     def run_simulation_experiment(self):
+        """
+        Description: This function runs the simulation experiment.
+        :return: None
+        """
         self.number_of_test_games_per_pause = 10000
         self.simulate_all_variants(self.simulation_experiment_dir)
         self.merge_csv_simulation_experiment_results()
 
     def get_game_statistics(self):
+        """
+        Description: This function returns the statistics of the game.
+        """
         game_result = self.game.get_game_status().value
         return {"game_result": game_result}

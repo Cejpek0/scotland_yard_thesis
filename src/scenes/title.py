@@ -1,5 +1,9 @@
-import pygame
+"""
+File description: Define a Title scene, which is the first scene in the game.
 
+Author: Michal Cejpek (xcejpe05@stud.fit.vutbr.cz)
+"""
+import pygame
 from src.Button import Button
 from src.colors import *
 from src.scenes.scene import Scene
@@ -40,7 +44,7 @@ class Title(Scene):
         self.list_cop_btns = [self.btn_cop_ppo, self.btn_cop_dqn, self.btn_cop_random]
         self.list_mrx_btns = [self.btn_mr_x_ppo, self.btn_mr_x_dqn, self.btn_mr_x_random]
 
-    def update(self, delta_time, actions):
+    def update(self, user_input):
         return
 
     def render(self, display):

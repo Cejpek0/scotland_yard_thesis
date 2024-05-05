@@ -20,7 +20,7 @@ class TrainerPPO:
             ray.init(num_gpus=0)
 
         def env_creator(env_config):
-            return ScotlandYardEnvironment({}, scotland_yard_game.DefinedAlgorithms.PPO, simulation=simulation)
+            return ScotlandYardEnvironment({})
 
         register_env("scotland_env", env_creator)
 

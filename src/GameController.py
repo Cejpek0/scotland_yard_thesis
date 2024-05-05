@@ -1,10 +1,11 @@
 """
-File description: This file contains the GameController class, which is the main class of the game. It is 
-responsible for running the game loop, handling user input, and managing the game's scenes.
+File description: This file contains the GameController class, which is the main class of the game.
+It is responsible for running the game loop, handling user input, and managing the game's scenes.
 
-Author: Michal Cejpek(xcejpe05@stud.fit.vutbr.cz)
+Author: Michal Cejpek (xcejpe05@stud.fit.vutbr.cz)
 
-This code was inspired by the following source: https://github.com/ChristianD37/YoutubeTutorials/tree/master/Game%20States
+This code was inspired by the following source:
+https://github.com/ChristianD37/YoutubeTutorials/tree/master/Game%20States
 Idea has been adopted, changed and expanded to fit the needs of the project.
 """
 
@@ -17,9 +18,10 @@ import ray
 from TrainerDQN import TrainerDQN
 from TrainerPPO import TrainerPPO
 from src.GuiController import GuiController
+from src.helper import verbose_print
 
 
-# Enumerations
+# Enum for possible user actions
 class UserActions(Enum):
     backspace = pygame.K_BACKSPACE
     enter = pygame.K_RETURN
@@ -30,15 +32,14 @@ class UserActions(Enum):
     mouse_left_up = pygame.MOUSEBUTTONUP
     mouse_right_up = pygame.MOUSEBUTTONUP
     mouse_moved = pygame.MOUSEMOTION
-    p_key = pygame.K_p
 
 
-class GameController():
+class GameController:
     def __init__(self, verbose=False):
-        print("GameController init")
+        verbose_print("GameController init")
         pygame.init()
         pygame.display.set_caption('Scotland Yard Thesis - xcejpe05')
-        print("Pygame init")
+        verbose_print("Pygame init")
 
         self.verbose = verbose
         self.font = None
@@ -61,6 +62,7 @@ class GameController():
 
         ray.init(num_gpus=0)
 
+        # Load the models
         trainer_ppo = TrainerPPO(playing=True)
         trainer_dqn = TrainerDQN(1, playing=True)
         self.algo_ppo = trainer_ppo.algo
@@ -82,6 +84,10 @@ class GameController():
             self.reset_keys()
 
     def get_events(self):
+        """
+        Get user input events
+        :return: None
+        """
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.playing = False
@@ -95,8 +101,6 @@ class GameController():
                     self.user_actions[UserActions.space.name] = True
                 if event.key == UserActions.backspace.value:  # Backspace btn
                     self.user_actions[UserActions.backspace.name] = True
-                if event.key == UserActions.p_key.value:  # P btn
-                    self.user_actions[UserActions.p_key.name] = True
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     self.user_actions[UserActions.mouse_left_down.name] = True
@@ -111,7 +115,7 @@ class GameController():
                 self.user_actions[UserActions.mouse_moved.name] = True
 
     def update(self):
-        self.scene_stack.top().update(self.dt, self.user_actions)
+        self.scene_stack.top().update(self.user_actions)
 
     def render(self):
         self.scene_stack.top().render(self.gui_controller.game_canvas)

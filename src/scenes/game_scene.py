@@ -1,3 +1,9 @@
+"""
+File description: Game scene class for Scotland Yard game.
+This class is responsible for communication between game and gui.
+
+Author: Michal Cejpek (xcejpe05@stud.fit.vutbr.cz)
+"""
 import time
 
 import pygame.time
@@ -34,14 +40,10 @@ class ScotlandYardScene(Scene):
         else:
             self.cop_algorithm = None
 
-    def update(self, delta_time, actions):
+    def update(self, user_input):
         from src.GameController import UserActions
 
-        if actions[UserActions.p_key.name]:
-            from src.scenes.pause_menu import PauseMenu
-            new_state = PauseMenu(self.game_controller, self.gui_controller)
-            new_state.enter_scene()
-        elif actions[UserActions.space.name] and self.game.get_game_status() == GameStatus.ONGOING:
+        if user_input[UserActions.space.name] and self.game.get_game_status() == GameStatus.ONGOING:
             self.game_controller.playing = not self.game_controller.playing
         elif self.game_controller.playing:
             self.game.play_turn(cop_algo=self.cop_algorithm, mr_x_algo=self.mrx_algorithm)

@@ -1,14 +1,17 @@
+"""
+File description: Visual representation of the Scotland Yard game.
+
+Author: Michal Cejpek (xcejpe05@stud.fit.vutbr.cz)
+"""
 import pygame
 
 from src.GuiController import GuiController
 from src.Player import Player
 from src.colors import *
-from src.game.scotland_yard_game_logic import ScotlandYardGameLogic, GameStatus
+from src.game.scotland_yard_game_logic import ScotlandYardGameLogic, GameStatus, GRID_SIZE
+
 
 # Constants
-
-GRID_SIZE = 15
-
 
 class ScotlandYardGameVisual:
     def __init__(self, game_instance: ScotlandYardGameLogic, gui_controller: GuiController):
@@ -16,8 +19,6 @@ class ScotlandYardGameVisual:
         self.game = game_instance
         self.gui_controller = gui_controller
         self.cell_size = gui_controller.width // self.grid_size
-
-    # -- BEGIN: DRAW FUNCTIONS -- #
 
     def to_draw_rectangle_at_position(self, position: (), color: (), alpha=255, small: bool = False):
         if small:
@@ -39,6 +40,10 @@ class ScotlandYardGameVisual:
         return self
 
     def redraw(self):
+        """
+        Redraws the whole game canvas based on the current game state.
+        :return: self
+        """
         (self.to_clear_grid()
          .to_draw_last_known_positions()
          .to_draw_players()
@@ -95,7 +100,7 @@ class ScotlandYardGameVisual:
 
     def draw_player_number(self, player: Player):
         self.gui_controller.to_draw_text(text=f"{player.number}", position=(
-        player.position[0] * self.cell_size + 5, player.position[1] * self.cell_size + 5))
+            player.position[0] * self.cell_size + 5, player.position[1] * self.cell_size + 5))
         return self
 
     def to_highlight_area_of_interest(self):
@@ -104,5 +109,3 @@ class ScotlandYardGameVisual:
         for position in possible_mr_x_positions:
             self.to_draw_rectangle_at_position(position, WHITE, 40)
         return self
-
-    # -- END: DRAW FUNCTIONS -- #

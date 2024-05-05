@@ -1,5 +1,10 @@
+"""
+File description: Button class for creating buttons in the game.
+
+Author: Michal Cejpek (xcejpe05@stud.fit.vutbr.cz)
+"""
+
 import pygame
-from src.colors import *
 
 
 # Button class

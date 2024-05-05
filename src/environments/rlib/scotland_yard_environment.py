@@ -1,20 +1,28 @@
-from typing import Dict, List, Any
+"""
+This file contains the implementation of the Scotland Yard environment for the learning agents.
+The environment is implemented as a MultiAgentEnv from the Ray RLlib library.
+The environment is a turn-based game where the agents take turns to make a move.
+Author: Michal Cejpek (xcejpe05@stud.fit.vutbr.cz)
+"""
+from typing import Dict, Any
 
 import numpy as np
 from gymnasium import spaces
 from ray.rllib import MultiAgentEnv
 from ray.rllib.utils.typing import AgentID
+
 import src.game.scotland_yard_game_logic as scotland_yard_game
 
+
 def policy_mapping_fn(agent_id, episode, worker):
+    """Mapping function for the policy based on the agent_id"""
     return "mr_x_policy" if agent_id == "mr_x" else "cop_policy"
+
 
 class ScotlandYardEnvironment(MultiAgentEnv):
     _agent_ids = ["mr_x", "cop_1", "cop_2", "cop_3"]
 
-    def __init__(self, config, selected_algo, simulation=False):
-        self.next_agent_index = 0
-        self.next_agent = "cop_1"
+    def __init__(self, config):
         super().__init__()
         self.config = config
         self.game = scotland_yard_game.ScotlandYardGameLogic()
@@ -23,6 +31,7 @@ class ScotlandYardEnvironment(MultiAgentEnv):
         self.agents = self._agent_ids
         self.num_agents = len(self._agent_ids)
 
+        # action space definition for each agent
         self.action_space = spaces.dict.Dict({
             "mr_x": spaces.Discrete(9),
             "cop_1": spaces.Discrete(9),
@@ -30,6 +39,7 @@ class ScotlandYardEnvironment(MultiAgentEnv):
             "cop_3": spaces.Discrete(9)
         })
 
+        # observation space definition for each agent
         self.observation_space = spaces.dict.Dict({
             "mr_x": scotland_yard_game.mrx_observation_space,
             "cop_1": scotland_yard_game.general_cop_observation_space,
@@ -39,16 +49,25 @@ class ScotlandYardEnvironment(MultiAgentEnv):
 
     def step(self, action_dict: Dict[AgentID, int]) -> (
             Dict[Any, Any], Dict[Any, Any], Dict[Any, Any], Dict[Any, Any], Dict[Any, Any]):
-        # check if actions of all agents are valid
+        """
+        Step function for the environment.
+        Tries to perform the action of the current agent.
+        If the action is invalid, heavily penalize the agent and do not proceed with the step.
+        Returns observations for next agent, rewards of current agent,
+        :param action_dict: Dictionary of actions for each agent
+        :return: Observations, rewards, terminations, truncated, info
+        """
+
         assert len(action_dict) > 0
         current_agent = self.game.get_current_player()
         action = action_dict[current_agent.name]
         rewards = {agent: 0 for agent in self._agent_ids}
         direction = scotland_yard_game.Direction(action)
 
+        # check if actions of all agents are valid
         invalid_move = not self.game.is_valid_move(current_agent, direction)
 
-        # If any action is invalid, do not proceed with the step. Do not update the game, and heavily penalize agents
+        # If action is invalid, do not proceed with the step. Do not update the game, and heavily penalize agents
         # that made invalid actions
         if invalid_move:
             observations = {current_agent.name: self.get_observations()[current_agent.name]}
@@ -60,7 +79,7 @@ class ScotlandYardEnvironment(MultiAgentEnv):
 
         self.game.play_turn(direction)
 
-        # Get updated observations
+        # get next player
         next_player = self.game.get_player_by_number((current_agent.number + 1) % self.num_agents)
         assert next_player is not None
         infos = {}
@@ -74,7 +93,7 @@ class ScotlandYardEnvironment(MultiAgentEnv):
 
         # Check if the game is over
         terminates = self.getTerminations()
-
+        # Get updated observations
         observations = {next_player.name: self.get_observations()[next_player.name]}
 
         # Return observations, rewards, terminates,truncated, info
@@ -82,6 +101,10 @@ class ScotlandYardEnvironment(MultiAgentEnv):
                                                    "cop_3": False, }, infos
 
     def reset(self, *, seed=None, options=None):
+        """
+        Reset the environment to the initial state.
+        :return: Observations, infos
+        """
         self.game.reset()
         current_player = self.game.get_current_player()
         # Observations
@@ -139,7 +162,8 @@ class ScotlandYardEnvironment(MultiAgentEnv):
             if distance < closest_cop_distance:
                 closest_cop_distance = distance
         distance_rewards["mr_x"] = round(
-            (((closest_cop_distance - minimum_distance) / (scotland_yard_game.MAX_DISTANCE - minimum_distance)) * 20), 10)
+            (((closest_cop_distance - minimum_distance) / (scotland_yard_game.MAX_DISTANCE - minimum_distance)) * 20),
+            10)
 
         # __ COPS __ #
         possible_mr_x_positions = self.game.get_possible_mr_x_positions()
@@ -161,6 +185,7 @@ class ScotlandYardEnvironment(MultiAgentEnv):
                 distance_rewards[cop.name] = (float(
                     minimum_distance - distance_to_closest_position) / scotland_yard_game.MAX_DISTANCE) * 10
 
+        # Sum all rewards
         for agent in self._agent_ids:
             rewards[agent] += (
                     distance_rewards[agent]
@@ -171,10 +196,18 @@ class ScotlandYardEnvironment(MultiAgentEnv):
         return rewards
 
     def get_observations(self):
+        """
+        Get observations for all agents
+        :return: Dictionary of observations for all agents: {agent_id: observation}
+        """
         observations = self.game.get_observations()
         return observations
 
     def get_empty_observation(self):
+        """
+        Get empty observation for all agents
+        :return: Dictionary of empty observations for all agents: {agent_id: observation}
+        """
         mrx_obs = np.array([0, 0, 0, 0, 0, 0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0])
         mrx_obs = mrx_obs.astype(np.float32)
 
@@ -189,6 +222,11 @@ class ScotlandYardEnvironment(MultiAgentEnv):
         }
 
     def getTerminations(self):
+        """
+        Get terminations for all agents.
+        Terminations depend on the game status.
+        :return: Dictionary of terminations for all agents: {agent_id: termination}
+        """
         game_over = self.game.get_game_status()
         returnDict = {}
         for agent_id in self._agent_ids:

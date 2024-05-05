@@ -1,4 +1,8 @@
-# Colors
+"""
+File description: Colors for the game.
+
+Author: Michal Cejpek (xcejpe05@stud.fit.vutbr.cz)
+"""
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (100, 100, 100)

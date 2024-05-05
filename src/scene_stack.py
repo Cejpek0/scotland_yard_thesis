@@ -2,7 +2,7 @@
 File description: This file contains the SceneStack class, which is a stack of scenes. It is used to manage the game's
 scenes and transitions between them.
 
-Author: Michal Cejpek(xcejpe05@stud.fit.vutbr.cz)
+Author: Michal Cejpek (xcejpe05@stud.fit.vutbr.cz)
 
 This code was inspired by the following source: https://github.com/ChristianD37/YoutubeTutorials/tree/master/Game%20States
 Idea has been adopted, changed and expanded to fit the needs of the project.

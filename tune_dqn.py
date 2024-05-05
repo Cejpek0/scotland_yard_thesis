@@ -19,7 +19,7 @@ if __name__ == "__main__":
 
 
     def env_creator(env_config):
-        return ScotlandYardEnvironment({}, scotland_yard_game.DefinedAlgorithms.DQN)
+        return ScotlandYardEnvironment({})
 
 
     register_env("scotland_env", env_creator)

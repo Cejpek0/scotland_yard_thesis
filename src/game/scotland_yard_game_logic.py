@@ -1,3 +1,9 @@
+"""
+File description: This file contains implementation of class ScotlandYardGameLogic . It has implementation of game logic.
+It is responsible for playing the game, moving players, generating observations, and handling the game state.
+
+Author: Michal Cejpek (xcejpe05@stud.fit.vutbr.cz)
+"""
 import math
 import random
 import sys
@@ -24,8 +30,7 @@ NUMBER_OF_STARTING_POSITIONS_MR_X = 5
 MAX_NUMBER_OF_TURNS = 24
 REVEAL_POSITION_ROUNDS = [3, 8, 13, 18, 24]
 
-ALGORITHM_CHECKPOINT_DIR = "../tuned_results/"
-
+# defineition of mrx observation space
 mrx_observation_space = spaces.Box(low=np.array([
     0,  # current turn
     0,  # max turns
@@ -66,6 +71,7 @@ mrx_observation_space = spaces.Box(low=np.array([
     GRID_SIZE * 2,  # distance to cop_3
 ]), dtype=np.float32)
 
+# definition of general cop observation space
 general_cop_observation_space = spaces.Box(low=np.array([
     0,  # current turn
     0,  # max turns
@@ -108,6 +114,7 @@ general_cop_observation_space = spaces.Box(low=np.array([
     1,  # inside or outside area of interest
 ]), dtype=np.float32)
 
+# Policy specifications
 MR_X_POLICY_SPEC = PolicySpec(
     observation_space=mrx_observation_space,
     action_space=spaces.Discrete(9),
@@ -118,7 +125,9 @@ COP_POLICY_SPEC = PolicySpec(
 )
 
 
-# Enumerations
+# Enumerations #
+
+# Possible moves
 class Direction(Enum):
     STOP = 0
     UP = 1
@@ -160,19 +169,24 @@ class ScotlandYardGameLogic:
         self.agents_previous_locations = {"mr_x": None, "cop_1": None, "cop_2": None, "cop_3": None}
         self.agents_is_in_previous_location_count = {"mr_x": 0, "cop_1": 0, "cop_2": 0, "cop_3": 0}
 
-        # Create players
         self.reset()
 
     def create_players(self):
+        """
+        Create new players
+        :return: self
+        """
         self.players.clear()
         self.players.append(MrX(0, color=RED, name="mr_x"))
         for i in range(self.number_of_cops):
             self.players.append(Cop(i + 1, color=GREEN, name=f"cop_{i + 1}"))
         return self
 
-    # -- BEGIN: CORE FUNCTIONS -- #
-
     def reset(self):
+        """
+        Reset game state
+        :return: self
+        """
         # init game state
         self.round_number = 0
         self.playing_player_index = 0
@@ -194,6 +208,8 @@ class ScotlandYardGameLogic:
                 chosen_start_position = random.choice(_start_positions_cops_temp)
                 self.choose_start_position(player, chosen_start_position)
                 _start_positions_cops_temp.remove(chosen_start_position)
+
+        # set current locations for innactivity check
         self.agents_previous_locations = dict(mr_x=self.get_mr_x().position,
                                               cop_1=self.get_player_by_number(1).position,
                                               cop_2=self.get_player_by_number(2).position,
@@ -201,35 +217,122 @@ class ScotlandYardGameLogic:
 
         return self
 
-    def quit(self):
+    def play_turn(self, action: Direction | Name = None, cop_algo=None, mr_x_algo=None, verbose=None,
+                  train_simulation=False):
+        """
+        Play one turn of the game
+        :param action: Action to be played. Is generated from trainers. If none, action will be generated based on selected algorithm
+        :param cop_algo: Algorithm for cops
+        :param mr_x_algo: Algorithm for mr x
+        :param verbose: Print verbose output
+        :param train_simulation: Train simulation is on
+        :return: self
+        """
+        if verbose is None:
+            verbose = self.verbose
+
+        if self.playing_player_index == 0:
+            self.round_number += 1
+
+        player = self.get_current_player()
+        if action is None:
+            if player.is_mr_x():
+                if mr_x_algo is None:
+                    action = self.get_random_action()
+                else:
+                    action = self.get_action_for_player(player, cop_algo, mr_x_algo, verbose=verbose,
+                                                        train_simulation=train_simulation)
+            elif player.is_cop():
+                if cop_algo is None:
+                    action = self.get_random_action()
+                else:
+                    action = self.get_action_for_player(player, cop_algo, mr_x_algo, verbose=verbose,
+                                                        train_simulation=train_simulation)
+
+        self.move_player(player, action)
+
+        if player.position == self.agents_previous_locations[player.name]:
+            self.agents_is_in_previous_location_count[player.name] += 1
+        else:
+            self.agents_is_in_previous_location_count[player.name] = 0
+        self.agents_previous_locations[player.name] = player.position
+
+        if self.round_number in REVEAL_POSITION_ROUNDS and player.is_mr_x():
+            self.get_mr_x().mr_x_reveal_position()
+        self.playing_player_index = (self.playing_player_index + 1) % len(self.players)
+
+        #verbose_print(self.get_simulation_rewards_fake(), self.verbose)
         return self
 
-    # -- END: CORE FUNCTIONS -- #
+    def get_random_action(self):
+        """
+        Get random action.
+        Generates only valid actions
+        :return: Random valid action
+        """
+        valid_actions = self.get_players_valid_moves(self.get_current_player())
+        generated_action = random.choice(valid_actions)
+        if self.is_valid_move(self.get_current_player(), Direction(generated_action)):
+            return Direction(generated_action)
+        else:
+            raise Exception("Generated action is not valid")
 
-    # -- BEGIN: RL FUNCTIONS -- #
+    def get_action_for_player(self, player: Player, cop_algo: PPO, mr_x_algo, verbose=False,
+                              train_simulation=False) -> Direction:
+        """
+        Get action for player based on the algorithm
+        :param player: Player for which the action is generated
+        :param cop_algo: Selected algorithm for cops
+        :param mr_x_algo: Selected algorithm for mr x
+        :param verbose: Print verbose output
+        :param train_simulation: Train simulation is on
+        :return: Action for player
+        """
+        # Use the policy to obtain an action for the given player and observation
+        observations = self.get_observations()
 
-    def get_square_radius(self, position: (int, int), r: int):
-        positions = []
-        for x in range(position[0] - r, position[0] + r + 1):
-            for y in range(position[1] - r, position[1] + r + 1):
-                if self.is_position_inside_grid((x, y)):
-                    positions.append((x, y))
-        return positions
-
-    def get_closest_position(self, position: (int, int), positions: [(int, int)]):
-        closest_position = None
-        min_distance = MAX_DISTANCE
-        for pos in positions:
-            distance = self.get_distance_between_positions(position, pos)
-            if distance < min_distance:
-                min_distance = distance
-                closest_position = pos
-        return closest_position
-
-    def get_players_names(self):
-        return [player.name for player in self.players]
+        count = 0
+        direction = None
+        action_is_valid = False
+        # Generate action for player
+        # if the generated action is not valid, generate another one
+        # after 100 tries, generate random action instead. This prevents infinite loop
+        while not action_is_valid:
+            if count < 100:
+                if player.is_mr_x():
+                    if mr_x_algo is None:
+                        generated_action = self.get_random_action()
+                    else:
+                        explore = True if mr_x_algo.__class__ == PPO else False
+                        if train_simulation:
+                            explore = True
+                        generated_action = mr_x_algo.compute_single_action(observations[player.name],
+                                                                           policy_id="mr_x_policy",
+                                                                           explore=explore)
+                else:
+                    if cop_algo is None:
+                        generated_action = self.get_random_action()
+                    else:
+                        explore = True if mr_x_algo.__class__ == PPO else False
+                        if train_simulation:
+                            explore = True
+                        generated_action = cop_algo.compute_single_action(observations[player.name],
+                                                                          policy_id="cop_policy",
+                                                                          explore=explore)
+            else:
+                generated_action = self.get_random_action()
+                verbose_print(f"Generated random action after 100 tries", verbose)
+            direction = Direction(generated_action)
+            if self.is_valid_move(player, direction):
+                action_is_valid = True
+            count += 1
+        return direction
 
     def get_observations(self):
+        """
+        Get observations for all agents
+        :return: Observations for all agents
+        """
         cop_1 = self.get_player_by_number(1)
         cop_2 = self.get_player_by_number(2)
         cop_3 = self.get_player_by_number(3)
@@ -287,6 +390,7 @@ class ScotlandYardGameLogic:
                     cop.get_distance_to(other_cop.position)
                 ]).astype(np.float32))
 
+            # find the closest position of interest
             closest_position = self.get_closest_position(
                 cop.position,
                 possible_mr_x_positions
@@ -309,62 +413,14 @@ class ScotlandYardGameLogic:
 
         return observations
 
-    def get_random_action(self):
-        valid_actions = self.get_players_valid_moves(self.get_current_player())
-        generated_action = random.choice(valid_actions)
-        if self.is_valid_move(self.get_current_player(), Direction(generated_action)):
-            return Direction(generated_action)
-        else:
-            raise Exception("Generated action is not valid")
-
-    def get_action_for_player(self, player: Player, cop_algo: PPO, mr_x_algo, verbose=False,train_simulation=False) -> Direction:
-        # Use the policy to obtain an action for the given player and observation
-        observations = self.get_observations()
-
-        count = 0
-        direction = None
-        action_is_valid = False
-        while not action_is_valid:
-            if count < 100:
-                if player.is_mr_x():
-                    if mr_x_algo is None:
-                        generated_action = self.get_random_action()
-                    else:
-                        explore = True if mr_x_algo.__class__ == PPO else False
-                        if train_simulation:
-                            explore = True
-                        generated_action = mr_x_algo.compute_single_action(observations[player.name],
-                                                                           policy_id="mr_x_policy",
-                                                                           explore=explore)
-                else:
-                    if cop_algo is None:
-                        generated_action = self.get_random_action()
-                    else:
-                        explore = True if mr_x_algo.__class__ == PPO else False
-                        if train_simulation:
-                            explore = True
-                        generated_action = cop_algo.compute_single_action(observations[player.name],
-                                                                          policy_id="cop_policy",
-                                                                          explore=explore)
-            else:
-                generated_action = self.get_random_action()
-                verbose_print(f"Generated random action after 100 tries", verbose)
-            direction = Direction(generated_action)
-            if self.is_valid_move(player, direction):
-                action_is_valid = True
-            count += 1
-        return direction
-
-    # -- END: RL FUNCTIONS -- #
-
-    # --GAME CONTROL FUNCTIONS-- #
-
-    def choose_start_position(self, player: Player, position: ()):
-        player.set_start_position(position)
-        return self
-
     def move_player(self, player: Player, direction: Direction):
-        # verbose_print(f"Player {player.position} moves {direction}", self.verbose)
+        """ 
+        Move player to new position
+        :param player: Player to move
+        :param direction: Direction in which to move
+        :return: self
+        """
+        verbose_print(f"Player {player.position} moves {direction}", self.verbose)
         if self.is_valid_move(player, direction):
             player.position = self.get_position_after_move(player, direction)
         else:
@@ -374,47 +430,44 @@ class ScotlandYardGameLogic:
             exit(1)
         return self
 
-    def get_current_player(self) -> Player:
-        return self.players[self.playing_player_index]
+    def get_square_radius(self, position: (int, int), r: int):
+        """
+        Get all positions in square with radius r around position. Used for cops to get possible positions
+        :param position: Center of the square
+        :param r: Radius of the square
+        """
+        positions = []
+        for x in range(position[0] - r, position[0] + r + 1):
+            for y in range(position[1] - r, position[1] + r + 1):
+                if self.is_position_inside_grid((x, y)):
+                    positions.append((x, y))
+        return positions
 
-    def play_turn(self, action: Direction | Name = None, cop_algo=None, mr_x_algo=None, verbose=None, train_simulation=False):
-        if verbose is None:
-            verbose = self.verbose
+    def get_closest_position(self, position: (int, int), positions: [(int, int)]):
+        """
+        Get the closest position to position from list of positions
+        :param position: Position to which we want to find the closest position
+        :param positions: List of positions
+        :return: Closest position
+        """
+        closest_position = None
+        min_distance = MAX_DISTANCE
+        for pos in positions:
+            distance = self.get_distance_between_positions(position, pos)
+            if distance < min_distance:
+                min_distance = distance
+                closest_position = pos
+        return closest_position
 
-        if self.playing_player_index == 0:
-            self.round_number += 1
+    def get_players_names(self):
+        return [player.name for player in self.players]
 
-        player = self.get_current_player()
-        if action is None:
-            if player.is_mr_x():
-                if mr_x_algo is None:
-                    action = self.get_random_action()
-                else:
-                    action = self.get_action_for_player(player, cop_algo, mr_x_algo, verbose=verbose, train_simulation=train_simulation)
-            elif player.is_cop():
-                if cop_algo is None:
-                    action = self.get_random_action()
-                else:
-                    action = self.get_action_for_player(player, cop_algo, mr_x_algo, verbose=verbose, train_simulation=train_simulation)
-
-        self.move_player(player, action)
-
-        if player.position == self.agents_previous_locations[player.name]:
-            self.agents_is_in_previous_location_count[player.name] += 1
-        else:
-            self.agents_is_in_previous_location_count[player.name] = 0
-        self.agents_previous_locations[player.name] = player.position
-
-        if self.round_number in REVEAL_POSITION_ROUNDS and player.is_mr_x():
-            self.get_mr_x().mr_x_reveal_position()
-        self.playing_player_index = (self.playing_player_index + 1) % len(self.players)
-
-        #verbose_print(self.get_simulation_rewards_fake(), self.verbose)
+    def choose_start_position(self, player: Player, position: ()):
+        player.set_start_position(position)
         return self
 
-    # -- END: GAMEPLAY FUNCTIONS -- #
-
-    # -- BEGIN: HELPER FUNCTIONS -- #
+    def get_current_player(self) -> Player:
+        return self.players[self.playing_player_index]
 
     def is_position_inside_grid(self, position: (int, int)) -> bool:
         if position[0] < 0 or position[0] >= self.grid_size or position[1] < 0 or position[1] >= self.grid_size:
@@ -437,7 +490,7 @@ class ScotlandYardGameLogic:
         # Generate random positions, cannot repeat
         while not success:
             random_position = (random.randint(0, self.grid_size - 1), random.randint(0, self.grid_size - 1))
-            # Check if random position is already in array
+            # Check if a random position is already in an array
             if random_position not in random_positions and random_position not in check_positions:
                 random_positions.append(random_position)
             if len(random_positions) == number_of_starting_positions:
@@ -569,7 +622,8 @@ class ScotlandYardGameLogic:
 
     def get_simulation_rewards(self, invalid_actions_player: str | None = None) -> {str: float | None}:
         """
-        Calculate rewards for all agents
+        Calculate rewards for all agents. This function is an exact copy of get_simulation_rewards inside environment
+        its sole purpose is to be used in simulation.
         win_rewards: Rewards for winning the game: 50 for direct win. 30 for indirect win. -20 for losing
         distance_rewards: Rewards for being close to the target: capped at 10
         inactivity_penalty: Penalty for being inactive: starts after 5 turns: -0.5 per turn including the 5 turns
@@ -648,4 +702,5 @@ class ScotlandYardGameLogic:
             )
         return rewards
 
-    # -- END: HELPER FUNCTIONS -- #
+    def quit(self):
+        return self

@@ -27,7 +27,7 @@ Algoritmus PPO byl vybrán z~důvodu jeho úspěšnosti při použití ve složi
 Tyto tvrzení podporuje experiment OpenAI~\cite{PPO_Hide_Seek_page}, podrobně popsán zde~\cite{PPO_Hide_Seek_paper}.
 V~tomto experimentu byla proximální optimalizace strategie použita pro učení strategie ve hře typu \textit{schovávaná} s~několika agenty a neúplnou informací.
 Jelikož tento typ hry přesně odpovídá i hře Scotland Yard, zdá se být vhodný i pro řešení této hry.
-Také další studie~\cite{Manille} a \cite{Dota2} tento výrok dále podporují a dokazují vhodnost algoritmu PPO pro tuto práci.
+Také další studie~\cite{Manille} a~\cite{Dota2} tento výrok dále podporují a dokazují vhodnost algoritmu PPO pro tuto práci.
 
 Zaměření této práce jsem si vybral, jelikož mi vždy byla umělá inteligence blízká a vždy jsem chtěl začít tomuto odvětví více věnovat i po praktické stránce.
 Algoritmus je pro mě zajímavý a zkušenost s~tímto algoritmém by se dala využít v~mém dalším pracovním životě.\newpage
@@ -59,7 +59,7 @@ Originální hra se odehrává v~na mapě Londýna.
 	\centering
 	\includegraphics[width=0.9\textwidth]{obrazky-figures/scotland_original}
 	\caption{Ukázka herní mapy hry Scotland Yard.
-  Zdroj:~\cite{scotland_original_image}}\label{fig:figure}
+  Zdroj~\cite{scotland_original_image}:}\label{fig:figure}
 \end{figure}
 \newpage
 
@@ -139,7 +139,7 @@ To můžou hráči učinit například obětováním slabších figur, aby odhal
 	\centering
 	\includegraphics[width=0.6\textwidth]{obrazky-figures/stratego}
 	\caption{Ukázka rozestavěných figur ve hře Stratego.
-  Zdroj:~\cite{Stratego_image}}\label{fig:figure2}
+  Zdroj~\cite{Stratego_image}:}\label{fig:figure2}
 \end{figure}
 
 Z~pohledu umělé inteligence je Stratego zajímavý problém.
@@ -187,7 +187,7 @@ Použité metody pro vytvoření těchto agentů bohužel nejsou zveřejněny.
 Inovaci umělé inteligence v~této hře opět přinesla společnost OpenAI a jejich projekt \emph{OpenAI Five}~\cite{Dota2}.
 Tento projekt se zaměřil na vytvoření agenta, který by byl schopna porazit nejlepší hráče světa ve hře Dota 2.
 OpenAi nepřišel se žádným novým algoritmem, ale pouze s~novým přístupem k~trénování a využití algoritmu \textbf{PPO} v~doposud neviděném měřítku. 
-Algoritmus PPO a posilované učení bodou blíže popsáni v~následujících sekcích \ref{sec:proximalni-optimalizace-strategie} a \ref{sec:klicove-koncepty-posilovaneho-uceni}.
+Algoritmus PPO a posilované učení bodou blíže popsáni v~následujících sekcích~\ref{sec:proximalni-optimalizace-strategie} a~\ref{sec:klicove-koncepty-posilovaneho-uceni}.
 
 OpenAi Five porazil tehdejší nejlepší tým světa během exibice na nejprestižnejším turnaji Dota2 \textit{The International}.
 Hrála se klasická turnajová verze, a to tedy nejlepší ze tří.
@@ -230,7 +230,7 @@ Velmi často se aktuální stav pozorovacího prostoru využívá jako stav.
 Při vytváření prostředí je nutné definovat typ, tvar prostoru a jaké hodnoty může nabývat.
 
 Pro jeho podoby je vhodné zvolit standard z~knihovny \emph{Gymnasium}~\cite{Gymnasium}.
-Gymnasium je pokračování knihovny \textit{Gym} od společnosti OpenAI.
+Gymnasium je pokračování knihovny \textit{Gym} od společnosti OpenAI\@.
 Tyto knihovny nastavily standard vytváření prostředí pro posilované učení.
 Dodržování těchto standardů umožňuje použití libovolného algoritmu na jedno prostředí.
 
@@ -300,7 +300,7 @@ Strategie může být deterministická nebo stochastická.
   Může tedy nastat situace kdy ve stejném stavu agent zvolí vždy jinou akci.
   Tato strategie je vhodná v~situacích, kdy je potřeba zkoumat různé strategie a kdy agent nemá úplnou informaci o~prostředí.
   Například tam kde by deterministická strategie zvolila jasnou akci \textit{A}, stochastická strategie by mohla s~malou pravděpodobností zvolit akci \textit{B}.
-  Čímž ale může odhalit, že stav \textit{B} je s~ohledem na komulativní odměnu lepší než stav \textit{A}.\cite{Policies}
+  Čímž ale může odhalit, že stav \textit{B} je s~ohledem na komulativní odměnu lepší než stav \textit{A}~\cite{Policies}.
 
   Rovnice výsledné akce stochastické strategie je:
   \begin{equation}
@@ -353,7 +353,7 @@ Markovský rozhodovací proces značí, že následující stav není závislý 
 	\centering
 	\includegraphics[width=0.6\textwidth]{obrazky-figures/RL_basics}
 	\caption{Interakce mezi prostředím a agentem podle Markova rozhodovacího procesu.
-  Zdroj:~\cite{RL_basics}}\label{fig:markov}
+  Zdroj~\cite{RL_basics}:}\label{fig:markov}
 \end{figure}
 
 \begin{definition}
@@ -387,7 +387,7 @@ Dociluje toho tak, že rozděluje hodnotovou funkci na dvě části: \emph{okam�
 \subsection{Rovnováha mezi explorací a exploatací}
 \label{subsec:exploration-exploitation-dillemma}
 \begin{quote}
-  \emph{Kompromis mezi potřebou získávat nové znalosti a potřebou použít již nabyté znalosti k~vylepšení výkonnosti je jedním z~nejzákladnějších kompromisů v~přírodě.~\cite{Exploitation_Exploration}}
+  \emph{Kompromis mezi potřebou získávat nové znalosti a potřebou použít již nabyté znalosti k~vylepšení výkonnosti je jedním z~nejzákladnějších kompromisů v~přírodě~\cite{Exploitation_Exploration}.}
 \end{quote}
 Explorace a exploatace jsou dvě protichůdné strategie, které se vyskytují jak ve strojovém učení, tak i v~reálném životě.
 
@@ -436,7 +436,7 @@ Je často využíván, je--li stavový prostor řešeného problém příliš ve
 Tyto \uv{tradiční} algoritmy nelze na mnoho problémů použít, jelikož by byly příliš pomalé a náročné na výpočet.
 
 Tato metoda se také potýká s~rovnováhou mezi explorací a exploatací (viz.~ sekce~\nameref{subsec:exploration-exploitation-dillemma}).
-Explorací se strom rozrůstá do šířky, zatímco exploatací se strom prohlubuje \cite{mcts_geeksforgeeks}.
+Explorací se strom rozrůstá do šířky, zatímco exploatací se strom prohlubuje~\cite{mcts_geeksforgeeks}.
 
 MCTS se skládá z~několika fází:
 \begin{itemize}
@@ -603,7 +603,7 @@ Metoda proximální optimalizace strategie (Proximal policy optimization - PPO) 
 Tato metoda je vylepšeným následníkem algoritmu TRPO, popsaný v~předchozí sekci~\ref{sec:trust-region-policy-optimization}.
 
 Co výrazné odlišuje tuto metodu od předchůdců, je její jednoduchost a efektivita.
-Dosahuje lepších výsledků než metoda TRPO a srovnatelných výsledků s~metodou ACER.
+Dosahuje lepších výsledků než metoda TRPO a srovnatelných výsledků s~metodou ACER\@.
 Je avšak mnohem jednodušší na implementaci, má nižší nároky na výkon a je mnohem lepší co se týče efektivity dat pro trénování.\cite{PPO_paper}.
 
 Nechť $r_t(\theta)$ je pravděpodobnostní poměr mezi novou a starou strategií.
@@ -624,9 +624,9 @@ V~této rovnici je $r_t(\theta)$ relativní podobnost nové a staré strategie.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.6\textwidth]{obrazky-figures/clip.png}
+	\includegraphics[width=0.6\textwidth]{obrazky-figures/clip}
 	\caption{Grafy zobrazují 1 časový krok funkce $L^{CLIP}$. Červeným bodem je označen počáteční stav omptimalizace. Levý graf zobrazuje kladnou změnu a pravý zápornou změnu.
-  Zdroj: \cite{RL_basics}}\label{fig:markov}
+  Zdroj: \cite{RL_basics}}\label{fig:clip}
 \end{figure}
 
 K~dosažení těchto výsledků, využívá PPO techniku ořezávání náhradních cílů vloženou do algoritmu TRPO\@.
@@ -647,7 +647,7 @@ Bod 1 a 3 je řešen buď převedením spojitého akčního prostoru na diskrét
 
 Podmínka číslo 1 je v~mé implementaci prostředí hry Scotland Yard implicitně neplatná, jelikož akční prostor je diskrétní.\\
 Podmínka číslo 2 je řešena přídáním menších dílčích odměn.
-Agenti tak získávají odměny i za menší kroky, nejen například za vítězství/ prohru či blízkost, viz. podsekce \nameref{subsec:odmena}.\\
+Agenti tak získávají odměny i za menší kroky, nejen například za vítězství/ prohru či blízkost, viz. podsekce~\nameref{subsubsec:odmeny}.\\
 \subsection{Experiment OpenAI}\label{subsec:experiment-openai}
 Důležitým zdrojem pro tuto práci byla studie studie~\cite{PPO_Hide_Seek_paper}, od společnosti OpenAI, vyplývá, že algoritmus je vhodný pro řešení problémů s~nedokonalou informací.
 V~dané studii byl algoritmus implementován na komplexní hru schovávané.
@@ -725,8 +725,8 @@ K~dispozici jsou algoritmy \emph{PPO}, \emph{DQN} a náhodné chování.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.7\textwidth]{obrazky-figures/game_title.png}
-	\caption{Menu hry}
+	\includegraphics[width=0.7\textwidth]{obrazky-figures/game_title}
+	\caption{Menu hry}\label{fig:game_title}
 \end{figure}
 
 Samotný kód hry je rozdělen na 3 částí.
@@ -761,10 +761,10 @@ Jednotlivé vrstvy hry jsou tak izolovány a mohou být snadno vyměněny za jin
 Kód byl, avšak značně upraven a vylepšen, aby vyhovoval integrování do této práce.}
 
 Hra se zapne v~pozastaveném stavu, aby bylo možné lépe pozorovat počáteční rozložení hráčů.
-Pokud je hra pozastavena, je možné pokračovat stisknutím klávesy "Space" (mezerník).
-Jakmile hra běží, je možné ji opětovně pozastavit stisknutím klávesy "Space" (mezerník).
+Pokud je hra pozastavena, je možné pokračovat stisknutím klávesy Space (mezerník).
+Jakmile hra běží, je možné ji opětovně pozastavit stisknutím klávesy Space (mezerník).
 
-Samotná hra je zobrazena na herní ploše, kde se nachází 3 policisté a Pan~X.
+Samotná hra je zobrazena na herní ploše, kde se nachází 3 policisté a Pan~X\@.
 Je rozdělena do mřížky 15$\times$15 polí.
 V~mřížce jsou zobrazeny 4 figury ve formě barevného čtverce.
 Červený čtverec značí Pana~X a zelené čtverce značí policisty.
@@ -774,27 +774,27 @@ Pokud hra skončila, je zobrazeno, kdo hru vyhrál.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.5\textwidth]{obrazky-figures/game_0.png}
+	\includegraphics[width=0.5\textwidth]{obrazky-figures/game_0}
     \caption{Hra před spuštěním}
     \label{fig:game_0}
 \end{figure}
 
-V~obrázku \ref{fig:game_0} je hra v~pozastaveném stavu a je zobrazeno počáteční rozložení hráčů.
-Na obrázku lze vidět tvavě šedé čtverce, které značí možnou pozici Pana~X.
+V~obrázku~\ref{fig:game_0} je hra v~pozastaveném stavu a je zobrazeno počáteční rozložení hráčů.
+Na obrázku lze vidět tvavě šedé čtverce, které značí možnou pozici Pana~X\@.
 Na začátku hry, je těchto pozic mnoho, jelikož Pan~X doposud svoji pozici neodhalil.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.6\textwidth]{obrazky-figures/game_11.png}
+	\includegraphics[width=0.6\textwidth]{obrazky-figures/game_11}
       \caption{Jedenácté kolo hry}
     \label{fig:game_11}
 \end{figure}
 
-Na obrázku \ref{fig:game_11} je zobrazeno jedenácté kolo hry.
-Světlé šedý a nejvýraznější čtverec značí poslední známou pozici Pana~X.
-Tmavě šedé čtverce opět značí možné pozice Pana~X.
+Na obrázku~\ref{fig:game_11} je zobrazeno jedenácté kolo hry.
+Světlé šedý a nejvýraznější čtverec značí poslední známou pozici Pana~X\@.
+Tmavě šedé čtverce opět značí možné pozice Pana~X\@.
 Na tomto obrázku lze pozorovat, že policisté jsou v~blízkosti Pana~X a snaží se ho chytit.
-Všichni policisté se z~pozic, zobrazených na obrázku \ref{fig:game_0}, přesunuli na možné pozice Pana~X.
+Všichni policisté se z~pozic, zobrazených na obrázku~\ref{fig:game_0}, přesunuli na možné pozice Pana~X\@.
 
 \subsection{Prostředí a učení}\label{subsec:prostredi}
 
@@ -840,7 +840,7 @@ Takto uměle generovaná akce, nebyla za celou dobu testování použita, avšak
 Zavedení tohoto omezení pomocí systému odměn vedlo k~positivním výsledkům a agenti se naučili jaké akce jsou nevalidní a nepoužívají je.
 
 \subsubsection*{Systém odměn}
-\label{subsec:odmena}
+\label{subsubsec:odmeny}
 
 Jednotlivým agentům jsou udělovány odměny na základě jejich chování.
 Jelikož policisté a Pan~X mají odlišné a protichůdné strategie i jejich odměny jsou odlišné.
@@ -1002,13 +1002,13 @@ Všechny následující grafy vyobrazují průměrnou odměnu Pana~X a policist�
 \begin{figure}[H]
   \begin{minipage}{.48\textwidth}
     \centering
-    \includegraphics[width=1\textwidth]{obrazky-figures/graphs/cop_PPO_mrx_RANDOM.png}
+    \includegraphics[width=1\textwidth]{obrazky-figures/graphs/cop_PPO_mrx_RANDOM}
     \caption{Graf simulace her mezi policisty trénovanými pomocí PPO a Panem X volícím náhodné akce}
     \label{fig:cop_ppo_mrx_random}
   \end{minipage}\hfill
   \begin{minipage}{.48\textwidth}
     \centering
-    \includegraphics[width=1\textwidth]{obrazky-figures/graphs/cop_RANDOM_mrx_PPO.png}
+    \includegraphics[width=1\textwidth]{obrazky-figures/graphs/cop_RANDOM_mrx_PPO}
       \caption{Graf simulace hher mezi Panem X trénovaným pomocí PPO a policisty volícími náhodné akce}
       \label{fig:cop_random_mrx_ppo}
   \end{minipage}
@@ -1030,13 +1030,13 @@ Také vzdálenost policistů od Pana~x je výrazně vyšší než v~předchozím
   \centering
   \begin{minipage}{.48\textwidth}
     \centering
-    \includegraphics[width=1\textwidth]{obrazky-figures/graphs/cop_RANDOM_mrx_RANDOM.png}
+    \includegraphics[width=1\textwidth]{obrazky-figures/graphs/cop_RANDOM_mrx_RANDOM}
     \caption{Graf simulace her mezi policisty a Panem X, kde oba volí náhodné akce}
     \label{fig:cop_random_mrx_random}
   \end{minipage}\hfill
   \begin{minipage}{.48\textwidth}
     \centering
-    \includegraphics[width=1\textwidth]{obrazky-figures/graphs/cop_PPO_mrx_PPO.png}
+    \includegraphics[width=1\textwidth]{obrazky-figures/graphs/cop_PPO_mrx_PPO}
       \caption{Graf simulace her, kde oba agenti volí akce dle modelu PPO}
       \label{fig:cop_ppo_mrx_ppo}
   \end{minipage}
@@ -1044,7 +1044,7 @@ Také vzdálenost policistů od Pana~x je výrazně vyšší než v~předchozím
   \label{fig:srovnani_random_ppo}
   \end{figure}
 
-Na srovnání \ref{fig:srovnani_random_ppo} lze vidět, že na jak PPO tak náhodný algoritmus udržují velice stabilní vzdálenost.
+Na srovnání~\ref{fig:srovnani_random_ppo} lze vidět, že na jak PPO tak náhodný algoritmus udržují velice stabilní vzdálenost.
 U~náhodného chování je to kvůli základní pravděpodobnosti, která musí být průměrně stejná.
 U~grafu agentů PPO to avšak vypovídá o~tom, že policisté dokáží stabilně odhadovat pozici Pana~X a přinejmenším se pohybovat v~jeho blízkém okolí.
 Z~grafu\ref{fig:cop_ppo_mrx_ppo} lze pozorovat, že odměna policistů a Pana~X kolísá.
@@ -1077,7 +1077,7 @@ Tyto výsledky byly zpracovány do tabulek, které zobrazují procentuální po�
   DQN                                    & 10\% & 17\% & 19\% \\ \hline
 \end{tabular}
 \caption{Zobrazuje procentuální počet výher policistů proti Pánovi~X s~vybraným algoritmem během experimentu}
-\label{table:train_experiment_police_wins}    
+\label{tab:train_experiment_police_wins}    
 \end{table}  
 \end{minipage}\hfill
   \begin{minipage}{.48\textwidth}
@@ -1094,10 +1094,9 @@ Tyto výsledky byly zpracovány do tabulek, které zobrazují procentuální po�
       DQN                                    & 35\% & 82\% & 81\% \\ \hline
       \end{tabular}
       \caption{Zobrazuje procentuální počet výher Pana~X proti policistům s~vybraným algoritmem během experimentu}
-      \label{table:train_experiment_mrx_wins}
+      \label{tab:train_experiment_mrx_wins2}
     \end{table}
   \end{minipage}
-  \label{fig:srovnani_dqn}
   \end{figure}
 
 Pokud zde opět porovnáme výsledky kdy proti sobě hráli dva náhodní agenti a agenti trénovaní pomocí PPO, lze vidět, že agenti trénovaní pomocí PPO mají výrazně lepší výsledky.
@@ -1107,13 +1106,13 @@ Pokud zde opět porovnáme výsledky kdy proti sobě hráli dva náhodní agenti
   \centering
   \begin{minipage}{.48\textwidth}
     \centering
-    \includegraphics[width=1\textwidth]{obrazky-figures/graphs/cop_DQN_mrx_RANDOM.png}
+    \includegraphics[width=1\textwidth]{obrazky-figures/graphs/cop_DQN_mrx_RANDOM}
     \caption{Graf simulace hry mezi policisty trénovanými pomocí DQN a Panem X volícím náhodné akce}
     \label{fig:cop_dqn_mrx_random}
   \end{minipage}\hfill
   \begin{minipage}{.48\textwidth}
     \centering
-    \includegraphics[width=1\textwidth]{obrazky-figures/graphs/cop_RANDOM_mrx_DQN.png}
+    \includegraphics[width=1\textwidth]{obrazky-figures/graphs/cop_RANDOM_mrx_DQN}
       \caption{Graf simulace hry mezi Panem X trénovaným pomocí DQN a policisty volícími náhodné akce}
       \label{fig:cop_random_mrx_dqn}
   \end{minipage}
@@ -1122,10 +1121,10 @@ Pokud zde opět porovnáme výsledky kdy proti sobě hráli dva náhodní agenti
 
 Výsledky trénování agentů pomocí algoritmu DQN bohužel nemají dobré výsledky.
 Výsledné chování se velmi podobá náhodnému agentovi.
-Z~předchozích prací je známo, že by algoritmus DQN měl mít znatelně lepší výsledky než náhodná metoda \cite{Hrklova2023thesis}.
+Z~předchozích prací je známo, že by algoritmus DQN měl mít znatelně lepší výsledky než náhodná metoda~\cite{Hrklova2023thesis}.
 Algoritmus DQN je velice citlivý na hyperparametry a je možné, že bylo zvoleno nevhodné nastavení.
 Potřebuje také mnohem více trénovacích iterací než PPO\@.
-Je tedy možné, že 1000 iterací není dostatečné pro naučení dobré strategie pro algoritmus DQN.
+Je tedy možné, že 1000 iterací není dostatečné pro naučení dobré strategie pro algoritmus DQN\@.
 
 \emph{Trénování z~tohoto experimentu poslouží jako základ pro další experiment, kde budou simulovány hry s~již natrénovanými agenty.}
 
@@ -1156,7 +1155,7 @@ Následující tabulky byly získány ze 10000 simulací pro každou kombinaci j
   DQN                                    & 8\% & 17\% & 17\% \\ \hline
 \end{tabular}
 \caption{Zobrazuje procentuální počet výher policistů proti Pánovi~X s~vybraným algoritmem}
-\label{table:train_experiment_police_wins}    
+\label{tab:simulation_experiment_police_wins}    
 \end{table}  
 \end{minipage}\hfill
   \begin{minipage}{.48\textwidth}
@@ -1173,10 +1172,9 @@ Následující tabulky byly získány ze 10000 simulací pro každou kombinaci j
       DQN                                    & 36\% & 82\% & 83\% \\ \hline
       \end{tabular}
       \caption{Zobrazuje procentuální počet výher Pana~X proti policistům s~vybraným algoritmem}
-      \label{table:train_experiment_mrx_wins}
+      \label{tab:train_experiment_mrx_wins}
     \end{table}
   \end{minipage}
-  \label{fig:srovnani_dqn}
   \end{figure}
 
 Z~tabulky lze vyčíst, že policisté trénováni pomocí PPO vyhráli proti Pánovi~x s~náhodným chováním 72\% her.
@@ -1219,7 +1217,7 @@ Mám za to, že by tato možnost nadále prohloubila výsledky této studie o~za
 
 Algoritmus DQN nebyl plně prozkoumán, a tak jeho využití v~tomto projektu nemuselo být optimální.
 Navrhuji změnu stavového a akčního prostoru, aby byl kompatibilní s~verzemi studentů z~minulých let, kteří realizovali bakalářskou práci na podobné téma.
-A~následně využít jejich implementaci pro další experimenty \cite{Hrklova2023thesis}.
+A~následně využít jejich implementaci pro další experimenty~\cite{Hrklova2023thesis}.
 
 Dále je zde možnost rozšířit hratelnost hry o~jednotlivé druhy dopravy a k~nim příslušící jízdenky.
 Tím by výrazně vzrostla složitost hry a stavový prostor.

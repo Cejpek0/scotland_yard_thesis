@@ -1,3 +1,9 @@
+"""
+File description: This file contains the SimulationProcessor class, which is responsible for processing the results of the
+experiments and generating graphs and text output based on the results.
+
+Author: Michal Cejpek (xcejpe05@stud.fit.vutbr.cz)
+"""
 import os
 
 import seaborn as sns
