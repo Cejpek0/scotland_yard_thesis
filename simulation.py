@@ -5,4 +5,4 @@ if __name__ == '__main__':
                                       verbose=True,
                                       simulation_experiment=True)
     #simulation.run_simulation_experiment()
-    #simulation.run_train_experiment().cleanup()
+    simulation.run_train_experiment().cleanup()
