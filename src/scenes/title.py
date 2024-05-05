@@ -80,21 +80,21 @@ class Title(Scene):
                 self.mr_x_selected_algo = DefinedAlgorithms.RANDOM
 
     def reset_colors(self, button: Button):
-        button.color = GREEN
+        button.color = RED
         button.hover_color = WHITE
         button.text_color = WHITE
         button.text_hover_color = BLACK
-        button.border_color = WHITE
+        button.border_color = BLACK
         button.border_color_hovered = BLACK
         return button
 
     def set_selected_colors(self, button: Button):
-        button.color = RED
-        button.hover_color = RED
+        button.color = GREEN
+        button.hover_color = GREEN
         button.text_color = WHITE
-        button.text_hover_color = WHITE
-        button.border_color = WHITE
-        button.border_color_hovered = WHITE
+        button.text_hover_color = BLACK
+        button.border_color = BLACK
+        button.border_color_hovered = BLACK
         return button
 
     def set_cop_colors(self, button: Button):

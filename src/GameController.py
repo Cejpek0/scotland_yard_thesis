@@ -37,6 +37,7 @@ class GameController():
     def __init__(self, verbose=False):
         print("GameController init")
         pygame.init()
+        pygame.display.set_caption('Scotland Yard Thesis - xcejpe05')
         print("Pygame init")
 
         self.verbose = verbose

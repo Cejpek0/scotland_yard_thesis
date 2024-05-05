@@ -46,7 +46,7 @@ class SimulationProcessor:
             hue='variable',
             style='variable',
             kind='line',
-            errorbar=False,
+            errorbar=None,
             facet_kws=dict(legend_out=False),
             data=dataframe.melt(id_vars='train_iteration',
                                 value_vars=['mr_x_avg_reward', 'cops_avg_reward',
@@ -55,15 +55,17 @@ class SimulationProcessor:
         for text in g.legend.texts:
             if text.get_text() in label_mapping.keys():
                 text.set_text(label_mapping[text.get_text()])
-        g.legend.set_title("Sledované hodnoty")
+        g.legend.set_title(None)
         g.set_ylabels("Hodnota")
         g.set_xlabels("Počet trénovacích iterací")
         plt.title(f"Policisté - {cop_selected_algo.name}\nPan X - {mr_x_selected_algo.name}")
 
-        sns.move_legend(g, "bottom right")
+        sns.move_legend(g, "lower center")
+        plt.setp(g._legend.get_texts(), fontsize='8')
         ax = g.ax
         ax.patch.set_edgecolor('black')
         ax.patch.set_linewidth(1)
+        plt.subplots_adjust(bottom=0.25)
         if not os.path.exists(self.graphs_dir):
             os.makedirs(self.graphs_dir)
         g.savefig(f"{self.graphs_dir}/cop_{cop_selected_algo.name}_mrx_{mr_x_selected_algo.name}", bbox_inches="tight")
@@ -194,9 +196,7 @@ class SimulationProcessor:
 
 
 if __name__ == '__main__':
-    simulation = SimulationProcessor(train_simulation=False)
-    simulation.print_results(train_simulation=False)
-    exit()
+    simulation = SimulationProcessor(train_simulation=True)
     dataframe = simulation.get_dataframe_for(DefinedAlgorithms.PPO, DefinedAlgorithms.PPO)
     simulation.generate_graph_for(dataframe, DefinedAlgorithms.PPO, DefinedAlgorithms.PPO)
 
@@ -224,4 +224,4 @@ if __name__ == '__main__':
     dataframe = simulation.get_dataframe_for(DefinedAlgorithms.RANDOM, DefinedAlgorithms.RANDOM)
     simulation.generate_graph_for(dataframe, DefinedAlgorithms.RANDOM, DefinedAlgorithms.RANDOM)
 
-    simulation.print_results()
+    simulation.print_results(True)
