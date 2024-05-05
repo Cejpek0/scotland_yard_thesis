@@ -52,7 +52,7 @@ class SimulationProcessor:
             hue='variable',
             style='variable',
             kind='line',
-            lw=2,
+            lw=2.5,
             errorbar=None,
             facet_kws=dict(legend_out=False),
             data=dataframe.melt(id_vars='train_iteration',
