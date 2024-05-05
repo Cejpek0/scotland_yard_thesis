@@ -23,7 +23,9 @@ Prvotní spuštění může trvat trochu déle, kvůli načítání prostředí 
 Po načtení se zobrazí menu hry, kde je možné si vybrat jaký agent má být použit pro policisty a který pro Pana X.
 Je tedy možné sledovat hru s různými kombinacemi agentů.
 Hra se následně spustí kliknutím na tlačítko "Start".
-Hru je možno pozastavit klávesou "Space"("Mezerník").
+Hra se zapne v pozastaveném stavu.
+Pokud je hra pozastavena, je možné pokračovat stisknutím klávesy "Space"("Mezerník").
+Jakmile hra běží, je možné ji opětovně pozastavit stisknutím klávesy "Space"("Mezerník").
 Do menu se lze navrátit stisknutím klávesy "Esc".
 Hru lze vypnout stisknutím klávesy "Esc" v menu.
 
