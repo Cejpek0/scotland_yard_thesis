@@ -74,7 +74,7 @@ class SimulationProcessor:
 
     def load_simulation_experiment(self) -> DataFrame:
         assert os.path.exists(self.simulation_experiment_dir), "Experiment results file not found"
-        return pd.read_csv(self.train_experiment_dir + "/results.csv")
+        return pd.read_csv(self.simulation_experiment_dir + "results.csv")
 
     def print_results(self, train_simulation):
         dataframe_cop_ppo_mr_x_ppo = self.get_dataframe_for(DefinedAlgorithms.PPO, DefinedAlgorithms.PPO)
@@ -148,6 +148,8 @@ class SimulationProcessor:
         string_early_wins = ""
         if train_simulation:
             string_early_wins = f"Počet výher náhodných agentů proti PPO agentům (do 100 iterace): {random_ppo_early_wins_mrx + random_ppo_early_wins_cops}/{total_games_ppo_vs_random - victories_ppo_vs_random}"
+            string_early_wins += f"\nZ toho počet výher Pana X: {random_ppo_early_wins_mrx}/{random_ppo_early_wins_mrx + random_ppo_early_wins_cops}"
+            string_early_wins += f"\nZ toho počet výher policistů: {random_ppo_early_wins_cops}/{random_ppo_early_wins_mrx + random_ppo_early_wins_cops}"
         text = f"""Výsledky simulace:
         Počet výher PPO policistů proti náhodnému Panu X: {victories_ppo_cop_vs_mrx_random}/{games_ppo_cop_vs_mrx_random}
         Počet výher náhodného Pana X proti PPO policistům: {games_ppo_cop_vs_mrx_random - victories_ppo_cop_vs_mrx_random}/{games_ppo_cop_vs_mrx_random}
@@ -155,8 +157,6 @@ class SimulationProcessor:
         Počet výher náhodných policistů proti PPO Panu X: {games_ppo_mrx_vs_cop_random - victories_ppo_mrx_vs_cop_random}/{games_ppo_mrx_vs_cop_random}
         Počet výher PPO proti náhodnému agentovi: {victories_ppo_vs_random}/{total_games_ppo_vs_random}
         {string_early_wins}
-        Z toho počet výher Pana X: {random_ppo_early_wins_mrx}/{random_ppo_early_wins_mrx + random_ppo_early_wins_cops}
-        Z toho počet výher policistů: {random_ppo_early_wins_cops}/{random_ppo_early_wins_mrx + random_ppo_early_wins_cops}
         
         Počet výher PPO policistů proti PPO Panu X: {victories_ppo_cop_vs_mrx_ppo}/{total_games_ppo_vs_ppo}
         Počet výher PPO Panu X proti PPO policistům: {victories_ppo_mrx_vs_cop_ppo}/{total_games_ppo_vs_ppo}
@@ -183,7 +183,10 @@ class SimulationProcessor:
         Průměrná vzdálenost mezi Panem X a policisty (DQN): {dqn_avg_distance_to_cop}
         """
 
-        file = open(f"{self.graphs_dir}/results.txt", "w", encoding="utf-8")
+        directory = self.train_experiment_dir + "/" if train_simulation else self.simulation_experiment_dir
+        directory += "results.txt"
+
+        file = open(f"{directory}", "w", encoding="utf-8")
         file.write(text)
         file.close()
 
@@ -191,7 +194,9 @@ class SimulationProcessor:
 
 
 if __name__ == '__main__':
-    simulation = SimulationProcessor()
+    simulation = SimulationProcessor(train_simulation=False)
+    simulation.print_results(train_simulation=False)
+    exit()
     dataframe = simulation.get_dataframe_for(DefinedAlgorithms.PPO, DefinedAlgorithms.PPO)
     simulation.generate_graph_for(dataframe, DefinedAlgorithms.PPO, DefinedAlgorithms.PPO)
 

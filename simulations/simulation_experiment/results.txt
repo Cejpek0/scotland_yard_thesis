@@ -1,0 +1,32 @@
+Výsledky simulace:
+        Počet výher PPO policistů proti náhodnému Panu X: 7246/10000
+        Počet výher náhodného Pana X proti PPO policistům: 2754/10000
+        Počet výher PPO Panu X proti náhodným policistům: 9042/10000
+        Počet výher náhodných policistů proti PPO Panu X: 958/10000
+        Počet výher PPO proti náhodnému agentovi: 16288/20000
+        
+        
+        Počet výher PPO policistů proti PPO Panu X: 2613/20000
+        Počet výher PPO Panu X proti PPO policistům: 7387/20000
+        
+        Počet výher PPO policistů proti DQN Panu X: 6405/10000
+        Počet výher DQN Panu X proti PPO policistům: 3595/10000
+        Počet výher PPO Panu X proti DQN policistům: 9179/20000
+        Počet výher DQN policistů proti PPO Panu X: 821/20000
+        Počet výher PPO proti DQN agentovi: 15584/20000
+        
+        Počet výher DQN policistů proti náhodnému Panu X: 1726/10000 
+        Počet výher náhodného Pana X proti DQN policistům: 8274/10000
+        Počet výher DQN Panu X proti náhodným policistům: 8240/10000
+        Počet výher náhodných policistů proti DQN Panu X: 1760/10000
+        Počet výher DQN proti náhodnému agentovi: 9966/20000
+        
+        Počet výher DQN policistů proti DQN Panu X: 1709/20000
+        Počet výher DQN Panu X proti DQN policistům: 8291/20000
+        
+        Počet výher náhodných policistů proti náhodnému Panu X: 1893/10000
+        
+        Průměrná vzdálenost mezi Panem X a policisty (PPO): 4.779692656488397
+        Průměrná vzdálenost mezi Panem X a policisty (náhodný): 7.631191103120987
+        Průměrná vzdálenost mezi Panem X a policisty (DQN): 7.869671633109524
+        
