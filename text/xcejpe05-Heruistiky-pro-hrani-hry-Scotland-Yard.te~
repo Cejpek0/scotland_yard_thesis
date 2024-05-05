@@ -150,17 +150,19 @@
   %keywords.en={Here, individual keywords separated by commas will be written in English.},
   % Abstrakt / Abstract
   abstract.cs={
-    Tato práce se zabývá možností použití algoritmů hlubokého a posilovaného učení pro řešení problémů s~neúplnou informací.
+    Tato práce se zabývá možností použití algoritmů hlubokého a posilovaného učení pro řešení problémů s neúplnou informací.
     Konkrétně je hlavním zkoumaným algoritmem PPO -- Proximal Policy Optimization (optimalizace proximální politiky).
-    K~účelu otestování vhodnosti algoritmu PPO, byla vytvořena zjednodušená implementace hry Scotland Yard a také prostředí pro trénování a testování algoritmů.
+    Tento algoritmus otestován na zjednodušené verzi hry Scotland Yard.
+    K tomuto účelu byla vytvořena implementace hry Scotland Yard a prostředí pro trénování a testování algoritmů.
   
-    Z~provedených experimentů této práce vzešlo, že algoritmus PPO je velmi vhodný na řešení problémů s~neúplnou informací.
-    Agenti při~trénování velmi rychle získali pojem o~cílech hry a vybudovali vhodné strategie pro naplnění těchto cílů.
+    Z provedených experimentů této práce vzešlo, že algoritmus PPO je velmi vhodný na řešení problémů s neúplnou informací.
+    Agenti z trénování velmi rychle získali pojem o cílech hry a vybudovali vhodné strategie pro naplnění těchto cílů.
   }, % abstrakt v českém či slovenském jazyce / abstract in czech or slovak language
   abstract.en={
     This thesis explores the possibility of using deep and reinforcement learning algorithms to solve problems with incomplete information.
     The main algorithm under investigation is PPO -- Proximal Policy Optimization.
-    In order to test the suitability of the PPO algorithm, a simplified implementation of the Scotland Yard game was created as well as an environment for training and testing the algorithms.
+    This algorithm has been tested on a simplified version of Scotland Yard.
+    To achieve this, an implementation of Scotland Yard and an environment for training and testing the algorithms was created.
 
     From performed experiments, it emerged that the PPO algorithm is very suitable for solving problems with incomplete information.
     The agents very quickly gained a sense of the game's goals and built appropriate strategies to meet those goals through training.
