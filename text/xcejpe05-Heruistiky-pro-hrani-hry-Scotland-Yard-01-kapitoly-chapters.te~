@@ -3,11 +3,11 @@
 \chapter{Úvod}
 \label{ch:uvod}
 
-V~dnešní době, je obor umělé inteligence (AI), postupem let všudypřítomnější a její vliv ovlivňuje spoustu aspektů našeho života.
+V~dnešní době, je obor umělé inteligence (AI), postupem let všudypřítomnější a její působení ovlivňuje spoustu aspektů našeho života.
 
 Pokrok umělé inteligence je často a nejlépe měřen její aplikováním v~oblasti her.
 A~to proto, že právě hry nabízí jasně definovaná pravidla a cíle, čímž se stávají ideálním testovacím prostorem pro algoritmy umělé inteligence.
-Výkon AI je ve hrách snadno měřitelný a pokrok dokáže vidět i lajk bez žádných složitých grafů a výpočtů.
+Výkon AI je ve hrách snadno měřitelný a pokrok dokáže vidět i lajk bez žádných složitých grafů, tabulek a výpočtů.
 Umělá inteligence již dokázala porazit nejlepší hráče v~\textit{šachu}~\cite{DeepBlue}, \textit{Dota 2}~\cite{Dota2}, \textit{Go}~\cite{AlphaGo} a spoustě dalších her.
 
 Hra studovaná v~této práci se jmenuje \emph{Scotland Yard}.
@@ -16,12 +16,12 @@ V~této hře obvykle hraje jeden hráč jako Pan~X, který se snaží uniknout p
 Policisté, avšak nevědí, kde na herním poli se Pan~X nachází.
 A~musí tedy odhadovat jeho pozici a spolupracovat mezi sebou, aby ho mohli polapit.
 Pozice Pana~X je policistům odhalena pouze v~určitých kolech.
-Hra je u~konce, když Pan~X chycen policisty (vyhrávají policisté), nebo když je dosažen maximální počet kol (vyhrává Pan~X).
-Scotland Yard je ideální hrou ke studování neurčitosti ve hrách hranými systémy umělé inteligence, protože se jedná o~hru s~nedokonalou informací a k~vítězství policistů je zapotřebí spolupráce a strategie.
+Scotland Yard je ideální hrou ke studování neurčitosti ve hrách hranými systémy umělé inteligence, protože se jedná o~hru s~nedokonalou informací a k~vítězství policistů je zapotřebí spolupráce, strategie a odhadování neznámé informace.
 
 Tato práce zkoumá algoritmy posilovaného učení, jejich použití na hry s~neurčitostí a jejich porovnání s~klasickými metodami hraní her.
 Algoritmus proximální optimalizace strategie (Proximal Policy Optimization--PPO) je hlavním zkoumaným algoritmem této práce.
 Pro srovnání s~jinými algoritmy slouží algoritmus Deep--Q--Learning (DQN).
+Výslední agenti byli také testování proti hráči, který náhodně vybírá své akce.
 PPO je často používán k~řešení problémů se spojitými veličinami a ve 3D prostoru.
 Algoritmus PPO byl vybrán z~důvodu jeho úspěšnosti při použití ve složitých hrách s~neurčitostí.
 Tyto tvrzení podporuje experiment OpenAI~\cite{PPO_Hide_Seek_page}, podrobně popsán zde~\cite{PPO_Hide_Seek_paper}.
@@ -29,7 +29,7 @@ V~tomto experimentu byla proximální optimalizace strategie použita pro učen�
 Jelikož tento typ hry přesně odpovídá i hře Scotland Yard, zdá se být vhodný i pro řešení této hry.
 Také další studie~\cite{Manille} a~\cite{Dota2} tento výrok dále podporují a dokazují vhodnost algoritmu PPO pro tuto práci.
 
-Zaměření této práce jsem si vybral, jelikož mi vždy byla umělá inteligence blízká a vždy jsem chtěl začít tomuto odvětví více věnovat i po praktické stránce.
+Zaměření této práce jsem si vybral, jelikož mi vždy byl obor umělé inteligence blízký a vždy jsem se chtěl začít tomuto odvětví více věnovat i po praktické stránce.
 Algoritmus je pro mě zajímavý a zkušenost s~tímto algoritmem by se dala využít v~mém dalším pracovním životě.\newpage
 
 Pro zpracování práce byly využity tyto hlavní knihovny:
@@ -51,47 +51,51 @@ Nýbrž jedná se o~shrnutí nejdůležitějších relevantních informací a po
 \label{sec:deskova-hra-scotland-yard}
 
 Scotland Yard je populární hra pro tři a více hráčů, která kombinuje prvky schovávané a hry na honěnou.
-Jeden hráč hraje za Pana~X, který se snaží uniknout policistům a ty ovládají zbylí hráči.
-Hra končí, když je Pan~X chycen (vyhrávají policisté), nebo když je dosažen maximální počet kol (vyhrává Pan~X).
-Originální hra se odehrává v~na mapě Londýna.
+Jeden hráč hraje za Pana~X, který se snaží uniknout policistům a ti jsou ovládáni zbylými hráči.
+Hra je u~konce, pakliže je Pan~X úspěšně chycen policisty (vyhrávají policisté), nebo když je dosažen maximální počet kol, bez toho aniž by byl Pan X chycen (vyhrává Pan~X).
+Originální hra se odehrává na mapě Londýna.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.9\textwidth]{obrazky-figures/scotland_original}
+	\includegraphics[width=0.87\textwidth]{obrazky-figures/scotland_original}
 	\caption{Ukázka herní mapy hry Scotland Yard.
   Zdroj~\cite{scotland_original_image}:}\label{fig:figure}
 \end{figure}
 \newpage
 
-Na této herní mapě nachází 200 polí, které jsou vzájemně propojené náhodnými cestami.
+Na této herní mapě nachází 200 polí, které jsou vzájemně propojené cestami.
 Každá z~těchto cest povoluje pouze určitý způsob dopravy (např. pouze taxíkem, pouze autobusem atd.).
 Jednotliví hráči využívají prvky veřejné dopravy k~pohybu po herní ploše, kterými jsou:
 
-\begin{itemize}
+\begin{itemize}\vspace{-0.3cm}
   \item \emph{Taxi}\vspace{-0.3cm}
   \item \emph{Autobus}\vspace{-0.3cm}
   \item \emph{Metro}\vspace{-0.3cm}
-  \item \emph{Trajekt}\vspace{-0.3cm}
+  \item \emph{Trajekt}
 \end{itemize}
 
+Každému hráči je na začátku hry přidělen pouze určitý počet jízdenek na tyto typy dopravních prostředků.
+K~využití dopravy je použita právě tato jízdenka.
+Pokud již hráč nemá některou z typů jízdenek, nemůže nadále tento způsob přepravy využívat.
+Hra se dělí na kola, ve kterých se hráči postupně střídají.
+Jakmile Pan X provede svůj tah, je odhaleno pouze jaký typ dopravy využil, ale neodhaluje na které místo se přemístil.
 
-Každému hráči je na začátku hry přidělen pouze určitý počet jízdenek na tyto dopravní prostředky.
-K~využití dopravy je potřebná právě tato jízdenka.
-Pokud jízdenku hráč nemá, nemůže již tento způsob přepravy použít.
-Hra se dělí na kola, ve kterých se hráči střídají.
-
-Hlavní zápletkou hry je, že po většinu kol je pozice Pana~X policistům utajena.
+Hlavní myslěnkou hry je, že po většinu kol je pozice Pana~X policistům utajena.
 Odhaluje se jim pouze určená kola.
 To znamená, že policisté pro polapení Pana~X musí odhadovat jeho pozici a spolupracovat mezi sebou.
 Tímto se ze hry Scotland Yard stává hra s~nedokonalou informací, jelikož policisté nevidí přesnou pozici Pana~X\@.
 Tento fakt ji činí vhodnou pro studování metod hraní her s~neurčitostí.
+
+Pan X má také možnost použít speciální akci, kterou je \emph{dvojitý tah}.
+Také vlastní speciální jízdenku, která mu umožňuje použít jakýkoliv druh dopravy
+Pokud Pan X použije tutu speciální jízdenku, není policistům odhalen jaký typ dopravy využil.
 
 \section{Další hry s~nedokonalou informací}\label{sec:dalsi-hry-s-nedokonalou-informaci}
 V~oblasti umělé inteligence hraje důležitou roli modelování a řešení her.
 Hry představují formalizaci konfliktních interakcí mezi aktéry.
 Klasická teorie her se zaměřuje na hry s~úplnou informací, kde mají všechny strany v~daném okamžiku přístup ke všem relevantním informacím z~herního prostředí.
 Znají strategie a cíle ostatních hráčů.
-V~praxi se však častěji setkáváme se situacemi, kde jednotlivým stranám chybí některé informace, ať už se jedná o~prostředí či cíli soupeře.
+V~praxi se však častěji setkáváme se situacemi, kde jednotlivým stranám chybí některé informace, ať už se jedná o~informace z prostředí či cíli soupeře.
 
 \subsection{Bayesovské hry}
 Tyto případy lze modelovat pomocí her s~neúplnou či nedokonalou informací, kde hráči nemají úplné znalosti o~prostředí nebo soupeřích.
@@ -113,11 +117,12 @@ Bayesovské hry představují formální rámec sloužící k~modelování a pop
 
 \subsection{Stratego}\label{subsec:stratego}
 Stratego je desková strategická hra pro dva hráče.
-Vychází z~dřívějších her, jako je Šachy a Go, a kombinuje strategické plánování se snahou obelstít soupeře.
+Vychází z~dřívějších her, jako jsou Šachy a Go.
+Kombinuje strategické plánování se snahou obelstít soupeře.
 Hra se odehrává na herní ploše o~velikosti 10x10 polí.
 Na herním poli jsou umístněny sekce s~různými terény, které znemožňují pohyb jednotek.
 To vytváří různé strategicky uzká místa, kde je možno zabarikádovat protivníka jen pomocí dvou figur.
-Tím se hra stává zajímavější a je možné tyto body využívat k donucení oponenta aby zaútočil jako první.
+Tím se hra stává zajímavější a je možné tyto body využívat k~donucení oponenta aby zaútočil jako první.
 
 Na této herní mapě má každý hráč svoji sadu figur reprezentujících armádu.
 Figury jsou ale vyobrazeny tak, že jejich hodnost lze přečíst pouze z~jedné strany.
@@ -130,6 +135,7 @@ Tyto speciální miny mohou zničit jakoukoliv figuru se kterou se utkají v~boj
 Minu může zničit pouze horník.
 
 Hra začíná tím, že každý hráč rozmístí své figury na herní pole.
+Toto rozmístnění je samozřejmě tajné.
 Hráči se střídají v~tazích, kdy se pokouší najít oponentovu vlajku.
 Pokud hráč táhne na pole, kde se nachází oponentova figura, nastává souboj.
 Souboj spočívá v~odkrytí hodnosti obou figur a vyhrává ta s~vyšší hodností.
@@ -137,8 +143,8 @@ Figura, která vyhrála zůstává, poražená figura je odstraněna z~hry.
 
 Ve hře Stratego je důležité blafování a odhadování soupeřových tahů.
 V~této hře velmi důležitá informace, tudíž je důležité informace získávat.
-To můžou hráči učinit například obětováním slabších figur, aby odhalily silnější hodnosti.
-I tato hra je modelovatelná metodou Bayesovských her \cite{Bayes_stratego}.
+To můžou hráči učinit například obětováním slabších figur, aby odhalily soupeřovy figury se silnější hodností.
+I~tato hra je modelovatelná metodou Bayesovských her \cite{Bayes_stratego}.
 
 \begin{figure}[H]
 	\centering
@@ -176,21 +182,24 @@ To znamená, že hráči nemají úplnou informaci o~pozici nepřátelských jed
 Dota 2 je pro umělou inteligenci náročnou výzvou z~těchto důvodů:
 \begin{itemize}
   \item Složitost hry
+
   Dota 2 je komplexní hra s~mnoha proměnnými a možnostmi.
   Její stav se mění velmi rychle a je tedy těžké předpovědět vývoj hry.
   Agenti tedy musí být schopni rychle reagovat na změny a tím přizpůsobit svoji strategii.
   \item Nedokonalá informace
+
   Právě kvůli válečné mlze nemají hráči úplnou informaci o~pozici nepřátelských jednotek a musí tedy pouze odhadovat kde na mapě se nachází.
   Neznají ani jestli jsou nepřátelé schopni použít své schopnosti a předměty.
+  Ve hře dota 2 vykonávají hráči několik rozhodnutí někdy i několikrát za sekundu.
+  Je to doopravdy dynamická hre, kde je třeba rychle reagovat na strategie soupeřů, rychle a správně tyto strategie odhadovat a vytvářet úplně nové strategie.
 \end{itemize}
 
-Dota 2 sama o~sobě obsahuje implementaci chování umělé inteligence.
-Její výkon však není dostatečný a nebyla schopna ani zdaleka porazit nejlepší hráče světa.
+Dota 2 sama o~sobě obsahuje implementaci chování inteligentních agentů, kteří jsou schopni hrát hru na velmi vysoké úrovni.
+Jejich výkon však není dostatečný a nebyli schopni ani zdaleka porazit nejlepší hráče světa.
 Použité metody pro vytvoření těchto agentů bohužel nejsou zveřejněny.
 
-\ref{subsec:dota}
 Inovaci umělé inteligence v~této hře opět přinesla společnost OpenAI a jejich projekt \emph{OpenAI Five}~\cite{Dota2}.
-Tento projekt se zaměřil na vytvoření agenta, který by byl schopna porazit nejlepší hráče světa ve hře Dota 2.
+Tento projekt se zaměřil na vytvoření modelu, který by byl schopen porazit nejlepší hráče světa ve hře Dota 2.
 OpenAi nepřišel se žádným novým algoritmem, ale pouze s~novým přístupem k~trénování a využití algoritmu \textbf{PPO} v~doposud neviděném měřítku. 
 Algoritmus PPO a posilované učení bodou blíže popsáni v~následujících sekcích~\ref{sec:proximalni-optimalizace-strategie} a~\ref{sec:klicove-koncepty-posilovaneho-uceni}.
 
@@ -199,6 +208,7 @@ Hrála se klasická turnajová verze, a to tedy nejlepší ze tří.
 OpenAI Five byl schopen porazit nejlepší tým světa s~rozhodným výsledkem 2:0.
 První hra trvala 38~minut a druhá již pouhých 21~minut.
 V~celém exhibičním turnaji proti nejlepším týmům světa z~celkových 24 her vyhrál 19 her a pouhých 5 prohrál.
+Bylo zajímavé sledovat, že v průběhu zápasu OpenAI Five veřejně vypisoval své odhady pravděpodobnosti výhry.
 
 Agent OpenAI Five byl, kombinovaně s~předchozí verzí, trénován asi \emph{55 000} herních let hraním sama proti sobě.
 Pozorovací prostor je obrovský, obsahuje až 16 000 vstupů.
@@ -210,7 +220,7 @@ Tyto akce mají 3 parametry, zpoždění, vybranou jednotku a offset cíle akce.
 Pokud tyto akce a jejich parametry zkombinujeme získáme akční prostor o~velikosti 1,837,080 dimenzí.
 Výsledný reakční čas agenta je okolo 33ms, oproti tomu reakční čas profesionálních hráčů her je okolo 120ms~\cite{reaction_time}
 
-Na začátku byla většina chování agenta uměle naprogramované a postupně mu byla předávána kontrola nad vlastním chováním s~využití strategie.
+Na začátku byla většina chování agenta uměle naprogramována a postupně mu byla předávána kontrola nad vlastním chováním s~využití strategie.
 Některé naskriptované chování však bylo zachováno i ve finální verzi OpenAi Five a nebyly odstraněny, jelikož již agent byl dostatečně efektivní a nebylo třeba je odstranit.
 
 \section{Klíčové koncepty posilovaného učení}\label{sec:klicove-koncepty-posilovaneho-uceni}
@@ -232,7 +242,7 @@ Bez jeho vhodného zvolení, je dosažení strategie s~dobrými výsledky velmi 
 Pozorovací prostor je množina všech možných pozorování, které může agent získat z~prostředí.
 Je to tedy forma, kterou prostředí předává informace agentovi.
 Velmi často se aktuální stav pozorovacího prostoru využívá jako stav.
-Při vytváření prostředí je nutné definovat typ, tvar prostoru a jaké hodnoty může nabývat.
+Při vytváření prostředí je nutné definovat typ, tvar prostoru a jakých hodnot může nabývat.
 
 Pro jeho podoby je vhodné zvolit standard z~knihovny \texttt{Gymnasium}~\cite{Gymnasium}.
 Gymnasium je pokračování knihovny \texttt{Gym} od společnosti OpenAI\@.
@@ -242,12 +252,13 @@ Dodržování těchto standardů umožňuje použití libovolného algoritmu na 
 \bigskip
 
 \textbf{Akční prostor} je, jak název vypovídá, množina všech možných akcí, ze kterých může strategie volit.
-Často se jedná o~množinu celočíselných hodnot, které reprezentují různé akce.
+Často se jedná o~konečnou množinu celočíselných hodnot, které reprezentují různé akce.
 Samozřejmě může být akční prostor i spojitého typu (blíže popsáno v~další sekci).
 
 V~herním prostředí mohou nastat situace kdy se nějaká akce stane nevalidní, jelikož by její provedení vyústilo v~nevalidní stav herního prostředí.
 V~takovém případě je vhodné zvolení této akce zamezit, nejlépe pomocí akční masky.
 Ta definuje, které akce jsou v~momentálním stavu prostředí proveditelné.
+Lze také tyto akce povolit, ale následně agentovi udělit sníženou odměnu za provedení nevalidní akce.
 
 \subsection{Diskrétní a spojitý prostor}\label{subsec:diskretni-a-spojity-prostor}
 
@@ -261,12 +272,6 @@ Zato \textbf{spojitý prostor} je nekonečný prostor, který může obsahovat n
 Spojitý pozorovací prostor je například ten, jehož vstupem je audio stopa.
 Spojité akční prostory jsou nekonečné a často je definuje nekonečná množina akcí.
 Na prostředí se spojitými prostory se často používají jiné algoritmy, například algoritmus DDPG (Hluboký deterministický gradient strategie).
-
-\bigskip
-
-Uvažujme však 3D hru kde se agent může hýbat za pomocí aplikování silového vektoru o~různé velikosti a v~různém směru.
-Může tím tedy měnit rychlost a směr pohybu.
-V~tomto případě se jedná o~\textbf{spojitý akční prostor}.
 
 \subsection{Prostředí}\label{subsec:prostredi2}
 
@@ -305,7 +310,7 @@ Strategie může být deterministická nebo stochastická.
   Může tedy nastat situace kdy ve stejném stavu agent zvolí vždy jinou akci.
   Tato strategie je vhodná v~situacích, kdy je potřeba zkoumat různé strategie a kdy agent nemá úplnou informaci o~prostředí.
   Například tam kde by deterministická strategie zvolila jasnou akci \textit{A}, stochastická strategie by mohla s~malou pravděpodobností zvolit akci \textit{B}.
-  Čímž ale může odhalit, že stav \textit{B} je s~ohledem na komulativní odměnu lepší než stav \textit{A}~\cite{Policies}.
+  Čímž ale může odhalit, že akce \textit{B} je s~ohledem na komulativní odměnu lepší než akce \textit{A}~\cite{Policies}.
 
   Rovnice výsledné akce stochastické strategie je:
   \begin{equation}
@@ -319,7 +324,7 @@ Výsledkem provedení akce je tedy změna z~aktuálního stavu, do jiného, či 
 Zjednodušeně, je to rozhodnutí, které agent vykonává v~prostředí a toto rozhodnutí ovlivňuje prostředí.
 
 Akce může být také nedeterministická či stochastická.
-Výsledný stav tedy může být stejný pro stejný stav a akci.
+Výsledný stav tedy může být jiný pro stejný stav a akci.
   
 \subsection{Odměna}\label{subsec:odmena}
 
@@ -331,7 +336,7 @@ Výsledný stav tedy může být stejný pro stejný stav a akci.
 
   Hodnotová funkce vyhodnocuje, jak dobrý je stav tím, že predikuje budoucí odměnu, pokud bude další tah začínat v~tomto stavu.
   Čím vzdálenější odměna je od tohoto stavu, tím více je snížena.
-  Protože, čím je odměna vzdálenější tím více je nejistá, že bude doopravdy získána.
+  Protože, čím je odměna vzdálenější tím více je nejisté, že bude doopravdy získána.
 
   Existují dva typy hodnotových funkcí:
 
@@ -347,6 +352,8 @@ Výsledný stav tedy může být stejný pro stejný stav a akci.
   Hodnotová funkce akce \emph{$Q(s, a)$} vyhodnocuje očekávanou komulativní odměnu, pokud se agent nachází v~tomto stavu a zvolí tuto akci.
   Tato funkce je opět závislá na strategii, kterou se agent řídí.
   Vyhodnocuje tedy jak příznivé je zvolení dané akce v~aktuálním stavu.
+
+\pagebreak
 
 \subsection{Markovský rozhodovací proces}\label{subsec:markovsky-rozhodovaci-proces}
 
@@ -370,7 +377,7 @@ Markovský rozhodovací proces je definován pěticí $(S, A, P, R, \gamma)$~\ci
 \item $A$ je množina akcí.
 \item $P$ je pravděpodobnostní přechodová funkce
 \item $R$ je odměnová funkce
-\item $\gamma$ je diskontní faktor pro budoucí odměny
+\item $\gamma$ je zlevňovací faktor pro budoucí odměny
 \end{itemize}
 \end{definition}
 
@@ -408,20 +415,20 @@ Tyto rovnice jsou základem pro většinu algoritmů posilovaného učení \cite
   Q_*(s, a) = R(s, a) + \gamma \sum_{s' \in \mathcal{S}} P_{ss'}^a \max_{a' \in \mathcal{A}} Q_*(s', a')
 \end{equation}
 
-Tato rovnice udává, že hodnota akce $a$ ve stavu $s$ při optimální strategii je rovna okamžité odměně za provedení akce $a$ ve stavu $s$ plus diskontované hodnotě nejlepší akce ve stavu $s'$ při optimální strategii \cite{RL_basics,Dynamic_Programming_BELLMAN}.
+Tato rovnice udává, že hodnota akce $a$ ve stavu $s$ při optimální strategii je rovna okamžité odměně za provedení akce $a$ ve stavu $s$ plus zlevněné hodnotě nejlepší akce ve stavu $s'$ při optimální strategii \cite{RL_basics,Dynamic_Programming_BELLMAN}.
 
 \begin{equation}\label{eq:bellman_optimality2}
   V_*(s) = \max_{a \in \mathcal{A}} \big( R(s, a) + \gamma \sum_{s' \in \mathcal{S}} P_{ss'}^a V_*(s') \big)
 \end{equation}
 
-Rovnice \ref{eq:bellman2} udává, že maximální hodnota stavu $s$ při optimální strategii je rovna maximální hodnotě akce $a$ ve stavu $s$, pokud dále budeme pokračovat v optimální strategii \cite{RL_basics}.
+Rovnice \ref{eq:bellman2} udává, že maximální hodnota stavu $s$ při optimální strategii je rovna maximální hodnotě akce $a$ ve stavu $s$, pokud dále budeme pokračovat v~optimální strategii \cite{RL_basics}.
 
 \begin{itemize}
   \item $Q_*(s, a)$ je nejlepší možná hodnota akce $a$ ve stavu $s$ při optimální strategii.\cite{RL_basics}
   \item $V_*(s)$ je nejlepší možná hodnota stavu $s$ při optimální strategii.
   \item $R(s, a)$ je okamžitá odměna za provedení akce $a$ ve stavu $s$.
   \item $P_{ss'}^a$ je pravděpodobnost přechodu ze stavu $s$ do stavu $s'$ po provedení akce $a$.
-  \item $\gamma$ je diskontní faktor pro budoucí odměny.
+  \item $\gamma$ je zlevňovací faktor pro budoucí odměny.
   \item $\mathcal{S}$ je množina stavů.
   \item $\mathcal{A}$ je množina akcí.
   \item $\max_{a' \in \mathcal{A}} Q_*(s', a')$ je maximální hodnota akce ve stavu $s'$ při optimální strategii.
@@ -463,6 +470,7 @@ Také hra Scotland Yard, kde policisté neznají pozici Pana~X\@.
 \textbf{\emph{Neúplná informace}} znamená, že hráč nezná strukturu odměn, podstatu hry nebo její pravidla.
 Hráč tedy nezná výchozí informace o~hře.
 Všechny hry s~neúplnou informací se dají považovat za hry s~nedokonalou informací.
+\bigskip
 
 \emph{Soukromá informace} je informace, která není dostupná ostatním hráčům.
 
@@ -475,7 +483,7 @@ Tato kapitola se zaměřuje na algoritmy, které jsou vhodné pro řešení her 
 \subsection{Monte Carlo tree search}\label{subsec:monte-carlo-tree-search}
 Metoda Monte Carlo tree search (MCTS) je heuristický algoritmus prohledávání.
 Kombinuje stromové vyhledávání s~principy posilovaného učení.
-Je často využíván, je--li stavový prostor řešeného problém příliš velký a složitý na to, aby byl prohledán kompletně jinými metodami, jako například minimax, či alfa--beta prořezávání.
+Je často využíván, je--li stavový prostor řešeného problému příliš velký a složitý na to, aby byl prohledán kompletně jinými metodami, jako například minimax, či alfa--beta prořezávání.
 Tyto \uv{tradiční} algoritmy nelze na mnoho problémů použít, jelikož by byly příliš pomalé a náročné na výpočet.
 
 Tato metoda se také potýká s~rovnováhou mezi explorací a exploatací (viz.~ sekce~\nameref{subsec:exploration-exploitation-dillemma}).
@@ -491,7 +499,7 @@ MCTS se skládá z~několika fází:
   \emph{Strom s~horní mezí spolehlivosti} (Upper confidence bounds applied to trees, UCT) kombinuje průměrnou hodnotu uzlu a odměnu za exploraci.
 
   \label{epsilon_greedy}
-  \emph{Chamtivá strategie $\epsilon$ } ($\epsilon--greedy strategy$) vybírá s~pravděpodobností $\epsilon$ náhodný uzel, jinak volí uzel s~nejvyšší hodnotou.
+  \emph{Chamtivá strategie $\epsilon$ } ($\epsilon$--greedy strategy) vybírá s~pravděpodobností $\epsilon$ náhodný uzel, jinak volí uzel s~nejvyšší hodnotou.
   Tato strategie se používá méně často než UCT\@.
 
   Obě tyto strategie se snaží o~rovnováhu mezi explorací a exploatací.
@@ -523,7 +531,7 @@ Tento algoritmus se skvěle hodí na hry s~nedokonalou či neúplnou informací,
 Q-learning je jedním z~nejznámějších algoritmů posilovaného učení.
 Učení tohoto algoritmu probíhá bez modelu a mimo strategii.
 
-Jak už název vypovídá, Q-learning se zaměřuje na určení hodnoty hodnotové funkci akce $Q(s, a)$, viz. \nameref{subsubsec:q_function}.
+Jak už název vypovídá, Q-learning se zaměřuje na určení hodnoty hodnotové funkce akce $Q(s, a)$, viz. \ref{subsubsec:q_function}.
 Tyto hodnoty se uchovávají v~Q--tabulce, která na každou kombinaci stavu a akce uchovává hodnotu $Q(s, a)$.
 Hodnoty v~Q--tabulce se iterativně aktualizují na základě získaných odměn.
 Kladná odměna po vykonání akce $s$, zvýší se hodnota $Q(s, a)$.
@@ -534,7 +542,7 @@ Po vytvoření jsou všechny $Q$ hodnoty v~tabulce inicializovány na nulu.
 Následně jsou tyto hodnoty iterativně aktualizovány dle zpětné vazby udělené od prostředí ve formě odměny.
 
 Jako u~většiny algoritmů je zde potřeba dohlédnout na rovnováhu mezi explorací a exploatací.
-K~tomuto se využívá $\epsilon$--greedy strategie viz. \nameref{epsilon_greedy}.
+K~tomuto se využívá $\epsilon$--greedy strategie viz. \ref{epsilon_greedy}.
 
 Hlavní nevýhodou tohoto algoritmu je právě jeho závislost na Q--tabulce.
 Tabulka mapuje hodnoty pro každou kombinaci stavu a akce,
@@ -546,14 +554,14 @@ Jako řešení byl navrhnut algoritmus Deep Q-learning.
 \subsection{Deep Q-learning (DQN)}\label{subsec:deep-q-learning}
 
 Tato metoda je rozšířením algoritmu Q-learning které,
-nahrazuje $Q$--tabulku neuronovou sítí určených k~aproximaci hodnotové funkce akce $Q(s, a)$.
+nahrazuje $Q$--tabulku neuronovou sítí určené k~aproximaci hodnotové funkce akce $Q(s, a)$.
 Díky této aproximaci je možné použít tento algoritmus na problémy s~velkým, či nekonečným množstvím kombinací akcí a stavů.
 
 Avšak tímto vzniká nový problém, \emph{nestabilita učení}.
 Ten je řešen dvěma mechanizmy:
 
 \begin{itemize}
-  \item \textbf{\emph{Přehrání zkušenosti (experience replay)}}
+  \item \textbf{Přehrání zkušenosti (experience replay)}
   
   Během trénování se ukládají všechny zkušenosti do paměti.
   Ať už to jsou akce, stavy, odměny atd.
@@ -561,7 +569,7 @@ Ten je řešen dvěma mechanizmy:
   Tímto se snižuje rozdíl mezi jednotlivými aktualizacemi a tím pádem se zvyšuje stabilita učení.
   
 
-  \item \textbf{\emph{Periodická aktualizace}}
+  \item \textbf{Periodická aktualizace}
   Síť je naklonována a změny se provádí pouze na duplikátní verzi.
   Do hlavní originální sítě se změny klonují po určitém počtu kroků.
 
@@ -578,11 +586,19 @@ V~diskrétním prostoru je odměnová funkce definována jako:
   \mathcal{J}(\theta) = V_{\pi_\theta}(S_1) = \mathbb{E}_{\pi_\theta}[V_1]
 \end{equation}
 
-V~spojitém prostoru je odměnová funkce definována jako:
+Ve~spojitém prostoru je odměnová funkce definována jako:
 \begin{equation}
     \label{eq:odmenova_funkce_spojita}
   \mathcal{J}(\theta) = \sum_{s \in \mathcal{S}} d_{\pi_\theta}(s) V_{\pi_\theta}(s) = \sum_{s \in \mathcal{S}} \Big( d_{\pi_\theta}(s) \sum_{a \in \mathcal{A}} \pi(a \vert s, \theta) Q_\pi(s, a) \Big)
   \end{equation}
+
+\begin{itemize}
+  \item $\mathcal{J}(\theta)$ je odměnová funkce strategie $\pi_\theta$.
+  \item $\theta$ je parametr strategie $\pi_\theta$.
+  \item $V_{\pi_\theta}(S_1)$ je hodnota stavu $S_1$ dle strategie $\pi_\theta$.
+  \item $\mathbb{E}_{\pi_\theta}[V_1]$ je očekávaná hodnota stavu $S_1$ dle strategie $\pi_\theta$.
+  \item $d_{\pi_\theta}(s)$ je rozdělení pravděpodobnosti stavů $s$ dle strategie $\pi_\theta$.
+\end{itemize}
 
 \subsubsection*{Věta o~gradientu strategie}
 Výpočet gradientu matematicky je zaznamenán touto rovnicí:
@@ -599,12 +615,13 @@ Avšak tento vzorec lze zjednodušit na rovnici zvanou \emph{věta o~gradientu s
   \nabla \mathcal{J}(\theta) = \mathbb{E}_{\pi_\theta} [\nabla \ln \pi(a \vert s, \theta) Q_\pi(s, a)]
 \end{equation}
 
+
 \section{Trust Region Policy Optimization (TRPO)}\label{sec:trust-region-policy-optimization}
 Trénované strategie jsou často velmi náchylné na změny.
 Kde i malá náhlá změna v~jednom kroku může způsobit velké změny v~chování agenta a zamezit dalšímu učení správné strategie.
 Během učení totiž chceme, aby učení probýhalo plynule a ne skokově.
-Pokud se strategie změní příliš rychle protože následovala nějvětší růst, může se stát, že mine cestu vedoucí k~optimální strategii.
-Uváznutí se tedy v~lokálním optimu.\pagebreak
+Pokud se strategie změní příliš rychle protože následovala nejstrmější směr růstu, může se stát, že mine cestu vedoucí k~optimální strategii.
+Může tedy uváznout v~lokálním optimu.
 
 TRPO je optimalizační algoritmus, který se snaží tento problém řešit tím, že definuje omezení rozdílu mezi novou aktualizovanou strategií $\textbf{p}$ a starou strategií z~předešlého kroku $\textbf{q}$.
 Tento rozdíl mezi dvěma pravděpodobnostními rozděleními je definován jako Kullback-Leiblerova divergence (K-L divergence)\cite{KL_divergence}.
@@ -613,13 +630,13 @@ Vzorec pro K-L divergenci ve spojitém prostoru je následující:
   D_{KL}(p \| q) = \int_x p(x) \log \frac{p(x)}{q(x)} dx
 \end{equation}
 
-Vzorec v diskrétním prostoru:
+Vzorec v~diskrétním prostoru:
 \begin{equation}
   D_{KL}(p \| q) = \sum_x p(x) \log \frac{p(x)}{q(x)}
 \end{equation}
 
 Vzniká tak region důvěry, ve kterém musí nová strategie setrvat.
-strategie se tedy nemůže skokově měnit na lokální maximum, ale pouze následuje směr lokálního maxima.
+Strategie se tedy nemůže skokově změnit na lokální maximum, ale pouze následuje směr lokálního maxima.
 
 K~tomu využívá Hesenská matice.
 Kdy pomocí těchto matic hledá optimální směr změny strategie.
@@ -630,6 +647,7 @@ Jelikož je strategie pravděpodobnostní funkce, jsou tyto matice ideální pro
 
 Díky tomuto řešení se učení stává robustním a stabilním.
 Avšak výměnou za to, je náročnost aproximace pomocí Hesenských matic a s~tím související náročnost na implementaci.
+Výpočet buňky v Hesenské matici je definován jako:
 \begin{equation}
   H_{ij} = \frac{\partial^2 f}{\partial x_i \partial x_j}
 \end{equation}
@@ -648,12 +666,12 @@ Výsledná matice tak poté může vypadat takto:
 
 %\textsuperscript {\ref{sec:trust-region-policy-optimization}}
 
-Metoda proximální optimalizace strategie (Proximal policy optimization - PPO) byla představena roku 2017\cite{PPO_paper}.
+Metoda proximální optimalizace strategie (Proximal policy optimization - PPO) byla představena roku 2017 \cite{PPO_paper}.
 Tato metoda je vylepšeným následníkem algoritmu TRPO, popsaný v~předchozí sekci~\ref{sec:trust-region-policy-optimization}.
 
 Co výrazné odlišuje tuto metodu od předchůdců, je její jednoduchost a efektivita.
 Dosahuje lepších výsledků než metoda TRPO a srovnatelných výsledků s~metodou ACER\@.
-Je avšak mnohem jednodušší na implementaci, má nižší nároky na výkon a je mnohem lepší co se týče efektivity dat pro trénování.\cite{PPO_paper}.
+Je avšak mnohem jednodušší na implementaci, má nižší nároky na výkon a je mnohem lepší co se týče efektivity dat pro trénování \cite{PPO_paper}.
 K~dosažení těchto výsledků, využívá PPO techniku ořezávání náhradních cílů vloženou do algoritmu TRPO\@.
 Vynucuje, aby K-L divergence staré a nové strategie byla v~rozmezí $[1-\epsilon, 1+\epsilon]$ kde $\epsilon$ je modifikovatelný parametr.
 
@@ -674,7 +692,7 @@ Pokud tento vzorec dosadíme do rovnice pro výpočet gradientu strategie TRPO. 
 
 \begin{itemize}
   \item $\theta$ je parametr strategie.
-  \item $\mathbb{E}_t$ značí empirickou očekávání v časových krocích
+  \item $\mathbb{E}_t$ značí empirickou očekávání v~časových krocích
   \item $r_t$ relativní podobnost nové a staré strategie \cite{PPO_paper}
   \item $\hat{A}_t$ je odhad výhody akce v~čase $t$.
   \item $\epsilon$ je hyperparametr, obvykle nastaven na hodnotu $0.1$ nebo $0.2$.
@@ -687,8 +705,8 @@ Pokud tento vzorec dosadíme do rovnice pro výpočet gradientu strategie TRPO. 
   Zdroj: \cite{RL_basics}}\label{fig:clip}
 \end{figure}
 
-Tyto změny tvoří PPO oproti TRPO kompatibilní s metodou stochastického gradientního sestupu.
-Odstraňujě KL omezení a nahrazuje je ořezáváním.
+Tyto změny tvoří PPO oproti TRPO kompatibilní s~metodou stochastického gradientního sestupu.
+Odstraňujě K--L omezení a nahrazuje je ořezáváním.
 
 PPO má však i své nedostatky.
 \label{PPO_weakness}
@@ -707,8 +725,9 @@ Podmínka číslo 1 je v~mé implementaci prostředí hry Scotland Yard implicit
 Podmínka číslo 2 je řešena přídáním menších dílčích odměn.
 Agenti tak získávají odměny i za menší kroky, nejen například za vítězství/ prohru či blízkost, viz. podsekce~\nameref{subsubsec:odmeny}.\\
 \subsection{Experiment OpenAI}\label{subsec:experiment-openai}
-Důležitým zdrojem pro tuto práci byla studie studie~\cite{PPO_Hide_Seek_paper}, od společnosti OpenAI, vyplývá, že algoritmus je vhodný pro řešení problémů s~nedokonalou informací.
-V~dané studii byl algoritmus implementován na komplexní hru schovávané.
+Důležitým zdrojem pro tuto práci byla studie~\cite{PPO_Hide_Seek_paper}, od společnosti OpenAI.
+Z ní vyplývá, že algoritmus je vhodný pro řešení problémů s~nedokonalou informací.
+V~dané studii byl algoritmus implementován na komplexní hru typu schovávaná.
 Ve hře proti sobě hrají dva typy hráčů.
 Modří hráči se snaží schovat a utéct před červenými.
 Po herní ploše byly rozestavěny objekty, se kterými hráči mohou interagovat.
@@ -717,28 +736,18 @@ Modří hráči se na začátku hry objevují ve své pevnosti, která má něko
 Červeným hráčům je na začátku hry znemožněn pohyb, což dává modrým hráčům čas připravit se na jejich útok.
 
 Po více než 8 miliónech epizodách učení se modří hráči naučili efektivně blokovat vstup do jejich pevnosti, takže je červení hráči nebyli schopni dostihnout.
-Poté se, avšak červení hráči adaptovali, naučili se totiž využívat rampy a přelézt opevnění modrých hráčů.
-Jako finální, a ultimátní strategii se modří naučili po 43 miliónech epizod.
-Modří hráči na začátku kola ukradli červeným všechny rampy, a zabarikádovali se i s~nimi v~pevnosti.
+Červení hráči se poté adatpovali a naučili se využívat rampy a přelézt opevnění modrých hráčů.
+Jako finální, a ultimátní strategii se modří naučili po 43 miliónech epizodách.
+Modří hráči na začátku kola ukradli červeným všechny rampy a zabarikádovali se i s~nimi v~pevnosti.
 Červení hráči tak neměli žádnou šanci na výhru.
 
-Dokonce se objevili i fascinující strategie které zneužívaly prostředí.
+Dokonce se objevili i fascinující strategie které zneužívaly chyby v prostředí.
 Například, v~kódu obsluhující kolize byla chyba, která způsobovala, že při najetí rampy na zeď arény, pod určitým úhlem, byla rampa rapidní rychlostí vymrštěna do vzduchu.
 Toho červení hráči zneužili a za pomocí této chyby se vymršťovali do vzduchu, aby překonali zdi pevnosti modrých.
 
 \chapter{Zhodnocení současného stavu a plán práce (návrh)}
 \label{ch:navrh}
-\begin{itemize}
-  \item \emph {Kritické zhodnocení dosavadního stavu}
-  \item \emph {Návrh, co by bylo vhodné vyřešit na základě znalostí dosavadního stavu}
-  \item \emph {Co jste konkrétně udělal s~teorií popsanou výše}
-  \item \emph {Volba OS, jazyk, knihovny}
-  \item \emph {Detailní rozbor zadání práce, detailní specifikace a formulace cíle a jeho částí}
-  \item \emph {Popis použití řešení, situace/problémy, které projekt řeší}
-  \item \emph {Postup práce/kroky vedoucí k~cíli, rozdělení celku na podčásti}
-  \item \emph {Návrh celého řešení i jeho částí, s~odkazy na teoretickou část}
-\end{itemize}
-
+V této kapitole je popsáno navrhnutí postup implementace řešení.
 \section{Zkoumaná modifikovaná verze hry Scotland Yard}\label{sec:zkoumana-modifikovana-verze-hry-scotland-yard}
 
 Tato práce využívá modifikovanou verzi hry Scotland Yard, ve které se hráči pohybují po mřížkové herní ploše ve tvaru čtverce.
@@ -750,8 +759,9 @@ K~pohybu nejsou potřebné žádné jízdenky.
 Předtím nežli začne hra, se vyberou náhodné startovací pozice Pana~X a policistů.
 Z~těchto možných pozic se následně náhodná pozice přidělí jednotlivým hráčům.
 Poté začíná hra.
+
 Hra se dělí na jednotlivá kola, ve kterých se hráči ve svých tazích střídají.
-Pro hru byli zvoleni 3 policisté z~toho důvodu, že je herní pole velké a 2 policisté by nemuseli mít možnost ho celé pokrýt.
+Pro hru byli zvoleni 3 policisté, z~toho důvodu, že je herní pole velké a 2 policisté by nemuseli mít možnost ho celé pokrýt.
 V~kole hraje jako první Pan~X a poté policisté, již podle jejich očíslování, které jim bylo náhodně přiděleno při vytváření.
 Hra končí v~okamžiku, kdy policisté chytí Pana~X nebo když Pan~X zůstane nepolapen až do konce.
 
@@ -760,21 +770,7 @@ Tato úprava vede k~tomu, že se zjednodušila strategie agentů, jelikož se ne
 Změny, avšak nemění základní podstatu hry, zachovává neurčitost, ale značně zjednodušuje implementaci.
 Stavový prostor je tedy zjednodušený a tím se i snižují nároky na výkon.
 
-\section{Implementace modelu a agentů do hry Scotland Yard pomocí algoritmu PPO}
-\label{sec:implementace}
-
-\subsection{Použité technologie}\label{subsec:pouzite-technologie}
-K~učení strategie pro hru Scotland Yard byl využit open-source framework \texttt{Ray}~\cite{Ray}.
-Konkrétně byla využita knihovna \texttt{Ray.Rllib}.
-Tato knihovna poskytuje nástroje pro posilované učení a samotné implementace jednotlivých algoritmů, včetně zkoumaného algoritmu \emph{PPO}.
-Rllib dokáže využívat obě populární knihovny pro strojové učení \texttt{Tensorflow} a \texttt{Pytorch}.
-Pro tuto práci byla vybrána knihovna \texttt{Pytorch}.
-
-Před finálním rozhodnutím pro využití frameworku \texttt{Ray} byly zkoumány i další možnosti.
-Knihovna Stable Baselines 3, která byla zavrhnuta, jelikož neumožňuje učení více strategií souběžně při hraním agentů proti sobě.
-Knihovna \textit{CleanRL} byla také zavrhnuta, jelikož nemá dostatečně implementované trénování více strategií souběžně.
-
-\subsection{Implementace uživatelského rozraní a herních mechanizmů}\label{subsec:implementace-uzivatelskeho-rozrani-a-hernich-mechanizmu}
+\section{Implementace uživatelského rozraní a herních mechanizmů}\label{subsec:implementace-uzivatelskeho-rozrani-a-hernich-mechanizmu}
 
 Uživatelské rozhraní bylo vytvářeno pomocí knihovny \texttt{Pygame}.
 Hra začíná v~menu, kde je momentálně možné vybrat pouze možnost sledování hry mezi dvěma agenty.
@@ -832,7 +828,7 @@ Pokud hra skončila, je zobrazeno, kdo hru vyhrál.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.5\textwidth]{obrazky-figures/game_0}
+	\includegraphics[width=0.8\textwidth]{obrazky-figures/game_0}
     \caption{Hra před spuštěním}
     \label{fig:game_0}
 \end{figure}
@@ -843,7 +839,7 @@ Na začátku hry, je těchto pozic mnoho, jelikož Pan~X doposud svoji pozici ne
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.6\textwidth]{obrazky-figures/game_11}
+	\includegraphics[width=0.8\textwidth]{obrazky-figures/game_11}
       \caption{Jedenácté kolo hry}
     \label{fig:game_11}
 \end{figure}
@@ -854,11 +850,25 @@ Tmavě šedé čtverce opět značí možné pozice Pana~X\@.
 Na tomto obrázku lze pozorovat, že policisté jsou v~blízkosti Pana~X a snaží se ho chytit.
 Všichni policisté se z~pozic, zobrazených na obrázku~\ref{fig:game_0}, přesunuli na možné pozice Pana~X\@.
 
-\subsection{Prostředí a učení}\label{subsec:prostredi}
+\section{Prostředí a učení agentů}
+\label{sec:implementace}
+
+\subsection{Použité technologie pro učení}\label{subsec:pouzite-technologie}
+K~učení strategie pro hru Scotland Yard byl využit open-source framework \texttt{Ray}~\cite{Ray}.
+Konkrétně byla využita knihovna \texttt{Ray.Rllib}.
+Tato knihovna poskytuje nástroje pro posilované učení a samotné implementace jednotlivých algoritmů, včetně zkoumaného algoritmu \emph{PPO}.
+Rllib dokáže využívat obě populární knihovny pro strojové učení \texttt{Tensorflow} a \texttt{Pytorch}.
+Pro tuto práci byla vybrána knihovna \texttt{Pytorch}.
+
+Před finálním rozhodnutím pro využití frameworku \texttt{Ray} byly zkoumány i další možnosti.
+Knihovna Stable Baselines 3, která byla zavrhnuta, jelikož neumožňuje učení více strategií souběžně při hraním agentů proti sobě.
+Knihovna \textit{CleanRL} byla také zavrhnuta, jelikož nemá dostatečně implementované trénování více strategií souběžně.
 
 Vytvořit prostředí pro platformu \texttt{Ray.Rlib} bylo složité.
 Dokumentace vytváření prostředí není příliš komplexní, byl tedy problém zajistit správnou komunikaci prostředí a agentů.
 Prostředí a následné učení je komplikované, jelikož zde figuruje více agentů a naráz se učí dvě rozdílné strategie.
+
+\subsection{Trénování agentů pomocí algoritmu DQN a PPO}
 
 Agenti se již od začátku učí zásadně pouze hraním proti sobě.
 Důvodem pro toto rozhodnutí bylo, že se jedná o~zajímavější experiment, kdy jsou agenti vpuštěni do zcela neznámého prostředí a nemají se od koho učit strategii.
@@ -869,22 +879,23 @@ Implementace algoritmu PPO i DQN je obsažena v~knihovně \texttt{Ray.Rlib}.
 PPO využívá základní parametry trénování bez žádné modifikace parametrů jelikož se ukázalo, že agenti se chovají optimálně a hru pochopili i bez těchto zásahů do výchozích hodnot hyperparametrů.
 Zato DQN agenti se chovali \emph{ne}optimálně.
 Agenti se naučili pouze stát na místě, přestože tato taktika byla velmi nevýhodná.
-Pro vyřešení tohoto problému, je nyní agentům udělována penalizace pokud se 5 kroků po sobě nehnou.
+Pro vyřešení tohoto problému, je nyní agentům udělována penalizace pokud se 5 kroků po sobě nepohnou.
 Penalizace je rovna zápornému počtu kol nečinnosti.
 Postupně tedy roste a pohybem je resetována.
-Tato expanze odměn vedla k vylepšení strategie agentů DQN a nadále nestáli pouze na jednom místě.
-Bohužel však přes veškeré snahy, agenti DQN nedosahují tak dobrých výsledků jako agenti PPO\@.
+Tato expanze odměn vedla k~vylepšení strategie agentů DQN a nadále nestáli pouze na jednom místě.
+Bohužel však přes veškeré snahy, agenti DQN nedosahují ani zdaleka tak dobrých výsledků jako agenti PPO\@.
 
-S konfiguračními parametry \texttt{Ray.rlib}u a hyperparametry DQN jsem dlouho experimentoval.
+S~konfiguračními parametry \texttt{Ray.rlib}u a hyperparametry DQN jsem dlouho experimentoval.
 Měnila se velikost vnitřních vrstev, počet neuronů, rychlost učení, velikost paměti, velikost dávky učení a další.
 
-Výsledná konfigorace je následující.
+Výsledná konfigurace je následující.
 Obsahuje 2 vnitřní skryté vrstvy, první vrstvá má 128 neuronů a druhá vrstva má 64 neuronů.
 Používá verzi \emph{double DQN}
 Algoritmus k~vyvážení explorace a exploatace při učení využívá metodu $\epsilon$--greedy, kde je $epsilon$ postupem trénování lineárně snižováno z~hodnoty 1 na 0.05.
 Tato hodnota udává pravděpodobnost náhodné volby akce.
 Po natrénování modelu je ve hře explorace vypnuta, $epsilon$ je tedy nastaveno na 0.
-K posílení explorace během trénování je k vahám sítě přidán \uv{šum}.
+K~posílení explorace během trénování je k~vahám sítě přidán \uv{šum}.
+Pro zlepšení stability je povoleno přehrávání zkušeností.
 Avšak i přesto jsou výsledky agentů DQN neuspokojivé, viz.\nameref{ch:experimenty}.
 
 \subsubsection*{Řešení zvolení nevalidních akcí}
@@ -937,9 +948,13 @@ Konečné odměny jsou vypočítány následovně:
   Pokud je vzádelenost od policisty menší než tato hodnota, Pan~X obdrží záporno odměnu a naopak kladnou.
 \end{itemize}
 
-Bylo také experimentováno s variantou kde byla odměna za vzdálenost od policistů počítána pro všechny policisty zvlášť a následně byla zprůměrována:
-$  R_{\rho_p} = \sum_{i=1}^{3}[(\rho_{p_i} - \rho_{pref})] \div 3$
-Což ale vedlo k tomu, že Panu X tolik \uv{nevadilo} když byl blízko jednoho policisty, ale daleko od zbylých dvou.
+Bylo také experimentováno s~variantou kde byla odměna za vzdálenost od policistů počítána pro všechny policisty zvlášť a následně byla zprůměrována:
+
+\begin{equation}
+  R_{\rho_p} = \sum_{i=1}^{3}[(\rho_{p_i} - \rho_{pref})] \div 3
+\end{equation}
+
+Což ale vedlo k~tomu, že Panu X tolik \uv{nevadilo} když byl blízko jednoho policisty, ale daleko od zbylých dvou.
 Výpočet této odměny se tedy změnil na výše uvedený vztah~\ref{eq:odmena_za_vzdalenost_od_policisty}.
 Což vedlo ke zlepšení výsledků Pana X.
 
@@ -949,7 +964,7 @@ Okolo tohoto bodu je vytvořená oblast zájmů, ve které se Pan~X může nach�
 Policisté znají bod této oblasti, který je jim nejbližší, neboli vstupní bod.
 Čím blíže je policista k~tomuto bodu, tím větší odměnu získává.
 Pokud je od oblasti velmi vzdálený obdrží penalizaci.
-Jakmile policista docílí oblastí zájmů dostává konstantní odměnu za to, že se pohybuje v lokaci ve které se může objevovat Pan X.
+Jakmile policista docílí oblastí zájmů dostává konstantní odměnu za to, že se pohybuje v~lokaci ve které se může objevovat Pan X.
 
 PPO algoritmus může začít v~prostředích s~diskrétními akcemi volit velmi neoptimální akce.
 Toto nastává pokud má příliš málo podstatných odměn\cite{PPO_weakness}.
@@ -961,11 +976,11 @@ Další varianta byla přidat do pozorování policistů pozice všech pozic, kd
 Toto by ale bylo méně efektivní, jelikož by se pozorovací prostor několikanásobně zvětšil.
 Tím by se zvýšila náročnost výpočtů a zpomalilo by se učení.
 \subsubsection*{Pozorovací a akční prostor agentů}
-
-\textbf{Pozorovací prostor} agentů je doopravdy velmi důležitý pro úspěšné naučení dobré strategie.
 V~této práci vzájemně v~prostředí vystupují dva agenti s~různými strategiemi a různými pozorovacími prostory.
 Akční prostor je stejný jak pro policisty, tak pro Pana~X\@.
 
+\bigskip
+\textbf{Pozorovací prostor} agentů je velmi důležitý pro úspěšné naučení dobré strategie.
 Struktury jednotlivých pozorovacích prostorů jsou následující:
 
 \begin{itemize}
@@ -1043,11 +1058,11 @@ Experiment v~průběhu tréninku periodicky provádí simulace her mezi agenty a
   \item Počet vyhraných her policistů
 \end{itemize}
 Experiment sleduje vývoj těchto hodnot po \textbf{1000 iterací}.
-Což znamená, že na konci experimentu, podstoupili všichni agenti 1000 iterací tréninku
+Což znamená, že na konci experimentu, podstoupili všichni agenti přesně 1000 iterací tréninku
 
 Simulační hry byly prováděny ve všech možných kombinací algoritmů.
 Zkoušeny tedy byly všechny algoritmy jak v~roli Pana~X, tak v~roli policistů.
-Simulace se spouštěly po různém počtu trénovacích iterací v~závislosti na aktuálním počtu již provedených iterací.\pagebreak
+Simulace byly spouštěny po různém počtu trénovacích iterací v~závislosti na aktuálním počtu již provedených iterací.\pagebreak
 
 Počet simulací byl následovný:\vspace{-0.5em}
 \begin{itemize}
@@ -1057,10 +1072,10 @@ Počet simulací byl následovný:\vspace{-0.5em}
 \end{itemize}
 
 Při učení je nejzajímavější sledovat vývoj chování agentů na začátku trénování.
-Proto byly simulace prováděny s~větší četností právě na začátku a postupem trénování byla četnost snižována pro snížení výpočetní a časové zátěže.
+Proto byly simulace prováděny s~větší četností právě na začátku a postupem trénování byla četnost snižována pro snížení výpočetní a časové zátěže simulací.
 Tím bylo zajištěno, že experiment správně a efektivně vyobrazuje jak rychle a jestli, agenti byly schopni pochopit cíl hry.
 Sběr dat pro tento experiment trval přibližně 18 hodin.
-Při četnějším sběru dat by rapidně narostla časová náročnost experimentu a trval by několik dní.
+Při četnějším sběru dat by rapidně narostla časová náročnost experimentu a dle testovacích spuštění a výpočtů by trval i několik dní.
 
 \subsection{Výsledky experimentu}
 \label{subsec:vysledky-experimentu-1}
