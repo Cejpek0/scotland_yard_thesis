@@ -76,7 +76,7 @@ Jednotliví hráči využívají prvky veřejné dopravy k~pohybu po herní plo�
 
 Každému hráči je na začátku hry přidělen pouze určitý počet jízdenek na tyto typy dopravních prostředků.
 K~využití dopravy je použita právě tato jízdenka.
-Pokud již hráč nemá některou z typů jízdenek, nemůže nadále tento způsob přepravy využívat.
+Pokud již hráč nemá některou z~typů jízdenek, nemůže nadále tento způsob přepravy využívat.
 Hra se dělí na kola, ve kterých se hráči postupně střídají.
 Jakmile Pan X provede svůj tah, je odhaleno pouze jaký typ dopravy využil, ale neodhaluje na které místo se přemístil.
 
@@ -95,7 +95,7 @@ V~oblasti umělé inteligence hraje důležitou roli modelování a řešení he
 Hry představují formalizaci konfliktních interakcí mezi aktéry.
 Klasická teorie her se zaměřuje na hry s~úplnou informací, kde mají všechny strany v~daném okamžiku přístup ke všem relevantním informacím z~herního prostředí.
 Znají strategie a cíle ostatních hráčů.
-V~praxi se však častěji setkáváme se situacemi, kde jednotlivým stranám chybí některé informace, ať už se jedná o~informace z prostředí či cíli soupeře.
+V~praxi se však častěji setkáváme se situacemi, kde jednotlivým stranám chybí některé informace, ať už se jedná o~informace z~prostředí či cíli soupeře.
 
 \subsection{Bayesovské hry}
 Tyto případy lze modelovat pomocí her s~neúplnou či nedokonalou informací, kde hráči nemají úplné znalosti o~prostředí nebo soupeřích.
@@ -208,7 +208,7 @@ Hrála se klasická turnajová verze, a to tedy nejlepší ze tří.
 OpenAI Five byl schopen porazit nejlepší tým světa s~rozhodným výsledkem 2:0.
 První hra trvala 38~minut a druhá již pouhých 21~minut.
 V~celém exhibičním turnaji proti nejlepším týmům světa z~celkových 24 her vyhrál 19 her a pouhých 5 prohrál.
-Bylo zajímavé sledovat, že v průběhu zápasu OpenAI Five veřejně vypisoval své odhady pravděpodobnosti výhry.
+Bylo zajímavé sledovat, že v~průběhu zápasu OpenAI Five veřejně vypisoval své odhady pravděpodobnosti výhry.
 
 Agent OpenAI Five byl, kombinovaně s~předchozí verzí, trénován asi \emph{55 000} herních let hraním sama proti sobě.
 Pozorovací prostor je obrovský, obsahuje až 16 000 vstupů.
@@ -647,7 +647,7 @@ Jelikož je strategie pravděpodobnostní funkce, jsou tyto matice ideální pro
 
 Díky tomuto řešení se učení stává robustním a stabilním.
 Avšak výměnou za to, je náročnost aproximace pomocí Hesenských matic a s~tím související náročnost na implementaci.
-Výpočet buňky v Hesenské matici je definován jako:
+Výpočet buňky v~Hesenské matici je definován jako:
 \begin{equation}
   H_{ij} = \frac{\partial^2 f}{\partial x_i \partial x_j}
 \end{equation}
@@ -726,7 +726,7 @@ Podmínka číslo 2 je řešena přídáním menších dílčích odměn.
 Agenti tak získávají odměny i za menší kroky, nejen například za vítězství/ prohru či blízkost, viz. podsekce~\nameref{subsubsec:odmeny}.\\
 \subsection{Experiment OpenAI}\label{subsec:experiment-openai}
 Důležitým zdrojem pro tuto práci byla studie~\cite{PPO_Hide_Seek_paper}, od společnosti OpenAI.
-Z ní vyplývá, že algoritmus je vhodný pro řešení problémů s~nedokonalou informací.
+Z~ní vyplývá, že algoritmus je vhodný pro řešení problémů s~nedokonalou informací.
 V~dané studii byl algoritmus implementován na komplexní hru typu schovávaná.
 Ve hře proti sobě hrají dva typy hráčů.
 Modří hráči se snaží schovat a utéct před červenými.
@@ -741,13 +741,13 @@ Jako finální, a ultimátní strategii se modří naučili po 43 miliónech epi
 Modří hráči na začátku kola ukradli červeným všechny rampy a zabarikádovali se i s~nimi v~pevnosti.
 Červení hráči tak neměli žádnou šanci na výhru.
 
-Dokonce se objevili i fascinující strategie které zneužívaly chyby v prostředí.
+Dokonce se objevili i fascinující strategie které zneužívaly chyby v~prostředí.
 Například, v~kódu obsluhující kolize byla chyba, která způsobovala, že při najetí rampy na zeď arény, pod určitým úhlem, byla rampa rapidní rychlostí vymrštěna do vzduchu.
 Toho červení hráči zneužili a za pomocí této chyby se vymršťovali do vzduchu, aby překonali zdi pevnosti modrých.
 
 \chapter{Zhodnocení současného stavu a plán práce (návrh)}
 \label{ch:navrh}
-V této kapitole je popsáno navrhnutí postup implementace řešení.
+V~této kapitole je popsáno navrhnutí postup implementace řešení.
 \section{Zkoumaná modifikovaná verze hry Scotland Yard}\label{sec:zkoumana-modifikovana-verze-hry-scotland-yard}
 
 Tato práce využívá modifikovanou verzi hry Scotland Yard, ve které se hráči pohybují po mřížkové herní ploše ve tvaru čtverce.
@@ -1068,7 +1068,7 @@ Počet simulací byl následovný:\vspace{-0.5em}
 \begin{itemize}
   \item 50 simulací každých 10 iterací, do 100 trénovacích iterací\vspace{-0.5em}
   \item 50 simulací každých 20 iterací, od 100 do 500 trénovacích iterací\vspace{-0.5em}
-  \item 50 simulací každých 50 iterací, od 500 do 1000 trénovacích iterací\vspace{-0.5em}
+  \item 50 simulací každých 50 iterací, od 500 do 1000 trénovacích iterací
 \end{itemize}
 
 Při učení je nejzajímavější sledovat vývoj chování agentů na začátku trénování.
@@ -1083,7 +1083,7 @@ Při četnějším sběru dat by rapidně narostla časová náročnost experime
 Při sledování výsledků tohoto experimentu je důležité si uvědomit že díky základní premise hry Scotland Yard je pro policisty vyhrát mnohem složitější než pro Pana~X\@.
 A~to z~toho důvodu, že  policisté dokáží vyhrát pouze pokud chytí Pana~X, zato Pan~X může vyhrát jenom na základě uplynutí maximálního počtu kol.
 
-Všechny následující grafy vyobrazují průměrnou odměnu Pana~X a policistů, průměrnou vzdálenost policistů od Pana~X a to vše v~závislosti na počtu trénovacích iterací.
+Všechny následující grafy vyobrazují průměrnou odměnu Pana~X (modá, nepřerušovaná linie) a policistů (oranžová, přerušovaná linie), průměrnou vzdálenost policistů od Pana~X (zelená, tečkovaná linie) a to vše v~závislosti na počtu trénovacích iterací.
 
 \subsubsection*{Srovnání s~náhodným agentem}
 \begin{figure}[H]
@@ -1296,10 +1296,12 @@ Toto a spoustu dalších potíží jsou důvody proč zvolení knihovny Ray.Rlli
 Měl jsem spíše algoritmus PPO implementovat svépomocí s~využitím \texttt{Pytorch} či \texttt{Tensorflow}.
 Nebo využít knihovnu \texttt{CleanRl} a učení více strategií naráz vyřešit jiným způsobem.
 
+\medskip
 Původním plánem bylo také realizovat možnost hraní hry mezi lidmy a agenty.
 Tuto implementaci jsem, avšak přes problémy s~experimenty a algoritmem DQN nestihl dokončit.
 Mám za to, že by tato možnost nadále prohloubila výsledky této studie o~zajímavé experimenty, kde by bylo možné sledovat jak si agent PPO vede proti lidskému protivníkovi.
 
+\medskip
 Agenti trénování pomocí algoritmu DQN měli velmi špatné výsledky.
 Je vyloučeno, že by byla chyba v~prostředí, udělování odměn či v~pozorování jelikož se agenti trénovaní pomocí PPO učili za stejných podmínek a jejich výsledky byly dobré.
 Je možné, že i přes hledání optimálních parametrů s~pomocí \texttt{Ray.Tune} byla zvolena nevhodná konfigurace.
@@ -1307,6 +1309,7 @@ Byť jsem s~těmito parametry dlouhosáhle experimentoval, nebylo dosaženo uspo
 Navrhuji změnu stavového a akčního prostoru, aby byl kompatibilní s~verzemi studentů z~minulých let, kteří realizovali bakalářskou práci na podobné téma.
 A~následně využít jejich implementaci pro další experimenty~\cite{Hrklova2023thesis}.
 
+\medskip
 Dále je zde možnost rozšířit hratelnost hry o~jednotlivé druhy dopravy a k~nim příslušící jízdenky.
 Tím by výrazně vzrostla složitost hry a stavový prostor.
 Jak ale ukázala práce OpenAI~\cite{Dota2}, algoritmus PPO nemá problém s~obrovským stavovým i akčním prostorem a naučit se i komplikované hry.
