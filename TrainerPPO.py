@@ -1,3 +1,8 @@
+"""
+File description: This file contains the TrainerPPO class, which is used to train and contain the PPO agents.
+
+Author: Michal Cejpek (xcejpe05@stud.fit.vutbr.cz)
+"""
 import os
 
 from ray.rllib.algorithms.ppo import PPOConfig, PPO
@@ -11,6 +16,14 @@ from src.helper import verbose_print
 
 class TrainerPPO:
     def __init__(self, directory="trained_policies_ppo", verbose=False, simulation=False, playing=False):
+        """
+        Initialize the TrainerPPO object.
+        :param directory: Directory to save the trained policies.
+        :param verbose: If True, print verbose output.
+        :param simulation: Set to true if trainer is initialized for simulation purposes.
+        Used to set the number of cpus per worker. And avoid multiple ray.init() calls.
+        :param playing: Set to true if trainer is initialized for playing purposes.
+        """
         if playing:
             assert os.path.exists(directory), "No trained policies found"
         self.directory = directory
@@ -18,6 +31,7 @@ class TrainerPPO:
         self.verbose = verbose
         if not simulation and not playing:
             ray.init(num_gpus=0)
+            # ray.init(num_gpus=1) for gpu support
 
         def env_creator(env_config):
             return ScotlandYardEnvironment({})
@@ -32,13 +46,13 @@ class TrainerPPO:
             "cop_policy": scotland_yard_game.COP_POLICY_SPEC,
         }
 
-        my_config["num_iterations"] = 20
         my_config["policy_mapping_fn"] = policy_mapping_fn
         my_config["reuse_actors"] = True
         if not playing:
             my_config["num_rollout_workers"] = 4
         if simulation:
             my_config = my_config.resources(num_cpus_per_worker=1.2)
+            # my_config = my_config.resources(num_gpu_per_worker=0.5) for gpu support
         my_config = my_config.framework("torch")
         self.config = my_config
         # Set the config object's env.
@@ -63,8 +77,8 @@ class TrainerPPO:
 
     def save_export(self):
         self.algo.save(self.directory)
-        #self.algo.get_policy("mr_x_policy").export_model(f"{self.directory}/trained_models/policy_model_mrx_ppo")
-        #self.algo.get_policy("cop_policy").export_model(f"{self.directory}/trained_models/policy_model_cop_ppo")
+        # self.algo.get_policy("mr_x_policy").export_model(f"{self.directory}/trained_models/policy_model_mrx_ppo")
+        # self.algo.get_policy("cop_policy").export_model(f"{self.directory}/trained_models/policy_model_cop_ppo")
         return self
 
     def cleanup(self):

@@ -1,5 +1,6 @@
 """
 File description: Button class for creating buttons in the game.
+Provides full control over the button style.
 
 Author: Michal Cejpek (xcejpe05@stud.fit.vutbr.cz)
 """
@@ -31,6 +32,7 @@ class Button:
         if self.font is None:
             self.font = pygame.font.SysFont("Arial", 20)
 
+        # Actual values
         self.actual_color = self.color
         self.actual_text_color = self.text_color
         self.actual_border_color = self.border_color

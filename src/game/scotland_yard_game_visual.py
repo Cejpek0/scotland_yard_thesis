@@ -50,12 +50,13 @@ class ScotlandYardGameVisual:
          .to_highlight_area_of_interest()
          )
         self.gui_controller.to_draw_text(text=f"Turn: {self.game.round_number}", position=(10, 10))
-        # set game status to display if game is over
+        # set game status to display if the game is over
         game_status = self.game.get_game_status()
         if game_status == GameStatus.COPS_WON:
             self.gui_controller.to_draw_text(text="Cops won!", position=(10, 30))
         elif game_status == GameStatus.MR_X_WON:
             self.gui_controller.to_draw_text(text="Mr X won!", position=(10, 30))
+
         pygame.display.flip()
         return self
 

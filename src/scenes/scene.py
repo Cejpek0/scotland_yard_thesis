@@ -37,7 +37,7 @@ class Scene:
     def scene_cleanup(self):
         """
         This method is called when a scene is being removed from the scene stack.
-        :return: 
+        :return:
         """
         pass
 

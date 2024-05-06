@@ -40,6 +40,9 @@ class ScotlandYardScene(Scene):
         else:
             self.cop_algorithm = None
 
+        verbose_print(f"Mr. X - selected algorithm: {mr_x_selected_algorithm}", self.game_controller.verbose)
+        verbose_print(f"Cops - selected algorithm: {cop_selected_algorithm}", self.game_controller.verbose)
+
     def update(self, user_input):
         from src.GameController import UserActions
 

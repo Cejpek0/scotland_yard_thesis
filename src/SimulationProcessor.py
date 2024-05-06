@@ -16,7 +16,10 @@ from src.game.scotland_yard_game_logic import DefinedAlgorithms, GameStatus
 
 class SimulationProcessor:
     def __init__(self, train_simulation):
-        #relevant cols: cop_algo, mr_x_algo, game_result, game_id, mr_x_avg_distance_to_cop, avg_distance_between_cops, mr_x_reward,cops_avg_reward
+        """
+            Initialize the SimulationProcessor class.
+            :param train_simulation: If True, the class will load the training experiment results, otherwise the simulation
+        """
         self.graphs_dir = "../simulations/graphs"
         self.train_experiment_dir = "../simulations/train_experiment"
         self.simulation_experiment_dir = "../simulations/simulation_experiment/"
@@ -38,7 +41,7 @@ class SimulationProcessor:
                     self.dataframe["mr_x_algo"] == mr_x_selected_algo.value)]
         return new_dataframe
 
-    def generate_graph_for(self, dataframe: DataFrame, cop_selected_algo: DefinedAlgorithms,
+    def generate_graph_for(self, df: DataFrame, cop_selected_algo: DefinedAlgorithms,
                            mr_x_selected_algo: DefinedAlgorithms):
         label_mapping = {
             'mr_x_avg_distance_to_cop': 'Vzdálenost policistů a Pana X',
@@ -55,8 +58,8 @@ class SimulationProcessor:
             lw=2.5,
             errorbar=None,
             facet_kws=dict(legend_out=False),
-            data=dataframe.melt(id_vars='train_iteration',
-                                value_vars=['mr_x_avg_reward', 'cops_avg_reward',
+            data=df.melt(id_vars='train_iteration',
+                         value_vars=['mr_x_avg_reward', 'cops_avg_reward',
                                             'mr_x_avg_distance_to_cop']),
         )
         for text in g.legend.texts:
@@ -136,7 +139,7 @@ class SimulationProcessor:
         victories_dqn_mrx_vs_cop_random = len(
             dataframe_cop_random_mr_x_dqn[dataframe_cop_random_mr_x_dqn["game_result"] == GameStatus.MR_X_WON.value])
         games_dqn_mrx_vs_cop_random = len(dataframe_cop_random_mr_x_dqn)
-        total_games_dqn_vs_random = len(dataframe_cop_dqn_mr_x_random) + len(dataframe_cop_random_mr_x_dqn)
+        # total_games_dqn_vs_random = len(dataframe_cop_dqn_mr_x_random) + len(dataframe_cop_random_mr_x_dqn)
         victories_dqn_vs_random = victories_dqn_cop_vs_mrx_random + victories_dqn_mrx_vs_cop_random
 
         victories_dqn_cop_vs_mrx_dqn = len(
@@ -162,31 +165,31 @@ class SimulationProcessor:
         text = f"""Výsledky simulace:
         Počet výher PPO policistů proti náhodnému Panu X: {victories_ppo_cop_vs_mrx_random}/{games_ppo_cop_vs_mrx_random}
         Počet výher náhodného Pana X proti PPO policistům: {games_ppo_cop_vs_mrx_random - victories_ppo_cop_vs_mrx_random}/{games_ppo_cop_vs_mrx_random}
-        Počet výher PPO Panu X proti náhodným policistům: {victories_ppo_mrx_vs_cop_random}/{games_ppo_mrx_vs_cop_random}
+        Počet výher PPO Pana X proti náhodným policistům: {victories_ppo_mrx_vs_cop_random}/{games_ppo_mrx_vs_cop_random}
         Počet výher náhodných policistů proti PPO Panu X: {games_ppo_mrx_vs_cop_random - victories_ppo_mrx_vs_cop_random}/{games_ppo_mrx_vs_cop_random}
         Počet výher PPO proti náhodnému agentovi: {victories_ppo_vs_random}/{total_games_ppo_vs_random}
         {string_early_wins}
-        
+
         Počet výher PPO policistů proti PPO Panu X: {victories_ppo_cop_vs_mrx_ppo}/{total_games_ppo_vs_ppo}
-        Počet výher PPO Panu X proti PPO policistům: {victories_ppo_mrx_vs_cop_ppo}/{total_games_ppo_vs_ppo}
-        
+        Počet výher PPO Pana X proti PPO policistům: {victories_ppo_mrx_vs_cop_ppo}/{total_games_ppo_vs_ppo}
+
         Počet výher PPO policistů proti DQN Panu X: {victories_ppo_cop_vs_mrx_dqn}/{games_ppo_cop_vs_mrx_dqn}
-        Počet výher DQN Panu X proti PPO policistům: {games_ppo_cop_vs_mrx_dqn - victories_ppo_cop_vs_mrx_dqn}/{games_ppo_cop_vs_mrx_dqn}
-        Počet výher PPO Panu X proti DQN policistům: {victories_ppo_mrx_vs_cop_dqn}/{total_games_ppo_vs_dqn}
+        Počet výher DQN Pana X proti PPO policistům: {games_ppo_cop_vs_mrx_dqn - victories_ppo_cop_vs_mrx_dqn}/{games_ppo_cop_vs_mrx_dqn}
+        Počet výher PPO Pana X proti DQN policistům: {victories_ppo_mrx_vs_cop_dqn}/{total_games_ppo_vs_dqn}
         Počet výher DQN policistů proti PPO Panu X: {games_ppo_mrx_vs_cop_dqn - victories_ppo_mrx_vs_cop_dqn}/{total_games_ppo_vs_dqn}
         Počet výher PPO proti DQN agentovi: {victories_ppo_vs_dqn}/{total_games_ppo_vs_dqn}
-        
-        Počet výher DQN policistů proti náhodnému Panu X: {victories_dqn_cop_vs_mrx_random}/{games_dqn_cop_vs_mrx_random} 
+
+        Počet výher DQN policistů proti náhodnému Panu X: {victories_dqn_cop_vs_mrx_random}/{games_dqn_cop_vs_mrx_random}
         Počet výher náhodného Pana X proti DQN policistům: {games_dqn_cop_vs_mrx_random - victories_dqn_cop_vs_mrx_random}/{games_dqn_cop_vs_mrx_random}
-        Počet výher DQN Panu X proti náhodným policistům: {victories_dqn_mrx_vs_cop_random}/{games_dqn_mrx_vs_cop_random}
+        Počet výher DQN Pana X proti náhodným policistům: {victories_dqn_mrx_vs_cop_random}/{games_dqn_mrx_vs_cop_random}
         Počet výher náhodných policistů proti DQN Panu X: {games_dqn_mrx_vs_cop_random - victories_dqn_mrx_vs_cop_random}/{games_dqn_mrx_vs_cop_random}
         Počet výher DQN proti náhodnému agentovi: {victories_dqn_vs_random}/{total_games_dqn_vs_random}
-        
+
         Počet výher DQN policistů proti DQN Panu X: {victories_dqn_cop_vs_mrx_dqn}/{total_games_dqn_vs_random}
-        Počet výher DQN Panu X proti DQN policistům: {victories_dqn_mrx_vs_cop_dqn}/{total_games_dqn_vs_random}
-        
+        Počet výher DQN Pana X proti DQN policistům: {victories_dqn_mrx_vs_cop_dqn}/{total_games_dqn_vs_random}
+
         Počet výher náhodných policistů proti náhodnému Panu X: {random_vs_random_cop_wins}/{total_games_random_vs_random}
-        
+
         Průměrná vzdálenost mezi Panem X a policisty (PPO): {ppo_avg_distance_to_cop}
         Průměrná vzdálenost mezi Panem X a policisty (náhodný): {random_avg_distance_to_cop}
         Průměrná vzdálenost mezi Panem X a policisty (DQN): {dqn_avg_distance_to_cop}

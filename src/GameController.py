@@ -10,7 +10,6 @@ Idea has been adopted, changed and expanded to fit the needs of the project.
 """
 
 import pygame
-import time
 from enum import Enum
 
 import ray
@@ -53,12 +52,10 @@ class GameController:
         self.title_screen = Title(self, self.gui_controller)
         self.scene_stack.push(self.title_screen)
 
-        self.clock = pygame.time.Clock()
         self.running, self.playing = True, False
         self.user_actions = {}
         for action in UserActions:
             self.user_actions[action.name] = False
-        self.dt, self.prev_time = 0, 0
 
         ray.init(num_gpus=0)
 
@@ -122,11 +119,6 @@ class GameController:
 
         self.gui_controller.screen.blit(self.gui_controller.game_canvas, (0, 0))
         pygame.display.flip()
-
-    def get_delta_time(self):
-        current_time = time.time()
-        self.dt = current_time - self.prev_time
-        self.prev_time = current_time
 
     def quit_game(self):
         self.playing = False

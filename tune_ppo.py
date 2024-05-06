@@ -1,7 +1,6 @@
 from ray import tune
 from ray.rllib.algorithms.ppo import PPO
 from ray.rllib.models import ModelCatalog
-from ray.tune.experiment.trial import ExportFormat
 from ray.util.client import ray
 from ray.tune.registry import register_env
 from src.game import scotland_yard_game_logic as scotland_yard_game
@@ -12,10 +11,10 @@ from ray.rllib.examples.models.centralized_critic_models import (
 )
 
 
-def get_all_subdirs(directory):
+def get_all_subdirs(tune_dir):
     import os
-    all_subdirs = [os.path.join(directory, d) for d in os.listdir(directory) if
-                   os.path.isdir(os.path.join(directory, d))]
+    all_subdirs = [os.path.join(tune_dir, d) for d in os.listdir(tune_dir) if
+                   os.path.isdir(os.path.join(tune_dir, d))]
     return all_subdirs
 
 

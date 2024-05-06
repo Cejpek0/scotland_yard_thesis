@@ -1,10 +1,11 @@
 """
+File description: This file contains the TrainerDQN class, which is used to train and contain the DQN agents.
 
+Author: Michal Cejpek (xcejpe05@stud.fit.vutbr.cz)
 """
 import os
 
 from ray.rllib.algorithms import DQN, DQNConfig
-from ray.rllib.utils.checkpoints import get_checkpoint_info
 from ray.util.client import ray
 from ray.tune.registry import register_env
 from src.game import scotland_yard_game_logic as scotland_yard_game
@@ -16,6 +17,16 @@ from src.helper import verbose_print
 class TrainerDQN:
     def __init__(self, max_iterations, directory="trained_policies_dqn", verbose=False, simulation=False,
                  playing=False):
+        """
+        Initialize the TrainerDQN object.
+        :param max_iterations: Maximum number of iterations to train the agents.
+        Used to calculate epsilon decay.
+        :param directory: Directory to save the trained policies.
+        :param verbose: If True, print verbose output.
+        :param simulation: Set to true if trainer is initialized for simulation purposes.
+        Used to set the number of cpus per worker. And avoid multiple ray.init() calls.
+        :param playing: Set to true if trainer is initialized for playing purposes.
+        """
         if playing:
             assert os.path.exists(directory), "No trained policies found"
         self.simulation = simulation
@@ -23,6 +34,7 @@ class TrainerDQN:
         self.verbose = verbose
         if not simulation and not playing:
             ray.init(num_gpus=0)
+            # ray.init(num_gpus=1) for gpu support
 
         def env_creator(env_config):
             return ScotlandYardEnvironment({})

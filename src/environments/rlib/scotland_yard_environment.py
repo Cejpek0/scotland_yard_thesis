@@ -1,6 +1,6 @@
 """
 This file contains the implementation of the Scotland Yard environment for the learning agents.
-The environment is implemented as a MultiAgentEnv from the Ray RLlib library.
+The environment is implemented as a MultiAgentEnv from the Ray Rllib library.
 The environment is a turn-based game where the agents take turns to make a move.
 Author: Michal Cejpek (xcejpe05@stud.fit.vutbr.cz)
 """
@@ -27,7 +27,7 @@ class ScotlandYardEnvironment(MultiAgentEnv):
         self.config = config
         self.game = scotland_yard_game.ScotlandYardGameLogic()
         self.observations = None
-        self._agent_ids = ["mr_x", "cop_1", "cop_2", "cop_3"]
+        self._agent_ids = ScotlandYardEnvironment._agent_ids
         self.agents = self._agent_ids
         self.num_agents = len(self._agent_ids)
 
@@ -64,22 +64,22 @@ class ScotlandYardEnvironment(MultiAgentEnv):
         rewards = {agent: 0 for agent in self._agent_ids}
         direction = scotland_yard_game.Direction(action)
 
-        # check if actions of all agents are valid
+        # check if the actions of all agents are valid
         invalid_move = not self.game.is_valid_move(current_agent, direction)
 
-        # If action is invalid, do not proceed with the step. Do not update the game, and heavily penalize agents
+        # If action is invalid, do not proceed with the step. Do not update the game, and heavily penalize agents 
         # that made invalid actions
         if invalid_move:
             observations = {current_agent.name: self.get_observations()[current_agent.name]}
             infos = {current_agent.name: {}}
             temp_rewards = self.get_rewards(current_agent.name)
             rewards[current_agent.name] = temp_rewards[current_agent.name]
-            return observations, rewards, self.getTerminations(), {
+            return observations, rewards, self.get_terminations(), {
                 "__all__": False, "mr_x": False, "cop_1": False, "cop_2": False, "cop_3": False, }, infos
 
         self.game.play_turn(direction)
 
-        # get next player
+        # get the next player
         next_player = self.game.get_player_by_number((current_agent.number + 1) % self.num_agents)
         assert next_player is not None
         infos = {}
@@ -92,11 +92,11 @@ class ScotlandYardEnvironment(MultiAgentEnv):
             rewards = turn_reward
 
         # Check if the game is over
-        terminates = self.getTerminations()
+        terminates = self.get_terminations()
         # Get updated observations
         observations = {next_player.name: self.get_observations()[next_player.name]}
 
-        # Return observations, rewards, terminates,truncated, info
+        # Return observations, rewards, terminates, truncated, info
         return observations, rewards, terminates, {"__all__": False, "mr_x": False, "cop_1": False, "cop_2": False,
                                                    "cop_3": False, }, infos
 
@@ -197,16 +197,16 @@ class ScotlandYardEnvironment(MultiAgentEnv):
 
     def get_observations(self):
         """
-        Get observations for all agents
-        :return: Dictionary of observations for all agents: {agent_id: observation}
+        Get observations for all agent
+        :return: Dictionaries of observations for all agents: {agent_id: observation}
         """
         observations = self.game.get_observations()
         return observations
 
     def get_empty_observation(self):
         """
-        Get empty observation for all agents
-        :return: Dictionary of empty observations for all agents: {agent_id: observation}
+        Get empty observation for all agent
+        :return: Dictionaries of empty observations for all agents: {agent_id: observation}
         """
         mrx_obs = np.array([0, 0, 0, 0, 0, 0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0])
         mrx_obs = mrx_obs.astype(np.float32)
@@ -221,21 +221,21 @@ class ScotlandYardEnvironment(MultiAgentEnv):
             "cop_3": cop_obs
         }
 
-    def getTerminations(self):
+    def get_terminations(self):
         """
         Get terminations for all agents.
         Terminations depend on the game status.
         :return: Dictionary of terminations for all agents: {agent_id: termination}
         """
         game_over = self.game.get_game_status()
-        returnDict = {}
+        return_dict = {}
         for agent_id in self._agent_ids:
             if game_over == scotland_yard_game.GameStatus.ONGOING:
-                returnDict[agent_id] = False
+                return_dict[agent_id] = False
             else:
-                returnDict[agent_id] = True
+                return_dict[agent_id] = True
         if game_over == scotland_yard_game.GameStatus.ONGOING:
-            returnDict["__all__"] = False
+            return_dict["__all__"] = False
         else:
-            returnDict["__all__"] = True
-        return returnDict
+            return_dict["__all__"] = True
+        return return_dict

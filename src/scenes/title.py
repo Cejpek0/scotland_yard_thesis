@@ -62,7 +62,9 @@ class Title(Scene):
         display.blit(self.text_surface_cops, (self.text_x_cops, 50))
         display.blit(self.text_surface_mrx, (self.text_x_mrx, 50))
 
+        # check if the mouse is clicked
         if self.game_controller.user_actions[UserActions.mouse_left_up.name]:
+            # check if the mouse is clicked on any button
             if self.btn_start.is_hovered():
                 from src.scenes.game_scene import ScotlandYardScene
 
@@ -84,6 +86,9 @@ class Title(Scene):
                 self.mr_x_selected_algo = DefinedAlgorithms.RANDOM
 
     def reset_colors(self, button: Button):
+        """
+            Reset button colors to default.
+        """
         button.color = RED
         button.hover_color = WHITE
         button.text_color = WHITE
@@ -112,6 +117,9 @@ class Title(Scene):
         return self.reset_colors(button)
 
     def to_draw_buttons(self, display):
+        """
+            Sets up buttons for the title screen.
+        """
         btn_color, btn_hover_color, text_color, hover_text_color, border_color, border_color_hovered = GREEN, WHITE, WHITE, BLACK, WHITE, BLACK
         btn_cop_ppo = Button("PPO", DefinedAlgorithms.PPO, self.cop_button_pos_x, 200, self.button_width,
                              self.button_height, display, btn_color, btn_hover_color, text_color, hover_text_color,

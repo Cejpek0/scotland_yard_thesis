@@ -1,3 +1,9 @@
+"""
+File description: Base class for all players in the game.
+
+Author: Michal Cejpek (xcejpe05@stud.fit.vutbr.cz)
+"""
+
 import math
 
 from src.colors import *
@@ -14,6 +20,9 @@ class Player:
             print(f"WARN: Player {self.number} has no name")
 
     def __hash__(self):
+        """
+            Hash function for the player, so it can be used in sets
+        """
         return hash(str(self))
 
     def __str__(self):
@@ -28,6 +37,10 @@ class Player:
         return self
 
     def get_distance_to(self, position: (int, int)) -> float:
+        """
+        Get the distance to the given position
+        :param position: (int, int): (x,y) position to calculate the distance to
+        """
         return math.sqrt((self.position[0] - position[0]) ** 2 + (self.position[1] - position[1]) ** 2)
 
     def is_mr_x(self):

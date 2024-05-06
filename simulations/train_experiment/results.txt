@@ -1,30 +1,30 @@
 Výsledky simulace:
         Počet výher PPO policistů proti náhodnému Panu X: 1368/2050
         Počet výher náhodného Pana X proti PPO policistům: 682/2050
-        Počet výher PPO Panu X proti náhodným policistům: 1834/2050
+        Počet výher PPO Pana X proti náhodným policistům: 1834/2050
         Počet výher náhodných policistů proti PPO Panu X: 216/2050
         Počet výher PPO proti náhodnému agentovi: 3202/4100
         Počet výher náhodných agentů proti PPO agentům (do 100 iterace): 241/898
-Z toho počet výher Pana X: 181/241
-Z toho počet výher policistů: 60/241
+        Z toho počet výher Pana X: 181/241
+        Z toho počet výher policistů: 60/241
         
         Počet výher PPO policistů proti PPO Panu X: 782/4100
-        Počet výher PPO Panu X proti PPO policistům: 1268/4100
+        Počet výher PPO Pana X proti PPO policistům: 1268/4100
         
         Počet výher PPO policistů proti DQN Panu X: 1341/2050
-        Počet výher DQN Panu X proti PPO policistům: 709/2050
-        Počet výher PPO Panu X proti DQN policistům: 1840/4100
+        Počet výher DQN Pana X proti PPO policistům: 709/2050
+        Počet výher PPO Pana X proti DQN policistům: 1840/4100
         Počet výher DQN policistů proti PPO Panu X: 210/4100
         Počet výher PPO proti DQN agentovi: 3181/4100
         
         Počet výher DQN policistů proti náhodnému Panu X: 353/2050 
         Počet výher náhodného Pana X proti DQN policistům: 1697/2050
-        Počet výher DQN Panu X proti náhodným policistům: 1680/2050
+        Počet výher DQN Pana X proti náhodným policistům: 1680/2050
         Počet výher náhodných policistů proti DQN Panu X: 370/2050
         Počet výher DQN proti náhodnému agentovi: 2033/4100
         
         Počet výher DQN policistů proti DQN Panu X: 389/4100
-        Počet výher DQN Panu X proti DQN policistům: 1661/4100
+        Počet výher DQN Pana X proti DQN policistům: 1661/4100
         
         Počet výher náhodných policistů proti náhodnému Panu X: 413/2050
         

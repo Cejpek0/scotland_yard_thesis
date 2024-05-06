@@ -10,6 +10,7 @@ import sys
 from enum import Enum
 
 import numpy as np
+import ray
 from gymnasium import spaces
 from jinja2.nodes import Name
 from ray.rllib.algorithms import PPO
@@ -22,7 +23,6 @@ from src.colors import *
 from src.helper import verbose_print
 
 # Constants
-
 GRID_SIZE = 15
 MAX_DISTANCE = round(math.sqrt(GRID_SIZE ** 2 + GRID_SIZE ** 2), 2)
 NUMBER_OF_STARTING_POSITIONS_COPS = 10
@@ -30,7 +30,7 @@ NUMBER_OF_STARTING_POSITIONS_MR_X = 5
 MAX_NUMBER_OF_TURNS = 24
 REVEAL_POSITION_ROUNDS = [3, 8, 13, 18, 24]
 
-# defineition of mrx observation space
+# definition of mrx observation space
 mrx_observation_space = spaces.Box(low=np.array([
     0,  # current turn
     0,  # max turns
@@ -126,7 +126,6 @@ COP_POLICY_SPEC = PolicySpec(
 
 
 # Enumerations #
-
 # Possible moves
 class Direction(Enum):
     STOP = 0
@@ -138,7 +137,6 @@ class Direction(Enum):
     DOWN_LEFT = 6
     LEFT = 7
     UP_LEFT = 8
-
 
 class GameStatus(Enum):
     COPS_WON = 1
@@ -209,7 +207,7 @@ class ScotlandYardGameLogic:
                 self.choose_start_position(player, chosen_start_position)
                 _start_positions_cops_temp.remove(chosen_start_position)
 
-        # set current locations for innactivity check
+        # set current locations for inactivity check
         self.agents_previous_locations = dict(mr_x=self.get_mr_x().position,
                                               cop_1=self.get_player_by_number(1).position,
                                               cop_2=self.get_player_by_number(2).position,
@@ -221,8 +219,10 @@ class ScotlandYardGameLogic:
                   train_simulation=False):
         """
         Play one turn of the game
-        :param action: Action to be played. Is generated from trainers. If none, action will be generated based on selected algorithm
-        :param cop_algo: Algorithm for cops
+        :param action: Action to be played.
+        Is generated from trainers.
+        If none, action will be generated based on selected algorithm
+        :param cop_algo:  for cop
         :param mr_x_algo: Algorithm for mr x
         :param verbose: Print verbose output
         :param train_simulation: Train simulation is on
@@ -261,7 +261,8 @@ class ScotlandYardGameLogic:
             self.get_mr_x().mr_x_reveal_position()
         self.playing_player_index = (self.playing_player_index + 1) % len(self.players)
 
-        #verbose_print(self.get_simulation_rewards_fake(), self.verbose)
+        # uncomment to print rewards
+        # verbose_print(self.get_simulation_rewards_fake(), self.verbose)
         return self
 
     def get_random_action(self):
@@ -414,19 +415,19 @@ class ScotlandYardGameLogic:
         return observations
 
     def move_player(self, player: Player, direction: Direction):
-        """ 
+        """
         Move player to new position
         :param player: Player to move
         :param direction: Direction in which to move
         :return: self
         """
-        verbose_print(f"Player {player.position} moves {direction}", self.verbose)
         if self.is_valid_move(player, direction):
             player.position = self.get_position_after_move(player, direction)
         else:
             verbose_print(f"{player.name} tried to move {direction} from {player.position}", self.verbose)
             verbose_print(f"This move would result in {self.get_position_after_move(player, direction)}", self.verbose)
             sys.stderr.write(f"Move {direction} is not valid\n")
+            ray.shutdown()
             exit(1)
         return self
 
@@ -564,7 +565,7 @@ class ScotlandYardGameLogic:
                     continue
                 if cop.position == position:
                     return False
-        #Mr X can only move to empty position
+        # Mr X can only move to empty position
         else:
             for cop in self.get_cops():
                 if cop.position == position:

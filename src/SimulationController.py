@@ -22,6 +22,16 @@ from src.helper import verbose_print
 class SimulationController:
     def __init__(self, save_dir, verbose=False, experiment_training_iteration_count=1000,
                  test_games_every_n_trainings=10, test_games_count_per_pause=50, simulation_experiment=False):
+        """
+        Description: This function initializes the SimulationController.
+        :param save_dir: str - directory to save the results to
+        :param verbose: bool - flag if simulation should print during the run
+        :param experiment_training_iteration_count: int - number of training iterations
+        :param test_games_every_n_trainings: int - start game simulations every n trainings
+        :param test_games_count_per_pause: int - number of test games to be played per simulation step
+        :param simulation_experiment: bool - flag if the simulation experiment should be run. If so, all other parameters are ignored.
+        """
+        
         ray.init(num_gpus=0, num_cpus=8)
         self.verbose = verbose
         self.simulation_experiment = simulation_experiment
@@ -35,6 +45,8 @@ class SimulationController:
                                        "cop_ppo_mrx_ppo", "cop_random_mrx_ppo", "cop_ppo_mrx_random",
                                        "cop_dqn_mrx_random", "cop_random_mrx_dqn", "cop_random_mrx_random"]
         self.simulation_experiment_dir = self.save_dir + "/simulation_experiment/"
+        
+        # check if directories exist, if not create them
         if not os.path.exists(self.simulation_experiment_dir):
             os.makedirs(self.simulation_experiment_dir)
         for directory in self.experiment_directories:
@@ -49,9 +61,11 @@ class SimulationController:
         self.test_games_every_n_trainings_mapping = {10: 1, 50: 10, 500: 25, 1000: 50}
         self.number_of_test_games_per_pause = test_games_count_per_pause
         if not simulation_experiment:
+            # load the trainers for training simulation
             self.ppo_trainer = TrainerPPO(simulation=True)
             self.dqn_trainer = TrainerDQN(self.train_experiment_training_count, simulation=True)
         else:
+            # load the trainers for simulation experiment
             self.ppo_trainer = TrainerPPO(playing=True)
             self.dqn_trainer = TrainerDQN(self.train_experiment_training_count, playing=True)
             self.dqn_trainer.algo.reset_config(self.dqn_trainer.play_config)
@@ -154,55 +168,55 @@ class SimulationController:
                               self.dqn_trainer.algo, DefinedAlgorithms.DQN,
                               self.ppo_trainer.algo, DefinedAlgorithms.PPO,
                               use_game_id=False, save_dir=save_dir + "cop_dqn_mrx_ppo")
-        print(f"Simulations took {datetime.now() - now}")
+        verbose_print(f"Simulations took {datetime.now() - now}", verbose=self.verbose)
         now = datetime.now()
         self.batch_simulation(self.number_of_test_games_per_pause,
                               self.ppo_trainer.algo, DefinedAlgorithms.PPO,
                               self.dqn_trainer.algo, DefinedAlgorithms.DQN,
                               use_game_id=False, save_dir=save_dir + "cop_ppo_mrx_dqn")
-        print(f"Simulations took {datetime.now() - now}")
+        verbose_print(f"Simulations took {datetime.now() - now}", verbose=self.verbose)
         now = datetime.now()
         self.batch_simulation(self.number_of_test_games_per_pause,
                               self.dqn_trainer.algo, DefinedAlgorithms.DQN,
                               self.dqn_trainer.algo, DefinedAlgorithms.DQN,
                               use_game_id=False, save_dir=save_dir + "cop_dqn_mrx_dqn")
-        print(f"Simulations took {datetime.now() - now}")
+        verbose_print(f"Simulations took {datetime.now() - now}", verbose=self.verbose)
         now = datetime.now()
         self.batch_simulation(self.number_of_test_games_per_pause,
                               self.ppo_trainer.algo, DefinedAlgorithms.PPO,
                               self.ppo_trainer.algo, DefinedAlgorithms.PPO,
                               use_game_id=False, save_dir=save_dir + "cop_ppo_mrx_ppo")
-        print(f"Simulations took {datetime.now() - now}")
+        verbose_print(f"Simulations took {datetime.now() - now}", verbose=self.verbose)
         now = datetime.now()
         self.batch_simulation(self.number_of_test_games_per_pause,
                               None, DefinedAlgorithms.RANDOM,
                               self.ppo_trainer.algo, DefinedAlgorithms.PPO,
                               use_game_id=False, save_dir=save_dir + "cop_random_mrx_ppo")
-        print(f"Simulations took {datetime.now() - now}")
+        verbose_print(f"Simulations took {datetime.now() - now}", verbose=self.verbose)
         now = datetime.now()
         self.batch_simulation(self.number_of_test_games_per_pause,
                               self.ppo_trainer.algo, DefinedAlgorithms.PPO,
                               None, DefinedAlgorithms.RANDOM,
                               use_game_id=False, save_dir=save_dir + "cop_ppo_mrx_random")
-        print(f"Simulations took {datetime.now() - now}")
+        verbose_print(f"Simulations took {datetime.now() - now}", verbose=self.verbose)
         now = datetime.now()
         self.batch_simulation(self.number_of_test_games_per_pause,
                               self.dqn_trainer.algo, DefinedAlgorithms.DQN,
                               None, DefinedAlgorithms.RANDOM,
                               use_game_id=False, save_dir=save_dir + "cop_dqn_mrx_random")
-        print(f"Simulations took {datetime.now() - now}")
+        verbose_print(f"Simulations took {datetime.now() - now}", verbose=self.verbose)
         now = datetime.now()
         self.batch_simulation(self.number_of_test_games_per_pause,
                               None, DefinedAlgorithms.RANDOM,
                               self.dqn_trainer.algo, DefinedAlgorithms.DQN,
                               use_game_id=False, save_dir=save_dir + "cop_random_mrx_dqn")
-        print(f"Simulations took {datetime.now() - now}")
+        verbose_print(f"Simulations took {datetime.now() - now}", verbose=self.verbose)
         now = datetime.now()
         self.batch_simulation(self.number_of_test_games_per_pause,
                               None, DefinedAlgorithms.RANDOM,
                               None, DefinedAlgorithms.RANDOM,
                               use_game_id=False, save_dir=save_dir + "cop_random_mrx_random")
-        print(f"Simulations took {datetime.now() - now}")
+        verbose_print(f"Simulations took {datetime.now() - now}", verbose=self.verbose)
 
     def run_train_experiment(self):
         """

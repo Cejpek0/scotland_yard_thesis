@@ -1,7 +1,5 @@
-import os
-
 from ray import train, tune
-from ray.rllib.algorithms.dqn.dqn import DQNConfig, DQN
+from ray.rllib.algorithms.dqn.dqn import DQN
 from ray.rllib.models import ModelCatalog
 from ray.tune.stopper import MaximumIterationStopper
 from ray.util.client import ray
@@ -64,7 +62,7 @@ if __name__ == "__main__":
             "type": "MultiAgentPrioritizedReplayBuffer",
             "capacity": tune.grid_search([10000, 50000, 100000]),
             "prioritized_replay_alpha": tune.uniform(0.3, 0.7),
-            # Consider tuning prioritized_replay_beta 
+            # Consider tuning prioritized_replay_beta
             "prioritized_replay_eps": 1e-6
         },
 
@@ -93,8 +91,6 @@ if __name__ == "__main__":
 
     checkpoint_path = get_latest_checkpoint()
     print(checkpoint_path)
-
-#64,64,32,5000
 
     tuner = tune.Tuner(DQN,
                        tune_config=tune.TuneConfig(
