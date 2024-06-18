@@ -1,0 +1,11 @@
+Změna hlavních nadpisů
+    Shrnutí dosavadního stavu -> teoretický základ
+Odstranění zbytečností
+    Bayesovksé hry (nerelevantní)
+    Stratego (nerelevantní)
+    Dota 2 popsána o hodně stručněji (stále relevantní kvůli PPO)
+    Experimentální hra na schovku (Velmi relevantní, stejný princip a využití PPO)
+    Bellman (nerelevantní)
+    Markovské procesy (odstranil jsem formální definici přes čtveřici a popsal jen slovně)
+Překlady
+    Markovské procesy -> Markovovy procesy
