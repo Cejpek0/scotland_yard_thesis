@@ -9,7 +9,7 @@ V~dnešní době, je obor umělé inteligence (AI), postupem let všudypřítomn
 
 Pokrok umělé inteligence je dobře měřitelný jejím aplikováním v~oblasti her.
 A~to proto, že právě hry nabízí jasně definovaná pravidla a cíle, čímž se stávají ideálním testovacím prostorem pro algoritmy umělé inteligence.
-Výkon AI je ve hrách snadno měřitelný a pokrok dokáže vidět i lajk bez žádných složitých grafů, tabulek a výpočtů.
+Výkon AI je ve hrách snadno měřitelný a pokrok dokáže vidět i laik bez žádných složitých grafů, tabulek a výpočtů.
 Umělá inteligence již dokázala porazit nejlepší hráče v~\textit{šachu}~\cite{DeepBlue}, \textit{Dota 2}~\cite{Dota2}, \textit{Go}~\cite{AlphaGo} a spoustě dalších her.
 
 Hra studovaná v~této práci se jmenuje \emph{Scotland Yard}.
@@ -24,7 +24,7 @@ Tato práce zkoumá algoritmy posilovaného učení, jejich použití na hry s~n
 Algoritmus optimalizace proximální strategie (Proximal Policy Optimization--PPO) je hlavním zkoumaným algoritmem této práce.
 PPO je často používán k~řešení problémů se spojitými veličinami a ve 3D prostoru.
 Pro srovnání s~jinými algoritmy slouží algoritmus Deep--Q--Learning (DQN).
-Výslední agenti byli také testování proti hráči, který náhodně vybírá své akce.
+Výslední agenti\footnote[1]{V kontextu se hrou Scotland Yard je důležité nezaměňovat agenta, za policistu. Význam pojmu \emph{agent} je popsáno v kapitole \nameref{subsec:agent}} byli také testování proti hráči, který náhodně vybírá své akce.
 
 Algoritmus PPO byl vybrán z~důvodu jeho úspěšnosti při použití ve složitých hrách s~neurčitostí.
 Tyto tvrzení podporuje experiment OpenAI~\cite{PPO_Hide_Seek_page}, podrobně popsán zde~\cite{PPO_Hide_Seek_paper}.
@@ -179,11 +179,14 @@ Posilované učení (Reinforcement Learning, RL) je oblast strojového učení, 
 Agent se učí strategii chování, která maximalizuje kumulativní odměnu.
 
 \subsection{Agent}\label{subsec:agent}
-
 Je komplexní entita, která interaguje s~prostředím.
 Prostředí poskytuje agentovi informace o~stavu a agent na základě těchto pozorování vykonává akce.
 Tyto akce mohou ovlivnit stav prostředí a agent obdrží odměnu na základě odměnové funkce.
 Agent většinou volí takové akce, aby maximalizoval kumulativní odměnu.
+
+Pro textový obsah této práce je velmi důležité definovat pojem \emph{agent}.
+Slovo je podobné slovu \emph{policista} a v kontextu hry Scotland Yard je tedy možné tyto významy zaměnit.\\
+\emph{Slovo agent, v této práci výhradně značí entitu, která je zde byla popsána a nikde nevystupuje jako synonymum k policistům.}
 
 \subsection{Pozorovací a akční prostor}
 \label{subsec:prostory}
@@ -213,16 +216,15 @@ Lze také tyto akce povolit, ale následně agentovi udělit sníženou odměnu 
 
 \subsection{Diskrétní a spojitý prostor}\label{subsec:diskretni-a-spojity-prostor}
 
-Pokud se bavíme o~\textbf{diskrétním prostoru} v~oboru umělé inteligence, bavíme se o~konečném prostoru. 
-Skládá se tedy z~konečného počtu prvků.
+Je--li prostor o~\textbf{diskrétní}, je konečný nebo spočítatelně nekonečný. 
 Příkladem takového prostoru je například pozorovací prostor, jehož vstupem je fotka.
-Ta se dělí na přesně daný počet pixelů a je tedy diskrétní.
+Ta se dělí na přesně daný počet pixelů, kde každý má dané hodnoty RGB.
 Diskrétní akční prostory jsou počítatelné a často se jedná o~konečnou množinu možných akcí.
+Například akce pohybu \textit{vlevo}, \textit{vpravo}, \textit{nahoru}, \textit{dolů}.
 
-Zato \textbf{spojitý prostor} je nekonečný prostor, který může obsahovat nekonečný počet prvků. 
-Spojitý pozorovací prostor je například ten, jehož vstupem je audio stopa.
-Spojité akční prostory jsou nekonečné a často je definuje nekonečná množina akcí.
-Na prostředí se spojitými prostory se často používají jiné algoritmy, například algoritmus DDPG (Hluboký deterministický gradient strategie).
+Zato \textbf{spojitý prostor} je nekonečný a nespočítatelný. 
+Spojitý pozorovací prostor je například pozice robota ve 3D prostoru, nebo jeho rychlost.
+Spojitý akční prostor může například ovládat sílu stlačení pedálu, nebo úhel natočení kola.
 
 \subsection{Prostředí}\label{subsec:prostredi2}
 
@@ -459,7 +461,7 @@ Ten je řešen dvěma mechanizmy:
 
 \end{itemize}
 
-Při vytváření neuronové sítě jsou váhy inicializovány náhodně.
+Při vytvoření neuronové sítě jsou váhy inicializovány náhodně.
 
 \section{Gradient strategie}\label{subsec:gradient-strategie}
 Oproti předchozím zmiňovaným algoritmům, které usilují o~naučení hodnotové funkce či prohledávají stavový prostor, algoritmy gradientu strategie se snaží naučit strategii přímo.
@@ -659,17 +661,17 @@ Poté začíná hra.
 
 Hra se dělí na jednotlivá kola, ve kterých se hráči ve svých tazích střídají.
 Pro hru byli zvoleni 3 policisté, z~toho důvodu, že je herní pole velké a 2 policisté by nemuseli mít možnost ho celé pokrýt.
-V~kole hraje jako první Pan~X a poté policisté, již podle jejich očíslování, které jim bylo náhodně přiděleno při vytváření.
+V~kole hraje jako první Pan~X a poté policisté, již podle jejich očíslování, které jim bylo náhodně přiděleno při vytvoření.
 Hra končí v~okamžiku, kdy policisté chytí Pana~X nebo když Pan~X zůstane nepolapen až do konce.
 
 Z~původní verze hry byly odstraněny některé elementy jako jsou jízdenky a různé druhy dopravních prostředků.
-Tato úprava vede k~tomu, že se zjednodušila strategie agentů, jelikož se nemusí starat o~svoje jízdenky a mohou se pohybovat po herní ploše libovolně.
+Tato úprava vede k~tomu, že se zjednodušil stavový i akční prostor, jelikož se nemusí starat o~svoje jízdenky a mohou se pohybovat po herní ploše libovolně.
 Změny, avšak nemění základní podstatu hry, zachovává neurčitost, ale značně zjednodušuje implementaci.
-Stavový prostor je tedy zjednodušený a tím se i snižují nároky na výkon.
+Díky tomuto zjednodušení klade trénování nižší nároky na výkon.
 
 \section{Implementace uživatelského rozhraní a herních mechanizmů}\label{subsec:implementace-uzivatelskeho-rozrani-a-hernich-mechanizmu}
 
-Uživatelské rozhraní bylo vytvářeno pomocí knihovny \texttt{Pygame}.
+Uživatelské rozhraní bylo vytvořeno pomocí knihovny \texttt{Pygame}.
 Hra začíná v~menu, kde je momentálně možné vybrat pouze možnost sledování hry mezi dvěma agenty.
 Je zde ale možnost vybrat jaký algoritmus rozhodování je použit pro jednotlivé agenty.
 K~dispozici jsou algoritmy \emph{PPO}, \emph{DQN} a náhodné chování.
@@ -750,29 +752,26 @@ Všichni policisté se z~pozic, zobrazených na obrázku~\ref{fig:game_0}, přes
 \section{Prostředí a učení agentů}
 \label{sec:implementace}
 
-\subsection{Použité technologie pro učení}\label{subsec:pouzite-technologie}
-K~učení strategie pro hru Scotland Yard byl využit open-source framework \texttt{Ray}~\cite{Ray}.
+\subsection{Použitá knihova pro učení}\label{subsec:pouzite-technologie}
+K~učení modelů pro hru Scotland Yard byl využit open-source framework \texttt{Ray}~\cite{Ray}.
 Konkrétně byla využita knihovna \texttt{Ray.Rllib}.
 Tato knihovna poskytuje nástroje pro posilované učení a samotné implementace jednotlivých algoritmů, včetně zkoumaného algoritmu \emph{PPO}.
 Rllib dokáže využívat obě populární knihovny pro strojové učení \texttt{Tensorflow} a \texttt{Pytorch}.
 Pro tuto práci byla vybrána knihovna \texttt{Pytorch}.
 
-Před finálním rozhodnutím pro využití frameworku \texttt{Ray} byly zkoumány i další možnosti.
-Knihovna Stable Baselines 3, která byla zavrhnuta, jelikož neumožňuje učení více strategií souběžně při hraním agentů proti sobě.
-
 Knihovna \texttt{Ray} byla zvolena pro podporu učení více modelů naráz, je vhodná pro velké projekty a umožňuje možnosti konfigurace jako žádný jiný framework.
-Také obsahuje spoustu implementací algoritmů pro posilované učení.
-Má výsledná implementace je modulární a díky tomu lze jednoduše zaměnit využívaný algoritmus za jiný z knihovny \texttt{Ray.Rllib}.
+Obsahuje spoustu implementací algoritmů pro posilované učení a jelikož je má výsledná implementace modulární, lze jednoduše zaměnit využívaný algoritmus za jiný.
 
 Prvotní konfigurace a vytvoření prostředí je ale složité, jelikož dokumentace pro konfiguraci jednotlivých algoritmů není příliš komplexní.
 
 \subsection{Pozorovací a akční prostor agentů}
 V~této práci vzájemně v~prostředí vystupují dva agenti s~různými strategiemi a různými pozorovacími prostory.
 Akční prostor je stejný jak pro policisty, tak pro Pana~X\@.
+Oba prostory jsou diskrétní
 
 \bigskip
 \textbf{Pozorovací prostor} agentů je velmi důležitý pro úspěšné naučení dobré strategie.
-Struktury jednotlivých pozorovacích prostorů jsou následující:
+Struktura jednotlivých pozorovacích prostorů je následující:
 
 \begin{itemize}
   \item Shodné položky
@@ -798,9 +797,21 @@ Struktury jednotlivých pozorovacích prostorů jsou následující:
   \end{itemize}
 \end{itemize}
 
-Velikost pozorovacího prostoru tedy není příliš velká a je snadněji zpracovatelná, než kdyby obsahoval všechny herní políčka.
-Celkově má tedy pozorovací prostor Pana~X 17 rozměrů a pozorovací prostor policistů 18 rozměrů.
-Tento prostor je diskrétní s~typovou hodnotou \emph{numpy.float32}, jelikož se v~něm vyskytují hodnoty vzdálenosti a ty nejsou celočíselné.
+Agenti tedy nevidí všechny pole, ale jen ty které jsou důležité.
+Důležitý je observační prostor policistů.
+Ti vidí pouze poslední známou pozici Pana~X a oblast zájmu.
+Oblast zájmu je oblast ve které se může Pan~X nacházet.
+Je to obdoba reálného hledání, kde také známe rychlost sledovaného objektu a jeho poslední známou pozici.
+
+Přidání této oblasti bylo esenciální, protože bez ní by policisté dostávali jen velké a velmi řídké odměny pouze pokud by chytili Pana~X\@.
+Takto je zajištěno, že dostávají i menší, dílčí odměny za to, že se pohybují v oblasti kde se Pan X nachází\@.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\textwidth]{obrazky-figures/interest_area}
+      \caption{Zvýrazněná oblast zájmu policistů (růžové pole).}
+    \label{fig:game_11}
+\end{figure}
 
 Pokud informace obsažená v~těchto pozorovacích prostorech není v~daný moment definována, je nahrazena hodnotou -1.
 Konkrétně se jedná pouze o~hodnoty týkající se poslední veřejně známé pozice Pana~X, jelikož v~prvních několika kolech není známa.
@@ -809,25 +820,46 @@ Konkrétně se jedná pouze o~hodnoty týkající se poslední veřejně známé
 
 \textbf{Akční prostor} agentů reprezentuje možné akce, které mohou agenti provést.
 Tyto akce jsou stejné jak pro policisty, tak pro Pana~X\@.
-Jedná se ortogonální i diagonální pohyb.
-Agent také může zůstat na místě a neprovést žádnou akci.
-Celková velikost akčního prostoru je tedy 9.
-Jedná se o~diskrétní prostor, jehož výstupem je hodnota 1 má--li být akce zvolena.
+Agenti se mohou hýbat ortogonálně i diagonálně.
+Ale také můžou zůstat na místě.
+Celkově tedy agent může zvolit z 9 akcí.
 
 \subsection{Trénování agentů pomocí algoritmu DQN a PPO}
 
 Agenti se již od začátku učí zásadně pouze hraním proti sobě.
 Důvodem pro toto rozhodnutí bylo, že se jedná o~zajímavější experiment, kdy jsou agenti vpuštěni do zcela neznámého prostředí a nemají se od koho učit strategii.
 Jejich učení tedy není nijak podporováno a musí se naučit strategii sami.
-Tím je i pozorováno, jestli jsou agenti vůbec schopni rozpoznat cíl hry, co je po nich požadováno a případně jak rychle k~dosáhnou dobré strategie.
+Tím je i pozorováno, jestli jsou agenti vůbec schopni rozpoznat cíl hry, co je po nich požadováno a případně jak rychle dosáhnou dobré strategie.
+
+Trénování modelů je ve dvou skriptech:
+\begin{itemize}
+  \item TrainerDQN.py
+  \item Spuštení: \texttt{python TrainerDQN.py {\color{red}DOPSAT FLAGY}}
+  \begin{itemize}
+    \item --do-backup: během ukládání vytvoří záložní kopii modelu
+    \item --backup-folder [string]: složka pro záložní kopie; default: none
+    \item --load-folder [string]: načte model z~dané složky; default: trained\_model\_dqn
+    \item --save-folder [string]: uloží model do dané složky; default: trained\_model\_dqn
+    \item --num-iterations [int]: počet iterací trénování; default: 50
+    \item --save-interval [int]: interval ukládání modelu
+    \item --verbose
+  \end{itemize}
+  \item TrainerPPO.py
+\end{itemize}
+
+Tyto spustitelné skripty obsahují konfigurace pro trénování modelů.
+Při spuštění skriptu se načte aktuální model, pokud existuje a pokračuje v~trénování tohoto modelu.
+Pokud model neexistuje, je vytvořen nový model a začíná se s~trénováním od začátku.
+Model je uložen každých 5 iterací trénování.
+Při dlouhém trénování doporučuji spustit script s parametrem \texttt{--do-backup}, který zároveň vytvoří záložní kopii modelu.
+Během několikadenního trénování může dojít k výpadku proudu, či jiné chybě a model může být poškozen.
 
 \subsubsection*{Neuronové sítě ve výsledných modelech}
 V modelech PPO i DQN hraje hlavní roli neuronová síť.
-Vstupem do těchto neuronových sítí jsou pozorování agenta, v tomto případě viditelné pozorování z prostředí, popsané v předchozí části.
-Tyto vstupy jsou následně zpracovány skrytými vrstvami v jednotlivých modelech.
+Vstupem do těchto neuronových sítí je aktuální stav, v tomto případě viditelné pozorování z prostředí, popsané v předchozí části.
+Tyto vstupy jsou následně zpracovány skrytými vrstvami v jednotlivých neuronových sítích.
 Struktura vnitřních vrstev a výstup neuronové sítě jsou rozdílné pro oba algoritmy.
 \bigskip
-
 
   \textbf{Neuronová síť v PPO}
     \begin{itemize}
@@ -837,15 +869,14 @@ Struktura vnitřních vrstev a výstup neuronové sítě jsou rozdílné pro oba
         \end{itemize}
       \item Struktura
         \begin{itemize}
-          \item vstupní vrstva má 17 neuronů pro Pana~X a 18 pro policisty
+          \item vstupní vrstva má 17 vstupů pro Pana~X a 18 pro policisty
           \item dvě skryté vrstvy po 256 neuronech [256, 256]
-          \item 9 neuronů výstupní vrstvy
+          \item 9 výstupů (1 pro každou akci)
         \end{itemize}
       \item Výstup
         \begin{itemize}
-          \item Výstupem této neuronové sítě je pravděpodobnostní rozdělení nad možnými akcemi.\\
-          \item Tato pravděpodobnostní distribuce je následně použita pro výběr akce agentem.
-          Jedná se tedy o stochaistickou strategii, kde každá akce má šanci na zvolení, některá větší a některá menší
+          \item Výstupem této neuronové sítě je pravděpodobnostní rozdělení nad všemi akcemi.
+          \item Jedná se tedy o stochaistickou strategii, kde každá akce má šanci na zvolení, některá větší a některá menší, kde tuto šanci určuje neuronová síť.
         \end{itemize}
     \end{itemize}
 
@@ -857,7 +888,7 @@ Struktura vnitřních vrstev a výstup neuronové sítě jsou rozdílné pro oba
         \end{itemize}
       \item Struktura
         \begin{itemize}
-          \item vstupní vrstva má 17 neuronů pro Pana~X a 18 pro policisty
+          \item vstupní vrstva má 17 vstupů pro Pana~X a 18 pro policisty
           \item dvě skryté vrstvy, kde první má 128 neuronů a druhá 64 [128, 64]
           \item 9 neuronů výstupní vrstvy
         \end{itemize}

@@ -15,10 +15,10 @@ from src.helper import verbose_print
 
 
 class TrainerPPO:
-    def __init__(self, directory="trained_policies_ppo", verbose=False, simulation=False, playing=False):
+    def __init__(self, directory="trained_models_ppo", verbose=False, simulation=False, playing=False):
         """
         Initialize the TrainerPPO object.
-        :param directory: Directory to save the trained policies.
+        :param directory: Directory to save the trained models.
         :param verbose: If True, print verbose output.
         :param simulation: Set to true if trainer is initialized for simulation purposes.
         Used to set the number of cpus per worker. And avoid multiple ray.init() calls.
@@ -87,6 +87,6 @@ class TrainerPPO:
 
 
 if __name__ == "__main__":
-    (TrainerPPO(directory="trained_policies_ppo", verbose=True)
+    (TrainerPPO(directory="trained_models_ppo", verbose=True)
      .train(number_of_iterations=10, save_interval=5)
      .cleanup())

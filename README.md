@@ -80,14 +80,15 @@ Pro nainstalování gpu balíčků využijte soubor: requirements_gpu.txt.
 Aby mohl pytorch fungovat s GPU je potřeba mít nainstalovaný CUDA toolkit, apod.
 
 # Struktura adresáře a odevzdaného média
+
 - simulations/ -- Složka s výsledky simulací.
 - simulations/graphs/ -- Složka s výsledky simulací ve formě grafů.
 - simulations/simulation_experiment/ -- Složka s .csv a .txt soubory výsledků z simulačního experimentu.
 - simulations/train_experiment/ -- Složka s .csv a .txt soubory výsledků z trénovacího experimentu.
 - src/ -- Složka se zdrojovými kódy aplikace.
 - text/ -- Složka se zdrojovými kódy textu práce v jazyce \LaTeX.
-- trained_policies_dqn/ -- Složka s natrénovaným modelem DQN.
-- trained_policies_ppo/ -- Složka s natrénovaným modelem PPO
+- trained_models_dqn/ -- Složka s natrénovaným modelem DQN.
+- trained_models_ppo/ -- Složka s natrénovaným modelem PPO
 - thesis.pdf -- Soubor s textem práce.
 - arial.ttf -- Písmo pro grafické rozhraní
 - main.py -- Soubor, jejož spuštěním se spustí grafické rozhraní hry Scotland Yard.

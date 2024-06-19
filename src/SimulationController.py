@@ -251,8 +251,8 @@ class SimulationController:
 
             if current_train_iteration % 50 == 0:
                 from distutils.dir_util import copy_tree
-                copy_tree("trained_policies_dqn", "trained_policies_dqn_copy")
-                copy_tree("trained_policies_ppo", "trained_policies_ppo_copy")
+                copy_tree("trained_models_dqn", "trained_models_dqn_copy")
+                copy_tree("trained_models_ppo", "trained_models_ppo_copy")
 
         self.merge_final_train_experiment_results()
         verbose_print("Train experiment done", self.verbose)

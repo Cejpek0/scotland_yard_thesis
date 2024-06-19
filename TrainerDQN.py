@@ -15,13 +15,13 @@ from src.helper import verbose_print
 
 
 class TrainerDQN:
-    def __init__(self, max_iterations, directory="trained_policies_dqn", verbose=False, simulation=False,
+    def __init__(self, max_iterations, directory="trained_models_dqn", verbose=False, simulation=False,
                  playing=False):
         """
         Initialize the TrainerDQN object.
         :param max_iterations: Maximum number of iterations to train the agents.
         Used to calculate epsilon decay.
-        :param directory: Directory to save the trained policies.
+        :param directory: Directory to save the trained models.
         :param verbose: If True, print verbose output.
         :param simulation: Set to true if trainer is initialized for simulation purposes.
         Used to set the number of cpus per worker. And avoid multiple ray.init() calls.
@@ -136,6 +136,6 @@ class TrainerDQN:
 
 
 if __name__ == "__main__":
-    TrainerDQN(max_iterations=50, directory="trained_policies_dqn", verbose=True).train(number_of_iterations=50,
+    TrainerDQN(max_iterations=50, directory="trained_models_dqn", verbose=True).train(number_of_iterations=50,
                                                                                         save_interval=10).cleanup()
     print("Done")
