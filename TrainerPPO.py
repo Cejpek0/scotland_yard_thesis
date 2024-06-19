@@ -67,7 +67,11 @@ class TrainerPPO:
     def train(self, number_of_iterations=1, save_interval=10):
         for i in range(number_of_iterations):
             verbose_print(f"Training iteration {i + 1} of {number_of_iterations}", self.verbose)
-            verbose_print(f"Episode reward mean:{self.algo.train()['episode_reward_mean']}", self.verbose)
+            train_results = self.algo.train()
+            verbose_print(f"Information about training iteration {i + 1} of {number_of_iterations} done", self.verbose)
+            verbose_print(f"Number of episodes{train_results['episodes_this_iter']}", self.verbose)
+            verbose_print(f"Total time trained:{train_results['time_total_s']}", self.verbose)
+            verbose_print(f"Number of episodes: {train_results['episodes_this_iter']} with average reward:{train_results['episode_reward_mean']}", self.verbose)
             if not self.simulation and i % save_interval == 0 and i != 0:
                 verbose_print("Saving policies", self.verbose)
                 self.save_export()
