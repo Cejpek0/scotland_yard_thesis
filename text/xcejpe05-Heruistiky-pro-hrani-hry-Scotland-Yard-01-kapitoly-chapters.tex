@@ -148,7 +148,7 @@ Použité metody pro vytvoření těchto agentů bohužel nejsou zveřejněny.
 Inovaci umělé inteligence v~této hře opět přinesla společnost OpenAI a jejich projekt \emph{OpenAI Five}~\cite{Dota2}.
 Tento projekt se zaměřil na vytvoření modelu, který by byl schopen porazit nejlepší hráče světa ve hře Dota 2.
 OpenAi zvolila pro učení výsledného modelu algoritmus \textbf{PPO}.
-Agent OpenAI Five byl, kombinovaně s~předchozí verzí, trénován asi \emph{55 000} herních let hraním sama proti sobě.
+Agent OpenAI Five byl, kombinovaně s~předchozí verzí, trénován asi \emph{55 000} herních let hraním sama proti sobě metodou self-play.
 
 I přes velikost hry je výsledný reakční čas agenta okolo 33ms, oproti tomu reakční čas profesionálních hráčů her je okolo 120ms~\cite{reaction_time}
 OpenAi Five porazil tehdejší nejlepší tým světa během exhibice na nejprestižnějším turnaji Dota2 \textit{The International}.
@@ -407,7 +407,7 @@ MCTS se skládá z~několika fází:
 	\centering
 	\includegraphics[width=0.9\textwidth]{obrazky-figures/mcts}
 	\caption{Diagram jednotlivých fází MCTS.\@
-  Zdroj: \cite{mcts_geeksforgeeks}}\label{fig:mcts}
+  Zdroj:~\cite{mcts_geeksforgeeks}}\label{fig:mcts}
 \end{figure}
 
 Tento algoritmus se skvěle hodí na hry s~nedokonalou či neúplnou informací, jelikož se spoléhá na vzorkování pomocí simulací.
@@ -548,12 +548,12 @@ Výsledná matice tak poté může vypadat takto:
 
 %\textsuperscript {\ref{sec:trust-region-policy-optimization}}
 
-Metoda optimalizace proximální strategie (Proximal policy optimization - PPO) byla představena roku 2017 \cite{PPO_paper}.
+Metoda optimalizace proximální strategie (Proximal policy optimization - PPO) byla představena roku 2017~\cite{PPO_paper}.
 Tato metoda je vylepšeným následníkem algoritmu TRPO, popsaný v~předchozí sekci~\ref{sec:trust-region-policy-optimization}.
 
 Co výrazné odlišuje tuto metodu od předchůdců, je její jednoduchost a efektivita.
 Dosahuje lepších výsledků než metoda TRPO a srovnatelných výsledků s~metodou ACER\@.
-Je, avšak mnohem jednodušší na implementaci, má nižší nároky na výkon a je mnohem lepší co se týče efektivity dat pro trénování \cite{PPO_paper}.
+Je, avšak mnohem jednodušší na implementaci, má nižší nároky na výkon a je mnohem lepší co se týče efektivity dat pro trénování~\cite{PPO_paper}.
 K~dosažení těchto výsledků, využívá PPO techniku ořezávání náhradních cílů vloženou do algoritmu TRPO\@.
 Vynucuje, aby K-L divergence staré a nové strategie byla v~rozmezí $[1-\epsilon, 1+\epsilon]$ kde $\epsilon$ je modifikovatelný parametr.
 
@@ -563,14 +563,14 @@ Nechť $r_t(\theta)$ je pravděpodobnostní poměr mezi novou a starou strategi�
 \end{equation}
 
 Pokud tento vzorec dosadíme do rovnice pro výpočet gradientu strategie TRPO.
-Kde TRPO využívá K-L divergenci a maximalizuje vedlejší cíle \cite{policy_gradients}, vznikne následovná rovnice:
+Kde TRPO využívá K-L divergenci a maximalizuje vedlejší cíle~\cite{policy_gradients}, vznikne následovná rovnice:
 
 
 
 \begin{myitemize}
   \item $\theta$ je parametr strategie.
   \item $\mathbb{E}_t$ značí empirickou očekávání v~časových krocích
-  \item $r_t$ relativní podobnost nové a staré strategie \cite{PPO_paper}
+  \item $r_t$ relativní podobnost nové a staré strategie~\cite{PPO_paper}
   \item $\hat{A}_t$ je odhad výhody akce v~čase $t$.
   \item $\epsilon$ je hyperparametr, obvykle nastaven na hodnotu $0.1$ nebo $0.2$.
 \end{myitemize}
@@ -581,7 +581,7 @@ Kde TRPO využívá K-L divergenci a maximalizuje vedlejší cíle \cite{policy_
 	\caption{Grafy zobrazují 1 časový krok funkce $L^{CLIP}$.
   Červeným bodem je označen počáteční stav optimalizace.
   Levý graf zobrazuje kladnou změnu a pravý zápornou změnu.
-  Zdroj: \cite{RL_basics}}\label{fig:clip}
+  Zdroj:~\cite{RL_basics}}\label{fig:clip}
 \end{figure}
 
 Tyto změny tvoří PPO oproti TRPO kompatibilní s~metodou stochastického gradientního sestupu.
@@ -746,8 +746,13 @@ Všichni policisté se z~pozic, zobrazených na obrázku~\ref{fig:game_0}, přes
 \section{Prostředí a učení agentů}
 \label{sec:implementace}
 
+V této kapitole je popsáno prostředí ve kterém agenti vystupují.
+Jaké informace z tohoto prostředí pozorují a jaké akce mohou provádět.
+Dále je popsáno jakým způsobem byli agenti trénováni, jakou formou probíhá a co je výsledkem tohoto trénování.
+
+
 \subsection{Použitá knihova pro učení}\label{subsec:pouzite-technologie}
-K~učení modelů pro hru Scotland Yard byl využit open-source framework \texttt{Ray}~\cite{Ray}.
+K~učení modelů pro hru Scotland Yard byl využit open-source framework \texttt{Ray}~\cite{Ray,liang2018rllib}.
 Konkrétně byla využita knihovna \texttt{Ray.Rllib}.
 Tato knihovna poskytuje nástroje pro posilované učení a samotné implementace jednotlivých algoritmů, včetně zkoumaného algoritmu \emph{PPO}.
 Rllib dokáže využívat obě populární knihovny pro strojové učení \texttt{Tensorflow} a \texttt{Pytorch}.
@@ -756,7 +761,8 @@ Pro tuto práci byla vybrána knihovna \texttt{Pytorch}.
 Knihovna \texttt{Ray} byla zvolena pro podporu učení více modelů naráz, je vhodná pro velké projekty a umožňuje možnosti konfigurace jako žádný jiný framework.
 Obsahuje spoustu implementací algoritmů pro posilované učení a jelikož je má výsledná implementace modulární, lze jednoduše zaměnit využívaný algoritmus za jiný.
 
-Prvotní konfigurace a vytvoření prostředí je ale složité, jelikož dokumentace pro konfiguraci jednotlivých algoritmů není příliš komplexní.
+Cenou za tuto flexibilitu, modularitu a abstrakci je ale složitost konfigurace, složitost vytvoření správného prostředí a mnohem větší časová náročnost celého systému.
+Bez silné grafické karty je trénování velmi pomalé.
 
 \subsection{Pozorovací a akční prostor agentů}
 V~této práci v~prostředí vystupují dva agenti s~různými strategiemi a různými pozorovacími prostory.
@@ -805,10 +811,20 @@ Ale také můžou zůstat na místě.
 Celkově tedy agent může zvolit z 9 akcí.
 
 \subsection{Trénování agentů pomocí algoritmu DQN a PPO}
+Trénování je proces, při kterém agenti zlepšují své schopnosti a strategie na základě zpětné vazby z prostředí.
+V případě této práce agenti během učení modifikují váhy neuronů ve skrytých vrstvách neuronové sítě ve svém modelu, aby dosáhli požadovaného chování.
+
+Během trénování je modifikován jak model pro policisty, tak model pro Pana~X\@.
+Jedná se tedy o posilované učení s více agenty \textbf{(Marl)}
+V tomto podoboru posilovaného učení koexistuje vícero agentů ve stejném prostředí.
+Mohou mít stejné cíle, či rozdílné.
+V případě této práce tedy 3 agenti reprezentující policisty se stejným cílem.
+A jeden agent reprezentující Pana~X který má narozdíl od zbylých agentů opačný cíl.
+I proto jsem zvolil framework Ray, který jako jeden z mála tyto možnosti podporuje.
 
 \subsubsection{Neuronové sítě ve výsledných modelech}
 V modelech PPO i DQN hraje hlavní roli neuronová síť.
-Vstupem do těchto neuronových sítí je aktuální stav, v případě mé práce jsou to viditelné pozorování z prostředí, popsané v předchozí části.
+Vstupem do těchto neuronových sítí je aktuální stav, v případě mé práce jsou to viditelné pozorování agentů v prostředí, popsané v předchozí části.
 Tyto vstupy jsou následně zpracovány skrytými vrstvami v neuronových sítích.
 Struktura vnitřních vrstev a výstup neuronové sítě modelů jsou v rozdílné.
 \bigskip
@@ -857,8 +873,7 @@ Struktura vnitřních vrstev a výstup neuronové sítě modelů jsou v rozdíln
 
   \bigskip
 
-Agenti během učení modifikují váhy neuronů ve skrytých vrstvách svého modelu, aby dosáhli požadovaného chování.
-Ve výsledné aplikaci agenti obdrží pozorování od prostředí, které předají na vstup neuronové sítě svého modelu a na základě výsledků zvolí akci.
+
 
 Implementace algoritmu PPO i DQN je obsažena v~knihovně \texttt{Ray.Rlib}.
 PPO využívá základní parametry trénování bez žádné modifikace parametrů, jelikož se ukázalo, že agenti se chovají optimálně a hru pochopili i bez těchto zásahů do výchozích hodnot hyperparametrů.
@@ -872,10 +887,7 @@ Postupně tedy roste a pohybem je resetována.
 Tato expanze odměn vedla k~vylepšení strategie agentů DQN a nadále nestáli pouze na jednom místě.
 Bohužel však přes veškeré snahy, agenti DQN nedosahují ani zdaleka tak dobrých výsledků jako agenti PPO\@.
 
-Agenti se již od začátku učí zásadně pouze hraním proti sobě.
-Důvodem pro toto rozhodnutí bylo, že se jedná o~zajímavější experiment, kdy jsou agenti vpuštěni do zcela neznámého prostředí a nemají se od koho učit strategii.
-Jejich učení tedy není nijak podporováno a musí se naučit strategii sami.
-Tím je i pozorováno, jestli jsou agenti vůbec schopni rozpoznat cíl hry, co je po nich požadováno a případně jak rychle dosáhnou dobré strategie.
+
 
 Trénování modelů je obsaženo v~samostatných skriptech, které jsou spustitelné z~příkazové řádky:
 \begin{myitemize}
@@ -993,30 +1005,50 @@ Další variantou jak předat tuto oblast policistům, byla přidat do pozorová
 Toto by však bylo méně efektivní, jelikož by se pozorovací prostor výrazně zvětšil, což by zvýšilo náročnost výpočtů a zpomalilo by se učení.
 Naštěstí agenti dosahovali dobrých výsledku již se zjednodušenou variantou.
 
-\section{Systému řízení pro hru Scotland Yard}
+\section{Systém řízení pro hru Scotland Yard}
 \label{sec:system-rideni}
+Systém řízení má zodpovědnost za řízení chodu agentů a tím i celé hry při hraní hry i trénování agentů.
+Systém řízení tedy můžeme rozdělit na dvě různé části, podle toho, zda se jedná o~trénování agentů nebo o~hraní hry.
+V obou variantách je hlavní smyčka která volá metodu \texttt{step}:
 
-Sytém řízení má zodpodovědnost za řízení chodu agentů a tím i celé hry.
-Ve hře je hlavní herní smyčka která volá metodu \texttt{step}.
-V této metodě se vyhodnotí aktuální stav prostředí.
-Step metoda následně zavolá metodu pro získání akce od hrajících agentů, kterým předá aktuální stav.
+\subsection{\emph{Step} metoda během učení} je volána v~každém kroku algoritmu pro učení agentů.
+Této metodě je předána zvolená akce dle strategie tohoto učení a metoda zkontroluje, zda je akce validní.
+Pokud je akce validní, provede se, a v opačném případě je agent penalizován za špatnou akci a funkce step je volána znovu, pro stejného agenta, dokud není zvolena validní akce.
+Po provedení akce tedy metoda vypočte nový stav prostředí a odměny za provedenou akci.
+Nové pozorování z prostředí předá dalším agentům, kteří mají hrát.
+Vždy je tedy této metodě \emph{step} předána akce pro agenty které obdrželi pozorování.
+Tím se naznačuje, kdo hraje jako další a kdo má čekat na svůj tah.
+Vyhodnocené odměny jsou následně předány použitému algoritmu pro učení a ten na základě těchto odměn upraví váhy své neuronové sítě, viz kapitola o~algoritmu PPO (\ref{sec:proximalni-optimalizace-strategie}) a DQN (\ref{subsec:deep-q-learning}).
+
+\subsection{\emph{Step} metoda hraní hry} je volána v~každém kroku  herní smyčky.
+Tato metoda již nedostává akci agentů jako vstup, ale musí si ji sama vygenerovat.
+Metoda step tedy volá metodu pro získání akce od hrajících agentů, kterým předá aktuální stav.
 
 Agenti následně tento vstup předají do neuronové sítě svého modelu a na základě výsledků vrátí vybranou akci.
-Metoda následně zkontroluje zda je akce validní a pokud ne, vygeneruje novou akci.
-Samozřejmě se může teoreticky stát, že agenti budou volit nevalidní akci vždy, proto je zde nastaven limit na maximální počet pokusů o vygenerování validní akce na 100 pokusů.
+Metoda následně zkontroluje, zda je akce validní, a pokud není, vygeneruje novou akci.
+Samozřejmě se může teoreticky stát, že agenti budou volit nevalidní akci vždy a program by se mohl zacyklit.
+Proto je zde nastaven limit na maximální počet pokusů o vygenerování validní akce na 100 pokusů.
 Po 100 pokusech je vygenerována náhodná validní akce.
 Tohle se ale u testování modelu algoritmu naštěstí PPO nestalo ani jednou.
 
 Hlavní metoda step tedy získá akci pro agenty a následně tuto akci provede.
 Na základě provedení akce se upraví stav prostředí a funkce step je volána znovu, dokud nenastane konec hry.
 
+\bigskip
+\bigskip
+
 V průběhu realizace práce jsem experimentoval s různými variantami systému řízení:
-
-\subsection*{Prvotní verze, kde agenti hrají zároveň}
+\subsection{Prvotní verze, kde agenti hrají zároveň}
 V této verzi se hra dělila pouze na kola a funkce step obsluhovala celé toto kolo.
-Ve funkci step tedy byly volány metody pro získání akce pro všechny agenty.
-\subsection*{Finální verze, kde se agenti střídají}
+Ve funkci step tedy byly volány metody pro získání akce pro všechny agenty, které se nakonec vykonaly najednou.
+V této variantě ještě nebyla přidána možnost akce stání na místě.
+A tak si Pan~X vybudoval velmi zajímavou strategii, kde místo toho aby se od policistů držel co nejdále, tak se k policistům klidně přibližoval a využíval toho, že hrají naráz.
+Toto zneužívání spočívalo v tom, že vždy šel na pole na kterém již byl policista, jelikož věděl, že na daném místě již další kolo být nemůže.
 
+Tento styl, ale neodpovídal tomu jak se zkutečně hra hraje, protože všichni hráči nemohou hrát zároveň.
+\subsection{Finální verze, kde se agenti střídají}
+Zde již byla implementována možnost stání na místě a agenti se střídají v~tahu.
+Hra je tedy členěna na kola a ty jsou dále členěny na tahy jednotlivých hráčů.
 
 \chapter{Experimenty}
 \label{ch:experimenty}
@@ -1278,9 +1310,9 @@ Z~tohoto experimentu lze tedy vyvodit, že agenti trénovaní pomocí algoritmu 
 
 Provedené experimenty ukázaly, že algoritmus PPO je skutečně vhodný na hry s~neúplnou informací.
 Jelikož policisté trénování pomocí PPO dokázali odhadovat přibližnou pozici Pana~X a měli mnohem větší úspěšnost než náhodní agenti.
-Agenti se učili formou hraní proti sobě a dokázali pochopit koncept a cíl hry Scotland Yard.
+Agenti dokázali pochopit koncept a cíl hry Scotland Yard.
 Naučili se v~ní chovat optimálně, přestože začínali s~nulovým věděním o~prostředí.
-Bylo příjemným překvapením, že již po pouhých 10 iterací trénování byli agenti schopni projevovat náznaky pochopení cíle hry.
+Bylo příjemným překvapením, že již po pouhých 10 iterací trénování byli agenti schopni ukazovat lepší výsledky než agent s náhodným chováním.
 
 \section*{Možná vylepšení}
 \label{sec:mozna-vylepseni}
