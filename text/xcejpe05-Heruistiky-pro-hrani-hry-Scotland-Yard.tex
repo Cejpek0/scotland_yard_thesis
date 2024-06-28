@@ -88,8 +88,25 @@
 \usepackage[export]{adjustbox}
 \usepackage{wrapfig}
 \usepackage{algorithm}
-\usepackage[outputdir=cache]{minted}
-\usepackage{algpseudocode}
+\makeatletter
+\renewcommand{\ALG@name}{Algoritmus}
+\makeatother
+\usepackage[noend]{algpseudocode}
+
+\algrenewcommand\algorithmicend{\textbf{Konec}}
+\algrenewcommand\algorithmicdo{\textbf{proveď}}
+\algrenewcommand\algorithmicwhile{\textbf{dokud}}
+\algrenewcommand\algorithmicfor{\textbf{pro}}
+\algrenewcommand\algorithmicforall{\textbf{pro všechny}}
+\algrenewcommand\algorithmicif{\textbf{pokud}}
+\algrenewcommand\algorithmicelse{\textbf{jinak}}
+\algrenewcommand\algorithmicthen{\textbf{pak}}
+\algrenewcommand\algorithmicreturn{\textbf{vrátit}}
+\algrenewcommand\algorithmicfunction{\textbf{funkce}}
+\algrenewcommand\algorithmicprocedure{\textbf{procedura}}
+\algrenewtext{EndIf}{\textbf{Konec podmínky}}
+\algrenewtext{EndFor}{\textbf{Konec cyklu}}
+
 \usepackage{booktabs}% for \midrule and \cmidrule macros
 \newcommand\headercell[1]{%
   \smash[b]{\begin{tabular}[t]{@{}c@{}} #1 \end{tabular}}}  

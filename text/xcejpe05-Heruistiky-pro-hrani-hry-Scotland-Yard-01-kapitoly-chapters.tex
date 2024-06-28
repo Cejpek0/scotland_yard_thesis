@@ -392,6 +392,14 @@ Tyto \uv{tradiční} algoritmy nelze na mnoho problémů použít, jelikož by b
 Explorací se strom rozrůstá do šířky, zatímco exploatací se strom prohlubuje~\cite{mcts_geeksforgeeks}.
 
 MCTS se skládá z~několika fází:
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{obrazky-figures/mcts}
+	\caption{Diagram jednotlivých fází MCTS.\@
+  Zdroj:~\cite{mcts_geeksforgeeks}}\label{fig:mcts}
+\end{figure}
+
 \begin{myitemize}
   \item \textbf{\emph{Selekce}}
 
@@ -416,15 +424,8 @@ MCTS se skládá z~několika fází:
   \item \textbf{\emph{Aktualizace}}
   
   Díky nově nabitým informacím ze simulace, se zpětnou propagací aktualizují hodnoty uzlů ve stromě.
-
 \end{myitemize}
 
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=0.9\textwidth]{obrazky-figures/mcts}
-	\caption{Diagram jednotlivých fází MCTS.\@
-  Zdroj:~\cite{mcts_geeksforgeeks}}\label{fig:mcts}
-\end{figure}
 
 Tento algoritmus se skvěle hodí na hry s~nedokonalou či neúplnou informací, jelikož se spoléhá na vzorkování pomocí simulací.
 
@@ -446,65 +447,42 @@ Následně jsou tyto hodnoty iterativně aktualizovány dle zpětné vazby uděl
 Jako u~většiny algoritmů je zde potřeba dohlédnout na rovnováhu mezi explorací a exploatací.
 K~tomu se využívá $\epsilon$--greedy strategie viz \ref{epsilon_greedy}.
 
+\begin{algorithm}[H]
+  \caption{Učení Q-learning s využitím $\epsilon$-greedy strategie}
+  \begin{algorithmic}[1]
+  \State V Q tabulce inicializuj všechny hodnoty na 0
+  \State Inicializace $\epsilon$ na 1
+  \For{každou epizodu}
+    \While{není dosaženo konečného stavu}
+          \State S pravděpodobností $\epsilon$ vyber náhodnou akci, jinak vyber akci s nejvyšší hodnotou $Q(s, a)$
+          \State Proveď akci $a$, pozoruj odměnu $r$ a další stav $s'$
+          \State Aktualizuj hodnotu $Q(s, a)$:\par
+          $Q(s, a) = Q(s, a) + \alpha \left( r + \gamma \max_{a'} Q(s', a') - Q(s, a) \right)$
+    \EndWhile
+  \EndFor
+  \end{algorithmic}
+\end{algorithm}
+
+\begin{myitemize}
+  \item $\alpha$ - rychlost učení
+  \item $\gamma$ - diskontní faktor
+  \item $r$ - odměna
+  \item $s$ - stav
+  \item $a$ - akce
+  \item max$_{a'}$ - maximální hodnota budoucí odměny, pokud se agent nachází ve stavu $s'$ a zvolí nejlepší dostupnou akci $a'$ (hodnota hodnotová funkce nejlepší akce v následujícím stavu)
+\end{myitemize}
+
 Hlavní nevýhodou tohoto algoritmu je právě jeho závislost na Q--tabulce.
 Tabulka mapuje hodnoty pro každou kombinaci stavu a akce,
 Je--li však stavový, či akční prostor příliš velký, nebo dokonce nekonečný, je tento algoritmus nevhodný, téměř až nepoužitelný.
 Výsledná Q--tabulka by byla neefektivní kvůli své velikosti.
 Mohlo by se stát, že s~nekonečným množstvím kombinací by velikost tabulky rostla do \uv{nekonečna}.
-Jako řešení byl navrhnut algoritmus Deep Q-learning.
-
-\begin{minted}{python}
-def incmatrix(genl1,genl2):
-  m = len(genl1)
-  n = len(genl2)
-  M = None #to become the incidence matrix
-  VT = np.zeros((n*m,1), int)  #dummy variable
-  
-  #compute the bitwise xor matrix
-  M1 = bitxormatrix(genl1)
-  M2 = np.triu(bitxormatrix(genl2),1) 
-
-  for i in range(m-1):
-      for j in range(i+1, m):
-          [r,c] = np.where(M2 == M1[i,j])
-          for k in range(len(r)):
-              VT[(i)*n + r[k]] = 1;
-              VT[(i)*n + c[k]] = 1;
-              VT[(j)*n + r[k]] = 1;
-              VT[(j)*n + c[k]] = 1;
-              
-              if M is None:
-                  M = np.copy(VT)
-              else:
-                  M = np.concatenate((M, VT), 1)
-              
-              VT = np.zeros((n*m,1), int)
-  
-  return M
-
-\end{minted}
-
-\begin{algorithm}
-\caption{Učení Q-learning}
-\begin{algorithmic}[1]
-\State Inicializujte $Q(s, a)$ náhodně
-\For{každý krok epizody}
-    \State Initialize state $s$
-    \For{each step of episode}
-      \State Vyber akci $a$ ze stavu $s$ podle politiky odvozené z $Q$ (např. $\epsilon$-greedy)
-      \State Proveď akci $a$, pozoruj odměnu $r$ a další stav $s'$
-      \State Aktualizuj $Q(s, a)$
-    \EndFor
-\EndFor
-\end{algorithmic}
-\end{algorithm}
-
+Jako řešení byl navrhnut algoritmus Deep Q-learninggg.
 
 \section{Deep Q-learning (DQN)}\label{subsec:deep-q-learning}
 
-Tato metoda je rozšířením algoritmu Q-learning které,
-nahrazuje $Q$--tabulku neuronovou sítí určené k~aproximaci hodnotové funkce akce $Q(s, a)$.
-Díky této aproximaci je možné použít tento algoritmus na problémy s~velkým, či nekonečným množstvím kombinací akcí a stavů.
+Tato metoda je rozšířením algoritmu Q-learning, který nahrazuje $Q$--tabulku neuronovou sítí určenou k~aproximaci hodnotové funkce akce $Q(s, a)$.
+Díky této aproximaci je možné použít tento algoritmus na problémy s~velkým či nekonečným množstvím kombinací akcí a stavů.
 Při vytvoření neuronové sítě jsou váhy inicializovány náhodně.
 
 Avšak tímto vzniká nový problém, \emph{nestabilita učení}.
@@ -513,45 +491,64 @@ Ten je řešen dvěma mechanismy:
 \begin{myitemize}
   \item \textbf{Přehrání zkušenosti (experience replay)}
   
-  Během trénování se ukládají všechny zkušenosti do paměti.
-  Ať už to jsou akce, stavy, odměny atd.
-  Při trénování se poté náhodně vybírají náhodně zkušenosti z~této paměti a aktualizují se podle nich váhy sítě.
+  Během trénování se ukládají všechny zkušenosti (přechody) do paměti.
+  Zkušenost zahrnuje stav, akci, odměnu a následující stav.
+  Při aktualizaci vah při trénování se náhodně vybírají skupiny zkušeností z~této paměti a aktualizují se podle nich váhy sítě.
   Tímto se snižuje rozdíl mezi jednotlivými aktualizacemi a tím pádem se zvyšuje stabilita učení.
-  
 
   \item \textbf{Periodická aktualizace}
-  Síť je naklonována a změny se provádí pouze na duplikátní verzi.
-  Do hlavní originální sítě se změny klonují po určitém počtu kroků.
+  Používají se dvě neurnové sítě, jedna hlavní a jedna cílová.
+  Hlavní síť se aktualizuje při každém kroku.
+  Cílová síť se používá k~výpočtu hodnoty $Q(s, a)$ a aktualizuje se méně často než hlavní síť.
+  Aktualizace cílové sítě se provádí periodicky a kopírováním hlavní sítě.
+  Tímto se změny v chování hlavní sítě nepřenášejí okamžitě do cílové sítě a tím se zvyšuje stabilita učení.
 
 \end{myitemize}
 
-\begin{algorithm}
-  \caption{Deep Q-learning (DQN)}
+\begin{algorithm}[H]
+  \caption{Učení Deep Q-learning s využitím $\epsilon$-greedy strategie, pamětí zkušeností a periodickou aktualizací cílové sítě}
   \begin{algorithmic}[1]
-  \State Inicializujte paměť pro přehrání zkušeností $D$ na kapacitu $N$
-  \State Inicializujte hodnotovou funkci $Q$ s náhodnými váhami
-  \State Inicializujte cílovou hodnotovou funkci $\hat{Q}$ s váhami $\theta^- = \theta$
-  \For{každou epizodu}
-      \State Inicializujte stav $s$
+    \State Hlavní neuronové síti $Q$ inicializuj váhy ($\theta$) náhodně
+    \State Cílovou neuronovou síť $Q^{-}$ inicializuj váhy jako kopii hlavní sítě: $\theta^{-} = \theta$
+    \State Inicializace $\epsilon$ na 1
+    \For{každou epizodu}
       \For{každý krok epizody}
-          \State Vyberte akci $a$ ze stavu $s$ podle politiky odvozené z $Q$ (např. $\epsilon$-greedy)
-          \State Proveďte akci $a$, pozorujte odměnu $r$ a další stav $s'$
-          \State Uložte přechod $(s, a, r, s')$ do paměti $D$
-          \State Vzorkujte náhodnou minibatch přechodů $(s_j, a_j, r_j, s'_j)$ z $D$
-          \For{každý přechod $(s_j, a_j, r_j, s'_j)$ v minibatch}
-              \State $y_j = 
-              \begin{cases} 
-              r_j & \text{pro terminální } s'_j \\
-              r_j + \gamma \max_{a'} \hat{Q}(s'_j, a') & \text{pro neterminální } s'_j
-              \end{cases}$
-              \State Proveďte gradient descent krok na $(y_j - Q(s_j, a_j))^2$ vzhledem k parametrům sítě $\theta$
-          \EndFor
-          \State Každých $C$ kroků aktualizujte cílovou síť: $\hat{Q} \leftarrow Q$
-          \State $s \leftarrow s'$
+            \State S pravděpodobností $\epsilon$ vyber náhodnou akci, jinak vyber akci s nejvyšší hodnotou $Q(s, a; \theta)$
+            \State Proveď akci $a$, pozoruj odměnu $r$ a další stav $s'$
+            \State Ulož přechod $(s, a, r, s')$ do paměti $D$
+            \If{paměť zkušeností $D$ obsahuje dostatek vzorků}
+              \State Vzorkuj náhodnou skupinu přechodů $(s_j, a_j, r_j, s_j')$ z $D$
+              \For{každý vzorkovaný přechod $(s_j, a_j, r_j, s_j')$}
+                  \State \textbf{Cílová hodnota $y_j$:}
+                  \[
+                  y_j = 
+                  \begin{cases} 
+                  r_j & \text{pokud je } s_j' \text{ konečný stav} \\
+                  r_j + \gamma \max_{a'} Q^{-}(s_j', a'; \theta^{-}) & \text{jinak}
+                  \end{cases}
+                  \]
+                  \State Vypočítej ztrátu a pomocí gradientního sestupu aktualizuj váhy hlavní sítě~$\theta$:
+                   \[
+                  L(\theta) = \left(y_j - Q(s_j, a_j; \theta)\right)^2
+                  \]
+              \EndFor
+            \EndIf
+            \State Každých $N$ kroků aktualizuj cílovou síť $\theta^{-}$ kopírováním hlavní sítě~$\theta$
       \EndFor
-  \EndFor
+    \EndFor
   \end{algorithmic}
-  \end{algorithm}
+\end{algorithm}
+\begin{myitemize}
+  \item \(\theta\) - váhy hlavní neuronové sítě \(Q\)
+  \item \(\theta^{-}\) - váhy cílové neuronové sítě \(Q^{-}\)
+  \item $D$ - paměť zkušeností
+  \item $N$ - perioda aktualizace cílové sítě
+  \item $\gamma$ - diskontní faktor
+  \item $\gamma \max_{a'} Q^{-}(s_j', a'; \theta^{-})$ - hodnota $Q$ funkce pro nejlepší akci $a'$ v~následujícím stavu $s_j'$, vypočítaná pomocí cílové sítě $Q^{-}$
+  \item $Q(s_j, a_j; \theta)$ - hodnota $Q$ funkce pro akci $a_j$ ve stavu $s_j$, vypočítaná hlavní neuronovou sítí $Q$
+  \item $L(\theta) = \left(y_j - Q(s_j, a_j; \theta)\right)^2$ - rozdíl mezi cílovou hodnotou $y_j$ a hodnotou, kterou vypočítala neuronová síť $Q(s_j, a_j; \theta)$
+  \item Hodnoty vah neuronové sítě se upraví tak, aby se minimalizovala ztráta $L(\theta)$
+\end{myitemize}
 \section{Gradient strategie}\label{subsec:gradient-strategie}
 Algoritmy ze skupiny gradientu strategie se snaží naučit strategii přímo a to tím způsobem, že upravují parametry strategie aby maximalizovali účelovou funkci(objective function).
 Parametrem strategie může být například váhy neuronů v neuronové síti.
