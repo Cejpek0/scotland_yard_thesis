@@ -261,6 +261,13 @@ Strategie může být deterministická nebo stochastická.
   \begin{equation}
     \pi(s) = a\label{eq:policy_deterministic}
   \end{equation}
+\begin{myitemize}
+  \item $\pi$ - strategie
+  \item $s$ - stav
+  \item $a$ - akce
+  \item Rovnice tedy značí akci $a$, kterou agent zvolí ve~stavu $s$ podle strategie $\pi$
+
+\end{myitemize}
 
   \subsubsection*{Stochastická strategie}
   
@@ -275,6 +282,15 @@ Strategie může být deterministická nebo stochastická.
   \begin{equation}
     \pi(a \vert s) = \mathbb{P}_\pi [A=a \vert S=s]\label{eq:policy_stochastic}
   \end{equation}
+
+  \begin{myitemize}
+    \item $\pi$ - strategie
+    \item $s$ - stav
+    \item $a$ - akce
+    \item $\mathbb{P}_\pi$ - pravděpodobnostní rozdělení
+    \item Rovnice tedy značí pravděpodobnost výběru akce $a$, pokud se systém nachází ve stavu $s$, podle strategie $\pi$
+  \end{myitemize}
+  
 
 \subsection{Akce}\label{subsec:akce}
 
@@ -415,12 +431,12 @@ Tento algoritmus se skvěle hodí na hry s~nedokonalou či neúplnou informací,
 \section{Q-learning}\label{subsec:q-learning}
 
 Q-learning je jedním z~nejznámějších algoritmů posilovaného učení.
-Učení tohoto algoritmu probíhá bez modelu a mimo strategii.
+Učení tohoto algoritmu probíhá bez modelu (model-free) a mimo strategii (off-policy), což znamená, že se učí přímo z~interakce s~prostředím a nezávisle na strategii, kterou agent používá k~volbě akcí.
 
 Jak už název vypovídá, Q-learning se zaměřuje na určení hodnoty hodnotové funkce akce $Q(s, a)$, viz \ref{subsubsec:q_function}.
 Tyto hodnoty se uchovávají v~Q--tabulce, která na každou kombinaci stavu a akce uchovává hodnotu $Q(s, a)$.
 Hodnoty v~Q--tabulce se iterativně aktualizují na základě získaných odměn.
-Kladná odměna po vykonání akce $s$, zvýší se hodnota $Q(s, a)$.
+Pokud agent obdrží kladnou odměnu po vykonání akce $a$ ve stavu $s$, zvýší se hodnota $Q(s, a)$.
 Naopak, dostane--li po vykonání této akce zápornou odměnu, hodnota $Q(s, a)$ se sníží.
 
 Řádky Q-tabulky tedy reprezentují stavy a sloupce akce.
@@ -432,16 +448,64 @@ K~tomu se využívá $\epsilon$--greedy strategie viz \ref{epsilon_greedy}.
 
 Hlavní nevýhodou tohoto algoritmu je právě jeho závislost na Q--tabulce.
 Tabulka mapuje hodnoty pro každou kombinaci stavu a akce,
-Je--li avšak stavový, či akční prostor příliš velký, nebo dokonce nekonečný je tento algoritmus nevhodný, skoro až nepoužitelný.
+Je--li však stavový, či akční prostor příliš velký, nebo dokonce nekonečný, je tento algoritmus nevhodný, téměř až nepoužitelný.
 Výsledná Q--tabulka by byla neefektivní kvůli své velikosti.
 Mohlo by se stát, že s~nekonečným množstvím kombinací by velikost tabulky rostla do \uv{nekonečna}.
 Jako řešení byl navrhnut algoritmus Deep Q-learning.
+
+\begin{minted}{python}
+def incmatrix(genl1,genl2):
+  m = len(genl1)
+  n = len(genl2)
+  M = None #to become the incidence matrix
+  VT = np.zeros((n*m,1), int)  #dummy variable
+  
+  #compute the bitwise xor matrix
+  M1 = bitxormatrix(genl1)
+  M2 = np.triu(bitxormatrix(genl2),1) 
+
+  for i in range(m-1):
+      for j in range(i+1, m):
+          [r,c] = np.where(M2 == M1[i,j])
+          for k in range(len(r)):
+              VT[(i)*n + r[k]] = 1;
+              VT[(i)*n + c[k]] = 1;
+              VT[(j)*n + r[k]] = 1;
+              VT[(j)*n + c[k]] = 1;
+              
+              if M is None:
+                  M = np.copy(VT)
+              else:
+                  M = np.concatenate((M, VT), 1)
+              
+              VT = np.zeros((n*m,1), int)
+  
+  return M
+
+\end{minted}
+
+\begin{algorithm}
+\caption{Učení Q-learning}
+\begin{algorithmic}[1]
+\State Inicializujte $Q(s, a)$ náhodně
+\For{každý krok epizody}
+    \State Initialize state $s$
+    \For{each step of episode}
+      \State Vyber akci $a$ ze stavu $s$ podle politiky odvozené z $Q$ (např. $\epsilon$-greedy)
+      \State Proveď akci $a$, pozoruj odměnu $r$ a další stav $s'$
+      \State Aktualizuj $Q(s, a)$
+    \EndFor
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
 
 \section{Deep Q-learning (DQN)}\label{subsec:deep-q-learning}
 
 Tato metoda je rozšířením algoritmu Q-learning které,
 nahrazuje $Q$--tabulku neuronovou sítí určené k~aproximaci hodnotové funkce akce $Q(s, a)$.
 Díky této aproximaci je možné použít tento algoritmus na problémy s~velkým, či nekonečným množstvím kombinací akcí a stavů.
+Při vytvoření neuronové sítě jsou váhy inicializovány náhodně.
 
 Avšak tímto vzniká nový problém, \emph{nestabilita učení}.
 Ten je řešen dvěma mechanismy:
@@ -461,8 +525,33 @@ Ten je řešen dvěma mechanismy:
 
 \end{myitemize}
 
-Při vytvoření neuronové sítě jsou váhy inicializovány náhodně.
-
+\begin{algorithm}
+  \caption{Deep Q-learning (DQN)}
+  \begin{algorithmic}[1]
+  \State Inicializujte paměť pro přehrání zkušeností $D$ na kapacitu $N$
+  \State Inicializujte hodnotovou funkci $Q$ s náhodnými váhami
+  \State Inicializujte cílovou hodnotovou funkci $\hat{Q}$ s váhami $\theta^- = \theta$
+  \For{každou epizodu}
+      \State Inicializujte stav $s$
+      \For{každý krok epizody}
+          \State Vyberte akci $a$ ze stavu $s$ podle politiky odvozené z $Q$ (např. $\epsilon$-greedy)
+          \State Proveďte akci $a$, pozorujte odměnu $r$ a další stav $s'$
+          \State Uložte přechod $(s, a, r, s')$ do paměti $D$
+          \State Vzorkujte náhodnou minibatch přechodů $(s_j, a_j, r_j, s'_j)$ z $D$
+          \For{každý přechod $(s_j, a_j, r_j, s'_j)$ v minibatch}
+              \State $y_j = 
+              \begin{cases} 
+              r_j & \text{pro terminální } s'_j \\
+              r_j + \gamma \max_{a'} \hat{Q}(s'_j, a') & \text{pro neterminální } s'_j
+              \end{cases}$
+              \State Proveďte gradient descent krok na $(y_j - Q(s_j, a_j))^2$ vzhledem k parametrům sítě $\theta$
+          \EndFor
+          \State Každých $C$ kroků aktualizujte cílovou síť: $\hat{Q} \leftarrow Q$
+          \State $s \leftarrow s'$
+      \EndFor
+  \EndFor
+  \end{algorithmic}
+  \end{algorithm}
 \section{Gradient strategie}\label{subsec:gradient-strategie}
 Algoritmy ze skupiny gradientu strategie se snaží naučit strategii přímo a to tím způsobem, že upravují parametry strategie aby maximalizovali účelovou funkci(objective function).
 Parametrem strategie může být například váhy neuronů v neuronové síti.
