@@ -20,9 +20,9 @@ Pozice Pana~X je policistům odhalena pouze v určitých kolech.
 Scotland Yard je ideální hrou ke studování neurčitosti ve hrách hraných systémy umělé inteligence, protože se jedná o hru s nedokonalou informací a k vítězství policistů je zapotřebí spolupráce, strategie a odhadování.
 
 Tato práce zkoumá algoritmy posilovaného učení, jejich použití na hry s~neurčitostí a jejich porovnání s~klasickými metodami hraní her.
-Algoritmus optimalizace proximální strategie (Proximal Policy Optimization--PPO) je hlavním zkoumaným algoritmem této práce.
+Algoritmus optimalizace proximální strategie (Proximal Policy Optimization --- PPO) je hlavním zkoumaným algoritmem této práce.
 PPO je často používán k~řešení problémů se spojitými veličinami a ve 3D prostoru.
-Pro srovnání s~jinými algoritmy slouží algoritmus Deep--Q--Learning (DQN).
+Pro srovnání s~jinými algoritmy slouží algoritmus Deep-Q-Learning (DQN).
 Výslední agenti\footnote[1]{V kontextu se hrou Scotland Yard je důležité nezaměňovat agenta, za policistu.
 Význam pojmu \emph{agent} je popsáno v kapitole \nameref{subsec:agent}} byli také testování proti hráči, který náhodně vybírá své akce.
 
@@ -37,12 +37,12 @@ Algoritmus PPO je pro mě zajímavý a zkušenost s~tímto algoritmem by se dala
 
 Pro zpracování práce byly využity tyto hlavní knihovny:
 \begin{myitemize}
-  \item \texttt{Ray.Rlib} - framework pro posilované učení.
+  \item \texttt{Ray.Rlib} --- framework pro posilované učení.
   Obsahuje již zhotovenou implementací algoritmu PPO a DQN, které byly použity v~této práci.
 
-  \item \texttt{PyTorch} - podpůrná knihovna \texttt{Ray.Rlib}
-  \item \texttt{Gymnasium} - knihovna použita k~vytvoření prostředí hry Scotland Yard
-  \item \texttt{Pygame} - knihovna pro vytváření uživatelského rozhraní
+  \item \texttt{PyTorch} --- podpůrná knihovna \texttt{Ray.Rlib}
+  \item \texttt{Gymnasium} --- knihovna použita k~vytvoření prostředí hry Scotland Yard
+  \item \texttt{Pygame} --- knihovna pro vytváření uživatelského rozhraní
 \end{myitemize}
 
 Práce byla zhotovena pro operační systémy Windows a Python verze 3.10
@@ -220,10 +220,10 @@ Lze také tyto akce povolit, ale následně agentovi udělit sníženou odměnu 
 
 \subsection{Diskrétní a spojitý prostor}\label{subsec:diskretni-a-spojity-prostor}
 
-Je--li prostor o~\textbf{diskrétní}, je konečný nebo spočetně nekonečný.
+Je-li prostor o~\textbf{diskrétní}, je konečný nebo spočetně nekonečný.
 
 Příkladem takového prostoru je například pozorovací prostor, jehož vstupem je fotka.
-Ta se dělí na přesně daný počet pixelů, kde každý má dané hodnoty RGB.
+Ta se dělí na přesně daný počet pixelů, kde každý má dané hodnoty RGB.\@
 Diskrétní akční prostory jsou spočetné a často se jedná o~konečnou množinu možných akcí.
 Například akce pohybu \textit{vlevo}, \textit{vpravo}, \textit{nahoru} a \textit{dolů}.
 
@@ -262,9 +262,9 @@ Strategie může být deterministická nebo stochastická.
     \pi(s) = a\label{eq:policy_deterministic}
   \end{equation}
 \begin{myitemize}
-  \item $\pi$ - strategie
-  \item $s$ - stav
-  \item $a$ - akce
+  \item $\pi$ --- strategie
+  \item $s$ --- stav
+  \item $a$ --- akce
   \item Rovnice tedy značí akci $a$, kterou agent zvolí ve~stavu $s$ podle strategie $\pi$
 
 \end{myitemize}
@@ -284,10 +284,10 @@ Strategie může být deterministická nebo stochastická.
   \end{equation}
 
   \begin{myitemize}
-    \item $\pi$ - strategie
-    \item $s$ - stav
-    \item $a$ - akce
-    \item $\mathbb{P}_\pi$ - pravděpodobnostní rozdělení
+    \item $\pi$ --- strategie
+    \item $s$ --- stav
+    \item $a$ --- akce
+    \item $\mathbb{P}_\pi$ --- pravděpodobnostní rozdělení
     \item Rovnice tedy značí pravděpodobnost výběru akce $a$, pokud se systém nachází ve stavu $s$, podle strategie $\pi$
   \end{myitemize}
   
@@ -387,7 +387,7 @@ Tato kapitola se zaměřuje na algoritmy, které jsou vhodné pro řešení her 
 \section{Monte Carlo tree search}\label{subsec:monte-carlo-tree-search}
 Metoda Monte Carlo tree search (MCTS) je heuristický algoritmus prohledávání.
 Kombinuje stromové vyhledávání s~principy posilovaného učení.
-Je často využíván, je--li stavový prostor řešeného problému příliš velký a složitý na to, aby byl prohledán kompletně jinými metodami, jako například minimax, či alfa--beta prořezávání.
+Je často využíván, je-li stavový prostor řešeného problému příliš velký a složitý na to, aby byl prohledán kompletně jinými metodami, jako například minimax, či alfa-beta prořezávání.
 Tyto \uv{tradiční} algoritmy nelze na mnoho problémů použít, jelikož by byly příliš pomalé a náročné na výpočet.
 Explorací se strom rozrůstá do šířky, zatímco exploatací se strom prohlubuje~\cite{mcts_geeksforgeeks}.
 
@@ -409,7 +409,7 @@ MCTS se skládá z~několika fází:
   \textbf{\emph{Strom s~horní mezí spolehlivosti}} (Upper confidence bounds applied to trees, UCT) kombinuje průměrnou hodnotu uzlu a odměnu za exploraci.
 
   \label{epsilon_greedy}
-  textbf{\emph{Chamtivá strategie $\epsilon$ }} ($\epsilon$--greedy strategy) vybírá s~pravděpodobností $\epsilon$ náhodný uzel, jinak volí uzel s~nejvyšší hodnotou.
+  textbf{\emph{Chamtivá strategie $\epsilon$ }} ($\epsilon$-greedy strategy) vybírá s~pravděpodobností $\epsilon$ náhodný uzel, jinak volí uzel s~nejvyšší hodnotou.
   Tato strategie se používá méně často než UCT\@.
 
   Obě tyto strategie se snaží o~rovnováhu mezi explorací a exploatací.
@@ -464,12 +464,12 @@ K~tomu se využívá $\epsilon$--greedy strategie viz \ref{epsilon_greedy}.
 \end{algorithm}
 
 \begin{myitemize}
-  \item $\alpha$ - rychlost učení
-  \item $\gamma$ - diskontní faktor
-  \item $r$ - odměna
-  \item $s$ - stav
-  \item $a$ - akce
-  \item max$_{a'}$ - maximální hodnota budoucí odměny, pokud se agent nachází ve stavu $s'$ a zvolí nejlepší dostupnou akci $a'$ (hodnota hodnotová funkce nejlepší akce v následujícím stavu)
+  \item $\alpha$ --- rychlost učení
+  \item $\gamma$ --- diskontní faktor
+  \item $r$ --- odměna
+  \item $s$ --- stav
+  \item $a$ --- akce
+  \item max$_{a'}$ --- maximální hodnota budoucí odměny, pokud se agent nachází ve stavu $s'$ a zvolí nejlepší dostupnou akci $a'$ (hodnota hodnotová funkce nejlepší akce v následujícím stavu)
 \end{myitemize}
 
 Hlavní nevýhodou tohoto algoritmu je právě jeho závislost na Q--tabulce.
@@ -539,103 +539,124 @@ Ten je řešen dvěma mechanismy:
   \end{algorithmic}
 \end{algorithm}
 \begin{myitemize}
-  \item \(\theta\) - váhy hlavní neuronové sítě \(Q\)
-  \item \(\theta^{-}\) - váhy cílové neuronové sítě \(Q^{-}\)
-  \item $D$ - paměť zkušeností
-  \item $N$ - perioda aktualizace cílové sítě
-  \item $\gamma$ - diskontní faktor
-  \item $\gamma \max_{a'} Q^{-}(s_j', a'; \theta^{-})$ - hodnota $Q$ funkce pro nejlepší akci $a'$ v~následujícím stavu $s_j'$, vypočítaná pomocí cílové sítě $Q^{-}$
-  \item $Q(s_j, a_j; \theta)$ - hodnota $Q$ funkce pro akci $a_j$ ve stavu $s_j$, vypočítaná hlavní neuronovou sítí $Q$
-  \item $L(\theta) = \left(y_j - Q(s_j, a_j; \theta)\right)^2$ - rozdíl mezi cílovou hodnotou $y_j$ a hodnotou, kterou vypočítala neuronová síť $Q(s_j, a_j; \theta)$
+  \item \(\theta\) --- váhy hlavní neuronové sítě \(Q\)
+  \item \(\theta^{-}\) --- váhy cílové neuronové sítě \(Q^{-}\)
+  \item $D$ --- paměť zkušeností
+  \item $N$ --- perioda aktualizace cílové sítě
+  \item $\gamma$ --- diskontní faktor
+  \item $\gamma \max_{a'} Q^{-}(s_j', a'; \theta^{-})$ --- hodnota $Q$ funkce pro nejlepší akci $a'$ v~následujícím stavu $s_j'$, vypočítaná pomocí cílové sítě $Q^{-}$
+  \item $Q(s_j, a_j; \theta)$ --- hodnota $Q$ funkce pro akci $a_j$ ve stavu $s_j$, vypočítaná hlavní neuronovou sítí $Q$
+  \item $L(\theta) = \left(y_j - Q(s_j, a_j; \theta)\right)^2$ --- rozdíl mezi cílovou hodnotou $y_j$ a hodnotou, kterou vypočítala neuronová síť $Q(s_j, a_j; \theta)$
   \item Hodnoty vah neuronové sítě se upraví tak, aby se minimalizovala ztráta $L(\theta)$
 \end{myitemize}
-\section{Gradient strategie}\label{subsec:gradient-strategie}
-Algoritmy ze skupiny gradientu strategie se snaží naučit strategii přímo a to tím způsobem, že upravují parametry strategie aby maximalizovali účelovou funkci(objective function).
-Parametrem strategie může být například váhy neuronů v neuronové síti.
+\section{Metody gradientu politiky}\label{subsec:gradientni_metody}
+Předchozí metody se snažily naučit, či aproximovat hodnotovou funkci akce a vždy volili tu nejlepší, to ale vede k deterministické strategii.
+Často je ale optimální stochastická strategie.
+Algoritmy z této skupiny se snaží naučit strategii přímo a to tím způsobem, že upravují parametry strategie aby maximalizovali účelovou funkci (objective function).
+Nejčastěji se využívá neuronová síť, která má na vstupu stav prostředí, na výstupu pravděpodobnostní rozdělení nad akcemi a váhy neuronů jsou právě parametry politiky.
+Výsledkem metod této skupiny je tedy pravděpodobnostní rozdělení nad akcemi v daném stavu, což znamená, že každá akce má šanci na zvolení.
 
-Ve~spojitém prostoru je odměnová funkce definována jako:
+Účelová funkce je tedy očekávaná odměna, při následování strategie a hodnotí strategii.
+Základní účelová funkce je definována takto:
 \begin{equation}
     \label{eq:ucelova_funkce_spojita}
-  \mathcal{J}(\theta) = \sum_{s \in \mathcal{S}} d_{\pi_\theta}(s) V_{\pi_\theta}(s) = \sum_{s \in \mathcal{S}} \Big( d_{\pi_\theta}(s) \sum_{a \in \mathcal{A}} \pi(a \vert s, \theta) Q_\pi(s, a) \Big)
+  \mathcal{J}(\theta) = \sum_{s \in \mathcal{S}} d_{\pi_\theta}(s) V_{\pi_\theta}(s)
   \end{equation}
 
 \begin{myitemize}
-  \item $\mathcal{J}(\theta)$ je odměnová funkce strategie $\pi_\theta$.
-  \item $\theta$ je parametr strategie $\pi_\theta$.
-  \item $V_{\pi_\theta}(S_1)$ je hodnota stavu $S_1$ dle strategie $\pi_\theta$.
-  \item $\mathbb{E}_{\pi_\theta}[V_1]$ je očekávaná hodnota stavu $S_1$ dle strategie $\pi_\theta$.
-  \item $d_{\pi_\theta}(s)$ je rozdělení pravděpodobnosti stavů $s$ dle strategie $\pi_\theta$.
+  \item $\mathcal{J}(\theta)$ --- Účelová funkce.
+  \item $d_{\pi_\theta}(s)$ --- distribuční rozdělení stavů. Značí pravděpodobnost, že se agent nachází ve stavu $s$, při následování strategie $\pi_\theta$.
+  \item $V_{\pi_\theta}(s)$ --- hodnota stavu $s$ při následování strategie $\pi_\theta$.\par
+  \item Účelová funkce je tedy součtem hodnot stavů násobených jejich pravděpodobností výskytu.
 \end{myitemize}
 
-\subsubsection*{Věta o~gradientu strategie}
-{\color{red}TODO: přepsat nebo odstranit}
-Výpočet gradientu matematicky je zaznamenán touto rovnicí:
-
+Hodnota stavu $V_{\pi_\theta}(s)$ lze dále rozepsat, vznikne tedy výsledná rovnice účelové funkce:
 \begin{equation}
-  \label{eq:gradient_strategie}
-  \frac{\partial \mathcal{J}(\theta)}{\partial \theta_k} \approx \frac{\mathcal{J}(\theta + \epsilon u_k) - \mathcal{J}(\theta)}{\epsilon}
+  \mathcal{J}(\theta) = \sum_{s \in \mathcal{S}} \Big( d_{\pi_\theta}(s) \sum_{a \in \mathcal{A}} \pi(a \vert s, \theta) Q_\pi(s, a) \Big)
 \end{equation}
-Tento výpočet je velmi pomalý a náročný na výpočet.
-Avšak tento vzorec lze zjednodušit na rovnici zvanou \emph{věta o~gradientu strategie}:
+
+\begin{myitemize}
+  \item $\pi(a \vert s, \theta)$ --- pravděpodobnost volby akce $a$ ve stavu $s$ podle strategie $\pi_\theta$.
+  \item $Q_\pi(s, a)$ --- očekávaná odměna, pokud se ve stavu $s$ zvolí akce $a$.
+\end{myitemize}
+
+\pagebreak
+
+\subsection{Věta o~gradientu strategie a aktualizace parametrů}
+Aby bylo možné zjistit, jakým způsobem upravit parametry strategie k maximalizaci účelové funkce, je potřeba vypočítat \emph{\textbf{gradient}\footnote[2]{Gradient značí směr funkce, značí se symbolem $\nabla_{\phi}$. Počítá se parciální derivací účelové funkce podle $\phi$.}} --- $\nabla \mathcal{J}(\theta)$.
+
+Základní výpočet tohoto gradientu je závislý jak na pravděpodobnosti výběru akce (která je přímo určena strategií), tak na distribučním rozdělení stavů (která je nepřímo určena politikou).
+
+Jaký efekt budou mít změny parametrů strategie na zvolené akce lze spočítat jednoduše, odhadnout efekt ale bude mít na distribuční rozdělení stavů je složité.\\
+\emph{Věta o~gradientu strategie}~\cite{NIPS1999_464d828b} výrazně zjednodušuje výpočet gradientu tím že odstraňuje derivace distribučního rozdělení stavů v závislosti na změněných parametrech strategie:
 
 \begin{equation}
     \label{eq:veta_o_gradientu_strategie}
-  \nabla \mathcal{J}(\theta) = \mathbb{E}_{\pi_\theta} [\nabla \ln \pi(a \vert s, \theta) Q_\pi(s, a)]
+    \begin{split}
+        \nabla_\theta J(\theta) 
+        &= \nabla_\theta \sum_{s \in \mathcal{S}} d^\pi(s) \sum_{a \in \mathcal{A}} Q^\pi(s, a) \pi_\theta(a \vert s) \\
+        &= \sum_{s \in \mathcal{S}} d^\pi(s) \sum_{a \in \mathcal{A}} Q^\pi(s, a) \nabla_\theta \pi_\theta(a \vert s) 
+    \end{split}
 \end{equation}
 
+\begin{myitemize}
+  \item $\nabla_\theta \pi_\theta(a \vert s)$ --- gradient pravděpodobnosti volby akce $a$ ve stavu $s$ podle strategie $\pi_\theta$.
+  Lze rozepsat jako: $\frac{\partial \pi_\theta(a \vert s)}{\partial \theta}$.
+\end{myitemize}
 
-\section{Trust Region Policy Optimization (TRPO)}\label{sec:trust-region-policy-optimization}
-{\color{red}TODO: lépe popsat}
-Trénované strategie jsou často velmi náchylné na změny.
-Kde i malá náhlá změna v~jednom kroku může způsobit velké změny v~chování agenta a zamezit dalšímu učení správné strategie.
+Tento teorém je základem pro všechny metody gradientu politiky.
+Parametry strategie se mohou upravovat například pomocí metody \textbf{gradientního  vzestupu}:
+\begin{equation}
+  \theta_{k+1} = \theta_k + \alpha \nabla_\theta J(\theta)
+\end{equation}
+
+\begin{myitemize}
+  \item $\theta_{k+1}$ --- nové parametry strategie.
+  \item $\theta_k$ --- aktuální parametry strategie.
+  \item $\alpha$ --- rychlost učení, standardně se volí malá hodnota okolo $0.01$.
+  \item $\nabla_\theta J(\theta)$ --- gradient účelové funkce, popsaný výše.
+\end{myitemize}
+
+Nejzákladnější metodou gradientu politiky je \textbf{REINFORCE}.
+Metoda je velmi podobná algoritmu Monte Carlo, ale využívá gradientu strategie k~naivní aktualizaci parametrů.
+Vypočtený gradient se využije k aktualizaci parametrů strategie, ale změna není nijak omezována.
+Změny tak mohou být velmi velké a učení tak může být nestabilní, to řeší následující algoritmy.
+
+\pagebreak
+
+\subsection{Trust Region Policy Optimization (TRPO)}\label{sec:trust-region-policy-optimization}
+Trénovaní strategií pomocí výpočtu gradientu je velmi náchylné na změny, kde velká a náhlá změna v~jednom kroku může způsobit zásadní změny v~chování agenta a zamezit dalšímu učení optimálnější strategie.
 Během učení totiž chceme, aby učení probíhalo plynule a ne skokově.
-Pokud se strategie změní příliš rychle protože následovala nejstrmější směr růstu, může se stát, že mine cestu vedoucí k~optimální strategii.
-Může tedy uváznout v~lokálním optimu.
+Pokud se strategie změní příliš rychle, protože následovala nejstrmější směr růstu (gradient), může se stát, že mine cestu vedoucí k~optimální strategii a uvízne v~lokálním optimu.
 
-TRPO je optimalizační algoritmus, který se snaží tento problém řešit tím, že definuje omezení rozdílu mezi novou aktualizovanou strategií $\textbf{p}$ a starou strategií z~předešlého kroku $\textbf{q}$.
+TRPO je optimalizační algoritmus, který se snaží tento problém řešit tím, že definuje omezení rozdílu mezi novou aktualizovanou strategií \textbf{$\pi$} a starou strategií kroku \textbf{$\pi_{\text{old}}$}.
 Tento rozdíl mezi dvěma pravděpodobnostními rozděleními je definován jako Kullback-Leiblerova divergence (K-L divergence)\cite{KL_divergence}.
-Vzorec pro K-L divergenci ve spojitém prostoru je následující:
+
+Vzniká tak region důvěry (trust region), ve kterém musí nová strategie setrvat.
+Strategie se tedy nemůže skokově změnit na lokální maximum, ale pouze následuje směr gradientu.
+
+Účelová funkce je definována jako:
 \begin{equation}
-  D_{KL}(p \| q) = \int_x p(x) \log \frac{p(x)}{q(x)} dx
+  J^{TRPO}(\theta) = \sum_{s \in \mathcal{S}} d_{\pi_{\theta_{\text{old}}}}(s) \sum_{a \in \mathcal{A}} \pi_{\theta}(a \vert s) \hat{A}_{\theta_{\text{old}}}(s, a)
+\end{equation}
+Kde rozdíl mezi novou a starou politikou je omezen K-L divergencí:
+\begin{equation}
+  \label{eq:kl_divergence}
+    D_{KL}(\pi_{\theta_{\text{old}}} \Vert \pi_{\theta}) \le \delta
 \end{equation}
 
-Vzorec v~diskrétním prostoru:
-\begin{equation}
-  D_{KL}(p \| q) = \sum_x p(x) \log \frac{p(x)}{q(x)}
-\end{equation}
-
-Vzniká tak region důvěry, ve kterém musí nová strategie setrvat.
-Strategie se tedy nemůže skokově změnit na lokální maximum, ale pouze následuje směr lokálního maxima.
-
-K~tomu využívá Hessovy matice.
-Kdy pomocí těchto matic hledá optimální směr změny strategie.
-Tím, že se hledá lokální maximum pouze v~oblasti důvěry, řeší problém se zaseknutím v~těchto lokálních optimech.
+K výpočtu nových parametrů se již nepoužívá gradientní vzestup, ale používají se Hessovy matice.
 Hessova matice je vždy čtvercového tvaru.
-Její hodnoty obsahují druhé parciální derivace funkce a popisuje tím její lokální zakřivení.
-Jelikož je strategie pravděpodobnostní funkce, jsou tyto matice ideální pro hledání optimálního směru změny strategie.
+Její hodnoty obsahují druhé parciální derivace funkce a popisují tím její lokální zakřivení funkce.
+Tím, že se hledá lokální maximum pouze v~oblasti důvěry, problém se zaseknutím v~těchto lokálních optimech je značně redukován.
 
 Díky tomuto řešení se učení stává robustním a stabilním.
-Avšak výměnou za to, je náročnost aproximace pomocí Hessových matic a s~tím související náročnost na implementaci.
-Výpočet buňky v~Hessovy matici je definován jako:
-\begin{equation}
-  H_{ij} = \frac{\partial^2 f}{\partial x_i \partial x_j}
-\end{equation}
-Kde $i$ značí řádek a $j$ sloupec matice.
-Výsledná matice tak poté může vypadat takto:
+Avšak výměnou za to je náročnost výpočtu pomocí Hessových matic a s~tím související náročnost na implementaci.
 
-\begin{equation}
-  \begin{bmatrix}
-     \frac{\partial^2 f}{\partial x_1^2} & \frac{\partial^2 f}{\partial x_1 \partial x_2} \\
-     \frac{\partial^2 f}{\partial x_2 \partial x_1} & \frac{\partial^2 f}{\partial x_2^2}
-   \end{bmatrix}
-\end{equation}
-
-\section{Optimalizace proximální strategie (PPO)}
+\subsection{Optimalizace proximální strategie (PPO)}
 \label{sec:proximalni-optimalizace-strategie}
-{\color{red}TODO: lépe popsat}
-%\textsuperscript {\ref{sec:trust-region-policy-optimization}}
 
-Metoda optimalizace proximální strategie (Proximal policy optimization - PPO) byla představena roku 2017~\cite{PPO_paper}.
+Metoda optimalizace proximální strategie (Proximal policy optimization --- PPO) byla představena roku 2017~\cite{PPO_paper}.
 Tato metoda je vylepšeným následníkem algoritmu TRPO, popsaný v~předchozí sekci~\ref{sec:trust-region-policy-optimization}.
 
 Co výrazné odlišuje tuto metodu od předchůdců, je její jednoduchost a efektivita.
@@ -644,23 +665,38 @@ Je, avšak mnohem jednodušší na implementaci, má nižší nároky na výkon 
 K~dosažení těchto výsledků, využívá PPO techniku ořezávání náhradních cílů vloženou do algoritmu TRPO\@.
 Vynucuje, aby K-L divergence staré a nové strategie byla v~rozmezí $[1-\epsilon, 1+\epsilon]$ kde $\epsilon$ je modifikovatelný parametr.
 
-Nechť $r_t(\theta)$ je pravděpodobnostní poměr mezi novou a starou strategií.
+Nechť $r(\theta)$ je pravděpodobnostní poměr mezi novou a starou strategií.
 \begin{equation}
-  r_t(\theta) = \frac{\pi_\theta(a_t \vert s_t)}{\pi_{\theta_{old}}(a_t \vert s_t)}
+  r(\theta) = \frac{\pi_\theta(a_t \vert s_t)}{\pi_{\theta_{\text{old}}}(a_t \vert s_t)}
 \end{equation}
+
+\pagebreak
 
 Pokud tento vzorec dosadíme do rovnice pro výpočet gradientu strategie TRPO.
 Kde TRPO využívá K-L divergenci a maximalizuje vedlejší cíle~\cite{policy_gradients}, vznikne následovná rovnice:
 
-
+\begin{equation}
+  \begin{split}
+    J^{TRPO}(\theta) &= \sum_{s \in \mathcal{S}} d_{\pi_{\theta_{\text{old}}}}(s) \sum_{a \in \mathcal{A}} \pi_{\theta}(a \vert s) r(\theta) \hat{A}_{\theta_{\text{old}}}(s, a)\\
+    \hat{A}_{\theta_{\text{old}}}(s, a) &= Q_{\pi_{\theta_{\text{old}}}}(s, a) - V_{\pi_{\theta_{\text{old}}}}(s)\\
+  \end{split}
+\end{equation}
 
 \begin{myitemize}
-  \item $\theta$ je parametr strategie.
-  \item $\mathbb{E}_t$ značí empirickou očekávání v~časových krocích
-  \item $r_t$ relativní podobnost nové a staré strategie~\cite{PPO_paper}
-  \item $\hat{A}_t$ je odhad výhody akce v~čase $t$.
-  \item $\epsilon$ je hyperparametr, obvykle nastaven na hodnotu $0.1$ nebo $0.2$.
+  \item $\hat{A}_{\theta_{\text{old}}}(s, a)$ --- odhad výhody akce $a$ ve stavu $s$. Měří jak je daná akce lepší než průměrná akce ve stavu $s$.
 \end{myitemize}
+
+Nyní ale čelíme stejnému problému jako na začátku, kde při gradientním vzestupu může být změna příliš velká.
+Proto, tuto účelovou funkci upravíme a zavedeme ořezávání (clipping).
+
+\begin{equation}
+  J^{\text{CLIP}}(\theta) = \sum_{s \in \mathcal{S}} d_{\pi_{\theta_{\text{old}}}}(s) \sum_{a \in \mathcal{A}} \pi_{\theta_{\text{old}}}(a|s) \min \left( r(\theta) \hat{A}_{\theta_{\text{old}}}(s, a), \, \text{clip} \left( r(\theta), 1 - \epsilon, 1 + \epsilon \right) \hat{A}_{\theta_{\text{old}}}(s, a) \right)
+\end{equation}
+
+\begin{myitemize}
+  \item 
+\end{myitemize}
+
 
 \begin{figure}[H]
 	\centering
@@ -671,8 +707,14 @@ Kde TRPO využívá K-L divergenci a maximalizuje vedlejší cíle~\cite{policy_
   Zdroj:~\cite{RL_basics}}\label{fig:clip}
 \end{figure}
 
-Tyto změny tvoří PPO oproti TRPO kompatibilní s~metodou stochastického gradientního sestupu.
-Odstraňuje K--L omezení a nahrazuje je ořezáváním.
+Tyto změny tvoří PPO oproti TRPO kompatibilní s~metodou gradientního vzestupu, která je velmi snadná na výpočet.
+Parametry se tedy aktualuzují dle tohoto vzorce
+
+\begin{equation}
+  \theta_{k+1} = 
+\end{equation}
+
+\pagebreak
 
 PPO má však i své nedostatky.
 \label{PPO_weakness}
@@ -704,22 +746,22 @@ Agenti tak získávají odměny i za menší kroky, nejen například za vítěz
       \]
       \State Aktualizuj parametry politiky $\theta$:
       \[
-        \theta_{k+1} = argmax_{\theta} \frac{1}{\left|\mathcal{D}_k\right|T}\displaystyle\sum_{\tau \in \mathcal{D}_k} \sum_{t=0}^T \left[ \min \left( r_t(\theta) \hat{A}_t, \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon) \hat{A}_t \right) \right]
+        \theta_{k+1} = argmax_{\theta} \frac{1}{\left|\mathcal{D}_k\right|T}\displaystyle\sum_{\tau \in \mathcal{D}_k} \sum_{t=0}^T \left[ \min \left( r(\theta) \hat{A}_t, \text{clip}(r(\theta), 1-\epsilon, 1+\epsilon) \hat{A}_t \right) \right]
       \]
     \EndFor
   \end{algorithmic}
   \end{algorithm}\pagebreak
   \begin{myitemize}
-    \item $k$ - iterace
-    \item $r_t(\theta) = \frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_{old}}(a_t|s_t)}$\\ - poměr šance zvolení akce $a_t$ ve stavu $s_t$ \\ mezi novou a předchozí politikou
-    \item $\epsilon$ - hyperparametr klipoavací funkce.
-    \item $\text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon) \hat{A}_t$ - klipovaná ztráta politiky
-    \item $r_t(\theta) \hat{A}_t$ - ztráta politiky
-    \item min -  vybere nejmenší změny aby nedošlo k nestabilitě učení.
-    \item $\hat{A}_t$ - odhadovaná výhoda akce $a_t$ ve stavu $s_t$
-    \item $\frac{1}{\left|\mathcal{D}_k\right|T}$ - počet trajektorií v sadě $\mathcal{D}_k$ a počet kroků $T$ v trajektorii
-    \item $\displaystyle\sum_{\tau \in \mathcal{D}_k} \sum_{t=0}^T$ - sumace přes všechny trajektorie v sadě $\mathcal{D}_k$ a všechny kroky $t$ v trajektorii
-    \item $argmax$ - hledá takový argument, který maximalizuje funkci.
+    \item $k$ --- číslo iterace
+    \item $r(\theta) = \frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_{\text{old}}}(a_t|s_t)}$\\ --- poměr šance zvolení akce $a_t$ ve stavu $s_t$ \\ mezi novou a předchozí politikou
+    \item $\epsilon$ --- hyperparametr klipoavací funkce.
+    \item $\text{clip}(r(\theta), 1-\epsilon, 1+\epsilon) \hat{A}_t$ --- klipovaná ztráta politiky
+    \item $r(\theta) \hat{A}_t$ --- ztráta politiky
+    \item min ---  vybere nejmenší změny aby nedošlo k nestabilitě učení.
+    \item $\hat{A}_t$ --- odhadovaná výhoda akce $a_t$ ve stavu $s_t$
+    \item $\frac{1}{\left|\mathcal{D}_k\right|T}$ --- počet trajektorií v sadě $\mathcal{D}_k$ a počet kroků $T$ v trajektorii
+    \item $\displaystyle\sum_{\tau \in \mathcal{D}_k} \sum_{t=0}^T$ --- sumace přes všechny trajektorie v sadě $\mathcal{D}_k$ a všechny kroky $t$ v trajektorii
+    \item $argmax$ --- hledá takový argument, který maximalizuje funkci.
     Pomocí optimalizačních metod (Adam, nebo gradientní sestup)
 \end{myitemize}
 
