@@ -527,7 +527,7 @@ Ten je řešen dvěma mechanismy:
                   r_j + \gamma \max_{a'} Q^{-}(s_j', a'; \theta^{-}) & \text{jinak}
                   \end{cases}
                   \]
-                  \State Vypočítej ztrátu a pomocí gradientního sestupu aktualizuj váhy hlavní sítě~$\theta$:
+                  \State Vypočítej ztrátu a pomocí gradientního vzestupu (gradient ascend) aktualizuj váhy hlavní sítě~$\theta$:
                    \[
                   L(\theta) = \left(y_j - Q(s_j, a_j; \theta)\right)^2
                   \]
@@ -605,7 +605,7 @@ Jaký efekt budou mít změny parametrů strategie na zvolené akce lze spočít
 \end{myitemize}
 
 Tento teorém je základem pro všechny metody gradientu politiky.
-Parametry strategie se mohou upravovat například pomocí metody \textbf{gradientního  vzestupu}:
+Parametry strategie se mohou upravovat například pomocí metody \textbf{gradientního  vzestupu} (gradient ascend):
 \begin{equation}
   \theta_{k+1} = \theta_k + \alpha \nabla_\theta J(\theta)
 \end{equation}
@@ -639,6 +639,11 @@ Strategie se tedy nemůže skokově změnit na lokální maximum, ale pouze nás
 \begin{equation}
   J^{TRPO}(\theta) = \sum_{s \in \mathcal{S}} d_{\pi_{\theta_{\text{old}}}}(s) \sum_{a \in \mathcal{A}} \pi_{\theta}(a \vert s) \hat{A}_{\theta_{\text{old}}}(s, a)
 \end{equation}
+
+\begin{myitemize}
+  \item $\hat{A}_{\theta_{\text{old}}}(s, a)$ --- odhad výhody akce $a$ ve stavu $s$. Měří jak je daná akce lepší než průměrná akce ve stavu $s$. Lze dále rozepsat jako: $Q_{\pi_{\theta_{\text{old}}}}(s, a) - V_{\pi_{\theta_{\text{old}}}}(s)$.
+\end{myitemize}
+
 Kde rozdíl mezi novou a starou politikou je omezen K-L divergencí:
 \begin{equation}
   \label{eq:kl_divergence}
@@ -648,7 +653,7 @@ Kde rozdíl mezi novou a starou politikou je omezen K-L divergencí:
 K výpočtu nových parametrů se již nepoužívá gradientní vzestup, ale používají se Hessovy matice.
 Hessova matice je vždy čtvercového tvaru.
 Její hodnoty obsahují druhé parciální derivace funkce a popisují tím její lokální zakřivení funkce.
-Tím, že se hledá lokální maximum pouze v~oblasti důvěry, problém se zaseknutím v~těchto lokálních optimech je značně redukován.
+Tím, že se hledá lokální maximum pouze v~oblasti důvěry, problém se stabilitou je značně redukován.
 
 Díky tomuto řešení se učení stává robustním a stabilním.
 Avšak výměnou za to je náročnost výpočtu pomocí Hessových matic a s~tím související náročnost na implementaci.
@@ -665,26 +670,18 @@ Je, avšak mnohem jednodušší na implementaci, má nižší nároky na výkon 
 K~dosažení těchto výsledků, využívá PPO techniku ořezávání náhradních cílů vloženou do algoritmu TRPO\@.
 Vynucuje, aby K-L divergence staré a nové strategie byla v~rozmezí $[1-\epsilon, 1+\epsilon]$ kde $\epsilon$ je modifikovatelný parametr.
 
+\pagebreak
+
 Nechť $r(\theta)$ je pravděpodobnostní poměr mezi novou a starou strategií.
 \begin{equation}
   r(\theta) = \frac{\pi_\theta(a_t \vert s_t)}{\pi_{\theta_{\text{old}}}(a_t \vert s_t)}
 \end{equation}
 
-\pagebreak
-
-Pokud tento vzorec dosadíme do rovnice pro výpočet gradientu strategie TRPO.
-Kde TRPO využívá K-L divergenci a maximalizuje vedlejší cíle~\cite{policy_gradients}, vznikne následovná rovnice:
+Pokud tento vzorec dosadíme do rovnice pro výpočet účelové funkce v algoritmu TRPO, vznikne následovná rovnice:
 
 \begin{equation}
-  \begin{split}
-    J^{TRPO}(\theta) &= \sum_{s \in \mathcal{S}} d_{\pi_{\theta_{\text{old}}}}(s) \sum_{a \in \mathcal{A}} \pi_{\theta}(a \vert s) r(\theta) \hat{A}_{\theta_{\text{old}}}(s, a)\\
-    \hat{A}_{\theta_{\text{old}}}(s, a) &= Q_{\pi_{\theta_{\text{old}}}}(s, a) - V_{\pi_{\theta_{\text{old}}}}(s)\\
-  \end{split}
+    J^{CPI}(\theta) = \sum_{s \in \mathcal{S}} d_{\pi_{\theta_{\text{old}}}}(s) \sum_{a \in \mathcal{A}} \pi_{\theta}(a \vert s) r(\theta) \hat{A}_{\theta_{\text{old}}}(s, a)
 \end{equation}
-
-\begin{myitemize}
-  \item $\hat{A}_{\theta_{\text{old}}}(s, a)$ --- odhad výhody akce $a$ ve stavu $s$. Měří jak je daná akce lepší než průměrná akce ve stavu $s$.
-\end{myitemize}
 
 Nyní ale čelíme stejnému problému jako na začátku, kde při gradientním vzestupu může být změna příliš velká.
 Proto, tuto účelovou funkci upravíme a zavedeme ořezávání (clipping).
@@ -693,28 +690,41 @@ Proto, tuto účelovou funkci upravíme a zavedeme ořezávání (clipping).
   J^{\text{CLIP}}(\theta) = \sum_{s \in \mathcal{S}} d_{\pi_{\theta_{\text{old}}}}(s) \sum_{a \in \mathcal{A}} \pi_{\theta_{\text{old}}}(a|s) \min \left( r(\theta) \hat{A}_{\theta_{\text{old}}}(s, a), \, \text{clip} \left( r(\theta), 1 - \epsilon, 1 + \epsilon \right) \hat{A}_{\theta_{\text{old}}}(s, a) \right)
 \end{equation}
 
+Jelikož je toto nejdůležitější rovnice z celé prace, znovu zadefinujeme i známé proměnné.
 \begin{myitemize}
-  \item 
+  \item $\sum_{s \in \mathcal{S}}$ --- suma přes všechny stavy
+  \item $d_{\pi_{\theta_{\text{old}}}}(s)$ --- distribuční rozdělení stavů. Značí pravděpodobnost, že se agent nachází ve stavu $s$, při následování strategie $\pi_{\theta_{\text{old}}}$.
+  \item $\sum_{a \in \mathcal{A}}$ --- suma přes všechny akce
+  \item $\pi_{\theta_{\text{old}}}(a|s)$ --- pravděpodobnost volby akce $a$ ve stavu $s$ podle staré strategie $\pi_{\theta_{\text{old}}}$
+  \item $r(\theta)$ --- pravděpodobnostní poměr mezi novou a starou strategií
+  \item $\hat{A}_{\theta_{\text{old}}}(s, a)$ --- odhad výhody akce $a$ ve stavu $s$,\\vypočtený vzorcem: $Q_{\pi_{\theta_{\text{old}}}}(s, a) - V_{\pi_{\theta_{\text{old}}}}(s)$
+  \item $\epsilon$ --- hyperparametr ořezávání
+  \item clip --- funkce, která ořízne hodnotu $r(\theta)$ v intervalu $(1-\epsilon, 1+\epsilon)$
+  \item min --- funkce, která vybere menší z~dvou hodnot
 \end{myitemize}
-
+V rovnici se objevuje minimum, to bere menší z ořezané a neořezané hodnoty.
+Volí minimum, protože jedná pesimisticky (pessimistic bound) a tím volí nejbezpečnější možnost pro aktualizaci parametrů.
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.6\textwidth]{obrazky-figures/clip}
-	\caption{Grafy zobrazují 1 časový krok funkce $L^{CLIP}$.
-  Červeným bodem je označen počáteční stav optimalizace.
-  Levý graf zobrazuje kladnou změnu a pravý zápornou změnu.
+	\caption{Grafy zobrazují jak se chová funkce \emph{clip}.
+  Červeným bodem je označen počáteční stav.
+  Levý graf zobrazuje kladný růst gradientu, kde je tedy tento růst omezen.
+  Pravý graf zobrazuje záporné klesání gradientu, kde je toto klesání omezeno.
   Zdroj:~\cite{RL_basics}}\label{fig:clip}
 \end{figure}
 
-Tyto změny tvoří PPO oproti TRPO kompatibilní s~metodou gradientního vzestupu, která je velmi snadná na výpočet.
-Parametry se tedy aktualuzují dle tohoto vzorce
+Všechny výše uvedené vzorce byly kvůli zaměření této práce uvedeny pro diskrétní stavový i akční prostor.
+PPO však skvěle zvládá i spojité prostory, v případě spojitých prostorů se v rovnicích místo sum přes všechny stavy a akce využije \emph{očekávaná (střední) hodnota}.
+
+
+Tyto změny tvoří PPO oproti TRPO kompatibilní s~metodou gradientního vzestupu, která je oproti výpočtu přes Hessovy matice velice snadná na výpočet.
+Parametry se tedy aktualizují dle tohoto vzorce
 
 \begin{equation}
-  \theta_{k+1} = 
+  \theta_{k+1} = \theta_k + \alpha \nabla_\theta J^{\text{CLIP}}(\theta)
 \end{equation}
-
-\pagebreak
 
 PPO má však i své nedostatky.
 \label{PPO_weakness}
@@ -761,8 +771,7 @@ Agenti tak získávají odměny i za menší kroky, nejen například za vítěz
     \item $\hat{A}_t$ --- odhadovaná výhoda akce $a_t$ ve stavu $s_t$
     \item $\frac{1}{\left|\mathcal{D}_k\right|T}$ --- počet trajektorií v sadě $\mathcal{D}_k$ a počet kroků $T$ v trajektorii
     \item $\displaystyle\sum_{\tau \in \mathcal{D}_k} \sum_{t=0}^T$ --- sumace přes všechny trajektorie v sadě $\mathcal{D}_k$ a všechny kroky $t$ v trajektorii
-    \item $argmax$ --- hledá takový argument, který maximalizuje funkci.
-    Pomocí optimalizačních metod (Adam, nebo gradientní sestup)
+    \item $argmax$ --- hledá takový argument, který maximalizuje funkci, pomocí optimalizačních metod (Adam, nebo gradientní vzestup)
 \end{myitemize}
 
 
