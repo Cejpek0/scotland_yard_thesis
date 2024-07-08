@@ -3,6 +3,7 @@ File description: This file contains the TrainerDQN class, which is used to trai
 
 Author: Michal Cejpek (xcejpe05@stud.fit.vutbr.cz)
 """
+import argparse
 import os
 
 from ray.rllib.algorithms import DQN, DQNConfig
@@ -15,8 +16,8 @@ from src.helper import verbose_print
 
 
 class TrainerDQN:
-    def __init__(self, max_iterations, directory="trained_models_dqn", verbose=False, simulation=False,
-                 playing=False):
+    def __init__(self, max_iterations, directory="trained_models_dqn", verbose=False, simulation=False, playing=True,
+                 backup_folder=None):
         """
         Initialize the TrainerDQN object.
         :param max_iterations: Maximum number of iterations to train the agents.
@@ -32,6 +33,9 @@ class TrainerDQN:
         self.simulation = simulation
         self.directory = directory
         self.verbose = verbose
+        self.backup_folder = backup_folder
+        if backup_folder is not None:
+            assert os.path.exists(backup_folder), "Backup folder does not exist"
         if not simulation and not playing:
             ray.init(num_gpus=0)
             # ray.init(num_gpus=1) for gpu support
@@ -54,7 +58,7 @@ class TrainerDQN:
 
         if not playing:
             my_config = my_config.exploration(explore=True,
-                                              exploration_config={"type": "EpsilonGreedy", "initial_epsilon": 0.8,
+                                              exploration_config={"type": "EpsilonGreedy", "initial_epsilon": 1,
                                                                   "final_epsilon": 0.05,
                                                                   "epsilon_timesteps": max_iterations / 10 * 6 * 1000})
         else:
@@ -118,11 +122,18 @@ class TrainerDQN:
             train_results = self.algo.train()
             verbose_print(f"Information about training iteration {i + 1} of {number_of_iterations} done", self.verbose)
             verbose_print(f"Total time trained:{train_results['time_total_s']}", self.verbose)
-            verbose_print(f"Number of episodes: {train_results['episodes_this_iter']} with average reward:{train_results['episode_reward_mean']}", self.verbose)
-            verbose_print(f"Current epsilon: {self.algo.get_policy('mr_x_policy').get_exploration_state()['cur_epsilon']}",self.verbose)
+            verbose_print(
+                f"Number of episodes: {train_results['episodes_this_iter']} with average reward:{train_results['episode_reward_mean']}",
+                self.verbose)
+            verbose_print(
+                f"Current epsilon: {self.algo.get_policy('mr_x_policy').get_exploration_state()['cur_epsilon']}",
+                self.verbose)
             if not self.simulation and i % save_interval == 0 and i != 0:
                 verbose_print("Saving policies", self.verbose)
                 self.save_export()
+                if self.backup_folder is not None:
+                    verbose_print("Creating backup", self.verbose)
+                    self.do_backup()
         verbose_print("Done", self.verbose)
         self.save_export()
         return self
@@ -131,12 +142,37 @@ class TrainerDQN:
         self.algo.save(self.directory)
         return self
 
+    def do_backup(self):
+        if self.backup_folder is not None:
+            self.algo.save(self.backup_folder)
+        return self
+
     def cleanup(self):
         ray.shutdown()
         return self
 
 
 if __name__ == "__main__":
-    TrainerDQN(max_iterations=50, directory="trained_models_dqn", verbose=True).train(number_of_iterations=50,
-                                                                                        save_interval=10).cleanup()
+    parser = argparse.ArgumentParser(description="Train and run DQN agents.")
+    parser.add_argument('--backup-folder', type=str, default=None, help='Folder for backup copies; default: none.')
+    parser.add_argument('--load-folder', type=str, default='trained_models_dqn', help='Folder to load the model from; '
+                                                                                      'default: trained_models_dqn.')
+    parser.add_argument('--save-folder', type=str, default='trained_models_dqn', help='Folder to save the model to; '
+                                                                                      'default: trained_models_dqn.')
+    parser.add_argument('--num-iterations', type=int, default=50, help='Number of training iterations; default: 50.')
+    parser.add_argument('--save-interval', type=int, default=10, help='Interval for saving the model; default: 10.')
+    parser.add_argument('--verbose', action='store_true', default=True, help='Print verbose output; default: True.')
+
+    args = parser.parse_args()
+    trainer = TrainerDQN(
+        max_iterations=args.num_iterations,
+        directory=args.save_folder,
+        verbose=args.verbose,
+        backup_folder=args.backup_folder
+    )
+    (
+        trainer
+        .train(number_of_iterations=args.num_iterations, save_interval=args.save_interval)
+        .cleanup()
+    )
     print("Done")

@@ -3,6 +3,7 @@ File description: This file contains the TrainerPPO class, which is used to trai
 
 Author: Michal Cejpek (xcejpe05@stud.fit.vutbr.cz)
 """
+import argparse
 import os
 
 from ray.rllib.algorithms.ppo import PPOConfig, PPO
@@ -15,7 +16,8 @@ from src.helper import verbose_print
 
 
 class TrainerPPO:
-    def __init__(self, directory="trained_models_ppo", verbose=False, simulation=False, playing=False):
+    def __init__(self, directory="trained_models_ppo", verbose=False, simulation=False, playing=True,
+                 backup_folder=None):
         """
         Initialize the TrainerPPO object.
         :param directory: Directory to save the trained models.
@@ -23,12 +25,16 @@ class TrainerPPO:
         :param simulation: Set to true if trainer is initialized for simulation purposes.
         Used to set the number of cpus per worker. And avoid multiple ray.init() calls.
         :param playing: Set to true if trainer is initialized for playing purposes.
+        :param backup_folder: Directory to save backup copies of the models.
         """
         if playing:
             assert os.path.exists(directory), "No trained policies found"
         self.directory = directory
         self.simulation = simulation
         self.verbose = verbose
+        self.backup_folder = backup_folder
+        if backup_folder is not None:
+            assert os.path.exists(backup_folder), "Backup folder does not exist"
         if not simulation and not playing:
             ray.init(num_gpus=0)
             # ray.init(num_gpus=1) for gpu support
@@ -74,14 +80,23 @@ class TrainerPPO:
             if not self.simulation and i % save_interval == 0 and i != 0:
                 verbose_print("Saving policies", self.verbose)
                 self.save_export()
+                if self.backup_folder is not None:
+                    verbose_print("Creating backup", self.verbose)
+                    self.do_backup()
         verbose_print("Done", self.verbose)
         self.save_export()
         return self
 
     def save_export(self):
         self.algo.save(self.directory)
+        # Code for exporting the models into PyTorch format
         # self.algo.get_policy("mr_x_policy").export_model(f"{self.directory}/trained_models/policy_model_mrx_ppo")
         # self.algo.get_policy("cop_policy").export_model(f"{self.directory}/trained_models/policy_model_cop_ppo")
+        return self
+
+    def do_backup(self):
+        if self.backup_folder is not None:
+            self.algo.save(self.backup_folder)
         return self
 
     def cleanup(self):
@@ -90,6 +105,23 @@ class TrainerPPO:
 
 
 if __name__ == "__main__":
-    (TrainerPPO(directory="trained_models_ppo", verbose=True)
-     .train(number_of_iterations=10, save_interval=5)
-     .cleanup())
+    parser = argparse.ArgumentParser(description="Train and run PPO agents.")
+    parser.add_argument('--backup-folder', type=str, default=None, help='Folder for backup copies; default: none.')
+    parser.add_argument('--load-folder', type=str, default='trained_models_ppo', help='Folder to load the model from; default: trained_models_ppo.')
+    parser.add_argument('--save-folder', type=str, default='trained_models_ppo', help='Folder to save the model to; default: trained_models_ppo.')
+    parser.add_argument('--num-iterations', type=int, default=50, help='Number of training iterations; default: 50.')
+    parser.add_argument('--save-interval', type=int, default=10, help='Interval for saving the model; default: 10.')
+    parser.add_argument('--verbose', action='store_true', default=True, help='Print verbose output; default: True.')
+
+    args = parser.parse_args()
+    trainer = TrainerPPO(
+        directory=args.save_folder,
+        verbose=args.verbose,
+        backup_folder=args.backup_folder
+    )
+    (
+        trainer
+        .train(number_of_iterations=args.num_iterations, save_interval=args.save_interval)
+        .cleanup()
+    )
+    print("Done")
