@@ -1028,17 +1028,18 @@ Bohužel však přes veškeré snahy, agenti DQN stále nedosahují ani zdaleka 
 Trénování modelů je obsaženo v~samostatných skriptech, které jsou spustitelné z~příkazové řádky:
 \begin{myitemize}
   \item TrainerDQN.py\\
-  Spuštění: \texttt{python TrainerDQN.py {\color{red}TODO: dopsat FLAGY}}
+  Spuštění: \texttt{python TrainerDQN.py}
   \begin{myitemize}[${}$]
-    \item -{}-do-backup: během ukládání vytvoří záložní kopii modelu
-    \item -{}-backup-folder [string]: složka pro záložní kopie; default: none
+    \item -{}-backup-folder [string]: složka pro záložní kopie; default: None
     \item -{}-load-folder [string]: načte model z~dané složky; default: trained\_models\_dqn
     \item -{}-save-folder [string]: uloží model do dané složky; default: trained\_models\_dqn
     \item -{}-num-iterations [int]: počet iterací trénování; default: 50
     \item -{}-save-interval [int]: interval ukládání modelu
-    \item -{}-verbose
+    \item -{}-no-verbose: zákaz výpisu průběhu trénování; default: False
   \end{myitemize}
   \item TrainerPPO.py
+  \item - Spuštění: \texttt{python TrainerPPO.py}
+  \item - Parametry jsou stejné jako u TrainerDQN.py
 \end{myitemize}
 
 Tyto spustitelné skripty obsahují třídy a konfigurace pro trénování modelů.
@@ -1147,11 +1148,63 @@ Naštěstí agenti dosahovali dobrých výsledku již se zjednodušenou varianto
 Systém řízení je zodpovědný za řízení chodu agentů a celé hry Scotland Yard, stejně jako za trénování agentů.
 Systém řízení tedy můžeme rozdělit na dvě různé části, podle toho, zda kontroluje trénování nebo o~hraní hry.
 V obou variantách je hlavní smyčka která volá hlavní metodu \textbf{step}.
+Tato metoda následně volá i metodu \textbf{play\_turn}, která řídí chod hry.
 
-\subsection{\emph{Step} metoda během učení}
-{\color{red}TODO: pseudoalgoritmus}
+\subsection{Systém řízení během trénování}
 
-Step metoda je volána v~každém kroku algoritmu pro učení agentů.
+\begin{algorithm}[H]
+  \caption{\emph{step()} metoda prostředí, která se využívá při trénování}
+  \label{alg:step}
+  \begin{algorithmic}
+    \State \textbf{vstup:} hrající agent, akce pro agenta
+    \State \textbf{výstup:} pozorování pro dalšího agenta, odměna
+    \State
+    \If{akce je nevalidní}
+    \State další agent = agent
+    \State odměna = -20
+    \State \textbf{return} stejný stav, odměna
+    \EndIf
+    \State game.play\_turn(akce)
+    \State nový stav = environment.get\_state()
+    \State odměna = environment.get\_reward()
+    \State další agent = environment.get\_next\_player()
+    \State \textbf{return} nový stav, odměna
+  \end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+  \caption{Průběh trénování ve frameworku Ray}
+  \label{alg:training}
+  \begin{algorithmic}
+    \State \textbf{vstup:} počet iterací, velikost dávky, prostředí, model
+    \State \textbf{výstup:} model
+    \State
+    \State dávky = []
+    \For{i in počet iterací}
+      \For{pracovníka in pracovníci}
+        \State velikost\_dávky = 0
+        \State mini\_dávka = []
+        \While{velikost\_dávky < max\_velikost\_dávky}
+          \State stav = prostředí.získej\_stav()
+          \State akce = model.získej\_akci(stav)
+          \State nový stav, odměna = prostředí.step(akce)
+          \State mini\_dávka.append(stav, akce, nový stav, odměna)
+          \State velikost\_dávky += 1
+        \EndWhile
+        \State dávky.append(mini\_dávka)
+      \EndFor 
+      \State model.update(dávky)
+    \EndFor
+    \State \textbf{return} model
+  \end{algorithmic}
+\end{algorithm}
+
+
+Za řízení trénování agentů je zodpovědný framework \texttt{Ray}.
+Vícero procesů je spuštěno naráz a každý proces má svoji instanci prostředí.
+Každý proces sbírá data z hraní agentů a následně je posílá do hlavního procesu, který je zodpovědný za zpracování těchto údajů a trénování.
+Prostředí má svoji funkci step, která je volána v každém kroku sbírání dat.
+
 Této metodě je předána zvolená akce dle strategie tohoto učení a metoda zkontroluje, zda je akce validní.
 Pokud je akce validní, prostředí ji provede.
 V opačném případě je agent penalizován za špatnou akci a funkce step je volána znovu, pro stejného agenta, dokud není zvolena validní akce.
@@ -1159,17 +1212,75 @@ Po provedení akce tedy metoda vypočte nový stav prostředí a odměny za prov
 Nové pozorování z prostředí předá dalším agentům, kteří mají hrát.
 Vždy je tedy této metodě \emph{step} předána akce pro agenty které obdrželi pozorování.
 Tím se naznačuje, kdo hraje jako další a kdo má čekat na svůj tah.
-Vyhodnocené odměny jsou následně předány použitému algoritmu pro učení a ten na základě těchto odměn upraví váhy své neuronové sítě, viz kapitola o~algoritmu PPO (\ref{sec:proximalni-optimalizace-strategie}) a DQN (\ref{subsec:deep-q-learning}).
+Tyto dávky odehraných her jsou poté předány hlavnímu procesu, který na základě použitéhu algoritmu pro učení upraví váhy své neuronové sítě, viz kapitola o~algoritmu PPO (\ref{sec:proximalni-optimalizace-strategie}) a DQN (\ref{subsec:deep-q-learning}).
 
-\subsection{\emph{Step} metoda hraní hry}
-{\color{red}TODO: pseudoalgoritmus}
-%
-%def step():
-%  current_player = get_current_player()
-%  action = get_action_for_player(current_player)
-%  move_player(current_player, action)
-%  update_game_state()
-%  next_player_index = current_player_index + 1 % number_of_players
+\subsection{Systém řízení během hraní hry}
+
+\begin{algorithm}[H]
+  \begin{algorithmic}
+    \caption{Základní herní smyčka}
+    \label{alg:GameController}
+      \State scény = fronta()
+      \State scény.přidej\_scénu(Úvodní\_scéna)
+      \State
+      \While{je fronta scén neprázdná}
+        \State zpracuj\_uživatelský\_vstup()
+        \If {uživatel stiskl klávesu esc}
+          \State scény.odeber\_scénu()
+        \EndIf
+        \State scéna = scény.první\_scéna()
+        \State scéna.aktualizuj\_scénu(uživatelský\_vstup)
+        \State scéna.zobraz\_scénu()
+      \EndWhile
+  \end{algorithmic}
+\end{algorithm}
+
+Hlavní herní smyčka obsahuje frontu scén.
+Scény jsou třídy, které obsahují implementace metod pro aktualizaci a zobrazení scény.
+V této frontě jsou postupně přidávány scény, které se mají zobrazit.
+Jakmile je zcéna odstraněna, intuitivně se zobrazí minulá scéna.
+
+\begin{algorithm}[H]
+  \caption{Aktualizace scény hry Scotland Yard}
+  \label{alg:GameScene}
+  \begin{algorithmic}
+    \If{hra není pozastavena}
+      \State game.play\_turn()
+      \If {hra skončila}
+        \State Zobraz konec hry a za 2 sekundy resetuj hru
+      \EndIf
+    \EndIf
+  \end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+  \caption{Metoda \emph{play\_turn()}}
+  \label{alg:play_turn}
+  \begin{algorithmic}
+    \State \textbf{vstup:} hrající agent, akce pro agenta
+    \State
+
+    \If{není akce}
+      \State pocet\_pokusu = 0
+      \State akce = None
+      \While{je akce nevalidní}
+        \If{pocet\_nevalidnich\_akci < max\_pocet\_nevalidnich\_akci}
+          \State akce = model.získej\_akci(stav, agent)
+          \State pocet\_nevalidnich\_akci += 1
+        \Else
+        \State akce = náhodná\_validní\_akce
+        \EndIf
+      \EndWhile
+      \State \textbf{return} akce
+    \EndIf
+    \State agent.move(akce)
+    \State agent = get\_next\_player()
+  \end{algorithmic}
+\end{algorithm}
+
+Tato metoda obsluhuje jedno kolo hry.
+Vstupem je agent, který má hrát, a akce, kterou má provést.
+Pokud není akce, znamená to, že neprobíhá trénování a akci vygeneruje model.
 
 Zde je metoda Step je volána v~každém kroku  herní smyčky.
 Tato metoda již nedostává akci agentů jako vstup při trénování, ale musí si ji sama vygenerovat.
@@ -1183,10 +1294,9 @@ Samozřejmě se může teoreticky stát, že agenti budou volit nevalidní akci 
 Hlavní metoda step nyní získala akci pro agenty a následně tuto akci provede.
 Na základě provedení akce se upraví stav prostředí a funkce step je volána znovu, dokud nenastane konec hry.
 
-\bigskip
-\bigskip
+\pagebreak
 
-V průběhu realizace práce jsem experimentoval s různými variantami systému řízení:
+V průběhu realizace práce jsem experimentoval s různými variantami řízení kola hry:
 \subsection{Prvotní verze, kde agenti hrají zároveň}
 V této verzi se hra dělila pouze na kola a funkce step obsluhovala celé toto kolo.
 Ve funkci step tedy byly volány metody pro získání akce pro všechny agenty, které se nakonec vykonaly najednou.
