@@ -161,13 +161,13 @@ if __name__ == "__main__":
                                                                                       'default: trained_models_dqn.')
     parser.add_argument('--num-iterations', type=int, default=50, help='Number of training iterations; default: 50.')
     parser.add_argument('--save-interval', type=int, default=10, help='Interval for saving the model; default: 10.')
-    parser.add_argument('--verbose', action='store_true', default=True, help='Print verbose output; default: True.')
+    parser.add_argument('--no-verbose', action='no_verbose', default=False, help='Do not print verbose output; default: False.')
 
     args = parser.parse_args()
     trainer = TrainerDQN(
         max_iterations=args.num_iterations,
         directory=args.save_folder,
-        verbose=args.verbose,
+        verbose= not args.no_verbose,
         backup_folder=args.backup_folder
     )
     (
