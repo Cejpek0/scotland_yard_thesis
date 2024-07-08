@@ -117,6 +117,7 @@ class TrainerDQN:
         return int(start_length + progress * (max_length - start_length))
 
     def train(self, number_of_iterations=1, save_interval=10):
+        print("Training")
         for i in range(number_of_iterations):
             verbose_print(f"Training iteration {i + 1} of {number_of_iterations}", self.verbose)
             train_results = self.algo.train()
@@ -134,7 +135,7 @@ class TrainerDQN:
                 if self.backup_folder is not None:
                     verbose_print("Creating backup", self.verbose)
                     self.do_backup()
-        verbose_print("Done", self.verbose)
+        print("Done")
         self.save_export()
         return self
 
@@ -161,7 +162,8 @@ if __name__ == "__main__":
                                                                                       'default: trained_models_dqn.')
     parser.add_argument('--num-iterations', type=int, default=50, help='Number of training iterations; default: 50.')
     parser.add_argument('--save-interval', type=int, default=10, help='Interval for saving the model; default: 10.')
-    parser.add_argument('--no-verbose', action='no_verbose', default=False, help='Do not print verbose output; default: False.')
+    parser.add_argument('--no-verbose', action='store_true', default=False, help='Do not print verbose output; '
+                                                                                 'default: False.')
 
     args = parser.parse_args()
     trainer = TrainerDQN(
