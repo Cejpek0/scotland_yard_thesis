@@ -271,12 +271,12 @@ Strategie může být deterministická nebo stochastická.
 
   \subsubsection*{Stochastická strategie}
   
-  Zato stochastická strategie definuje pro každý stav pravděpodobnostní rozdělení nad množinou akcí.
-  Výsledná akce je tedy náhodná dle rozdělení pravděpodobnosti.
+  Zato stochastická strategie definuje pro každý stav pravděpodobnostní rozdělení nad akcemi.
+  Výsledná akce je tedy náhodná dle pravděpodobnosti zvolení akce.
   Může tedy nastat situace kdy ve stejném stavu agent zvolí vždy jinou akci.
   Tato strategie je vhodná v~situacích, kdy je potřeba zkoumat různé strategie a kdy agent nemá úplnou informaci o~prostředí.
-  Například tam kde by deterministická strategie zvolila jasnou akci \textit{A}, stochastická strategie by mohla s~malou pravděpodobností zvolit akci \textit{B}.
-  Čímž ale může odhalit, že akce \textit{B} je s~ohledem na kumulativní odměnu lepší než akce \textit{A}~\cite{Policies}.
+  Například tam kde by deterministická strategie zvolila jasnou akci \textit{a}, stochastická strategie by mohla s~malou pravděpodobností zvolit akci \textit{b}.
+  Čímž může dál prozkoumávat, výsledek akce \textit{b} a může zjistit, že je lepší než akce \textit{a}~\cite{Policies}.
 
   Rovnice výsledné akce stochastické strategie je:
   \begin{equation}
@@ -288,7 +288,7 @@ Strategie může být deterministická nebo stochastická.
     \item $s$ --- stav
     \item $a$ --- akce
     \item $\mathbb{P}_\pi$ --- pravděpodobnostní rozdělení
-    \item Rovnice tedy značí pravděpodobnost výběru akce $a$, pokud se systém nachází ve stavu $s$, podle strategie $\pi$
+    \item Rovnice tedy značí pravděpodobnost výběru akce $a$, pokud se prostředí nachází ve stavu $s$, podle strategie $\pi$
   \end{myitemize}
   
 
@@ -307,32 +307,12 @@ Výsledný stav tedy může být jiný pro stejný stav a akci.
   Může být kladná, záporná nebo nulová.
   Dle této zpětné vazby se agent učí, jak moc byla jeho zvolená akce v~daném stavu vhodná.
 
-\subsection{Markovův rozhodovací proces}\label{subsec:markovovy-rozhodovaci-proces}
-
-  Téměř všechny problémy řešené posilovaným učením, mohou být označeny jako Markovy rozhodovací procesy (Markov Decision Process).
-  Tato abstrakce je základním kamenem pro modelování algoritmů posilovaného učení.
-  Markovův rozhodovací proces značí, že následující stav není závislý na stavech minulých, nýbrž pouze na aktuálním stavu.
-  
-  \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.6\textwidth]{obrazky-figures/RL_basics}
-    \caption{Interakce mezi prostředím a agentem podle Markova rozhodovacího procesu.
-    Zdroj~\cite{RL_basics}:}\label{fig:markov}
-  \end{figure}
-  \begin{definition}
-  \end{definition}
-
-Hodnotová funkce vyhodnocuje, jak dobrý je stav tím, že predikuje budoucí odměnu, pokud bude další tah začínat v~tomto stavu.
-Čím vzdálenější odměna je od tohoto stavu, tím více je snížena.
-Protože, čím je odměna vzdálenější, tím více je nejisté, že bude doopravdy získána.
-Existují dva typy hodnotových funkcí:
-
-\subsubsection*{Hodnotová funkce stavu $V(s)$}
+\subsection{Hodnotová funkce stavu $V(s)$}
 
 Hodnotová funkce stavu \emph{$V(s)$} vyhodnocuje očekávanou kumulativní odměnu, jestliže se agent nachází v~tomto stavu.
 Vyhodnocuje tedy jak příznivý je daný stav pro agenta.
 
-\subsubsection*{Hodnotová funkce akce $Q(s, a)$}
+\subsection{Hodnotová funkce akce $Q(s, a)$}
 \label{subsubsec:q_function}
 
 Hodnotová funkce akce \emph{$Q(s, a)$} vyhodnocuje očekávanou kumulativní odměnu, pokud se agent nachází ve stau $s$ a zvolí akci $a$.
@@ -382,7 +362,7 @@ Všechny hry s~neúplnou informací se dají považovat za hry s~nedokonalou inf
 
 \chapter{Algoritmy, vhodné ke hraní her s~nedokonalou informací}\label{sec:vhodne-algoritmy-k-reseni-her-s-nedokonalou-informaci}
 
-Tato kapitola se zaměřuje na algoritmy, které jsou vhodné pro řešení her s~nedokonalou informací, s~důrazem na metody posilovaného učení a srovnáním s~klasickými metodami jako Monte Carlo.
+Tato kapitola se zaměřuje na algoritmy, které jsou vhodné pro řešení her s~nedokonalou informací, s~důrazem na metody posilovaného učení.
 
 \section{Monte Carlo tree search}\label{subsec:monte-carlo-tree-search}
 Metoda Monte Carlo tree search (MCTS) je heuristický algoritmus prohledávání.
@@ -399,7 +379,7 @@ MCTS se skládá z~několika fází:
 	\caption{Diagram jednotlivých fází MCTS.\@
   Zdroj:~\cite{mcts_geeksforgeeks}}\label{fig:mcts}
 \end{figure}
-
+\pagebreak
 \begin{myitemize}
   \item \textbf{\emph{Selekce}}
 
@@ -466,10 +446,12 @@ K~tomu se využívá $\epsilon$--greedy strategie viz \ref{epsilon_greedy}.
 \begin{myitemize}
   \item $\alpha$ --- rychlost učení
   \item $\gamma$ --- diskontní faktor
+  \item $Q(s, a)$ --- hodnota akce $a$ ve stavu $s$
+   
   \item $r$ --- odměna
   \item $s$ --- stav
   \item $a$ --- akce
-  \item max$_{a'}$ --- maximální hodnota budoucí odměny, pokud se agent nachází ve stavu $s'$ a zvolí nejlepší dostupnou akci $a'$ (hodnota hodnotová funkce nejlepší akce v následujícím stavu)
+  \item max$_{a'}Q(s', a')$ --- maximální hodnota budoucí odměny, pokud se agent nachází ve stavu $s'$ a zvolí nejlepší dostupnou akci $a'$ (hodnota nejlepší akce v následujícím stavu)
 \end{myitemize}
 
 Hlavní nevýhodou tohoto algoritmu je právě jeho závislost na Q--tabulce.
@@ -477,7 +459,7 @@ Tabulka mapuje hodnoty pro každou kombinaci stavu a akce,
 Je--li však stavový, či akční prostor příliš velký, nebo dokonce nekonečný, je tento algoritmus nevhodný, téměř až nepoužitelný.
 Výsledná Q--tabulka by byla neefektivní kvůli své velikosti.
 Mohlo by se stát, že s~nekonečným množstvím kombinací by velikost tabulky rostla do \uv{nekonečna}.
-Jako řešení byl navrhnut algoritmus Deep Q-learninggg.
+Jako řešení byl navrhnut algoritmus Deep Q-learning.
 
 \section{Deep Q-learning (DQN)}\label{subsec:deep-q-learning}
 
@@ -743,12 +725,14 @@ Podmínka číslo 1 je v~mé implementaci prostředí hry Scotland Yard implicit
 Podmínka číslo 2 je řešena přidáním menších dílčích odměn.
 Agenti tak získávají odměny i za menší kroky, nejen například za vítězství/ prohru či blízkost, viz podsekce~\nameref{subsec:odmeny}.\\
 
+\pagebreak
+
 \begin{algorithm}
   \caption{Proximal Policy Optimization (PPO)}
   \begin{algorithmic}[1]
-  \Require Počáteční parametry politiky $\theta_0$, počáteční parametry hodnotové funkce $\phi_0$
+  \State Počáteční parametry politiky $\theta_0$, počáteční parametry hodnotové funkce $\phi_0$
   \For{iterace $= 0, 1, 2, \dots$}
-      \State Shromáždí sadu trajektorií $\mathcal{D}$ spuštěním politiky $\pi_\theta$ v prostředí
+      \State Shromáždi sadu trajektorií $\mathcal{D}$ spuštěním politiky $\pi_\theta$ v prostředí
       \State Vypočítej odměny trajektorií $\hat{R}_t$
       \State Vypočítej odhady výhod $\hat{A}_t$ pomocí aktuální hodnotové funkce $V_{\phi_k}$:
       \[
@@ -756,12 +740,14 @@ Agenti tak získávají odměny i za menší kroky, nejen například za vítěz
       \]
       \State Aktualizuj parametry politiky $\theta$:
       \[
-        \theta_{k+1} = argmax_{\theta} \frac{1}{\left|\mathcal{D}_k\right|T}\displaystyle\sum_{\tau \in \mathcal{D}_k} \sum_{t=0}^T \left[ \min \left( r(\theta) \hat{A}_t, \text{clip}(r(\theta), 1-\epsilon, 1+\epsilon) \hat{A}_t \right) \right]
+        \theta_{k+1} = \theta_k + \alpha \nabla_\theta J^{\text{CLIP}}(\theta)
       \]
     \EndFor
   \end{algorithmic}
-  \end{algorithm}\pagebreak
+  \end{algorithm}
   \begin{myitemize}
+    \item $\sum_{t'=t}^T$ --- sumace přes všechny kroky trajektorií.
+    \item $\gamma^{t'-t} r_{t'} - V_{\phi_k}(s_t)$ --- odhad výhody akce $a_t$ ve stavu $s_t$.
     \item $k$ --- číslo iterace
     \item $r(\theta) = \frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_{\text{old}}}(a_t|s_t)}$\\ --- poměr šance zvolení akce $a_t$ ve stavu $s_t$ \\ mezi novou a předchozí politikou
     \item $\epsilon$ --- hyperparametr klipoavací funkce.
@@ -1296,7 +1282,7 @@ Na základě provedení akce se upraví stav prostředí a funkce step je volán
 
 \pagebreak
 
-V průběhu realizace práce jsem experimentoval s různými variantami řízení kola hry:
+V průběhu realizace práce jsem experimentoval s různými variantami průběhu kola hry:
 \subsection{Prvotní verze, kde agenti hrají zároveň}
 V této verzi se hra dělila pouze na kola a funkce step obsluhovala celé toto kolo.
 Ve funkci step tedy byly volány metody pro získání akce pro všechny agenty, které se nakonec vykonaly najednou.
