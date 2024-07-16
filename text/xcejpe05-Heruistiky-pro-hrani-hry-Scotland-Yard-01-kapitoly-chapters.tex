@@ -773,11 +773,11 @@ Hráči se po těchto polích mohou pohybovat ortogonálně i diagonálně, vžd
 Hráč se může rozhodnout nezměnit pozici a zůstat na svém aktuálním poli.
 K~pohybu nejsou potřebné žádné jízdenky.
 
-Tato úprava vede k~tomu, že se zjednodušil stavový i akční prostor, jelikož se nemusí starat o~svoje jízdenky a mohou se pohybovat po herní ploše libovolně.
+Tato úprava vede k~tomu, že se zjednodušil stavový i akční prostor, jelikož se hráči nemusí starat o~svoje jízdenky a mohou se pohybovat po herní ploše libovolně.
 Změny, avšak nemění základní podstatu hry, zachovává neurčitost, ale značně zjednodušuje implementaci.
 Díky tomuto zjednodušení klade trénování nižší nároky na výkon.
 
-Předtím nežli začne hra, se vyberou náhodné možné pozice, na kterých mohou Pan~X a policisté začínat.
+Předtím nežli začne hra, náhodně se vygenerují možné pozice, na kterých mohou Pan~X a policisté začínat.
 Z~těchto možných pozic se následně náhodná pozice přidělí jednotlivým hráčům.
 Poté začíná hra.
 
@@ -839,13 +839,11 @@ Pokud je hra pozastavena, je možné pokračovat stisknutím klávesy Space (mez
 Jakmile hra běží, je možné ji opětovně pozastavit stisknutím klávesy Space (mezerník).
 
 
-Na herní ploše jsou zobrazeny 4 figury ve formě barevného čtverce.
+Na herní ploše jsou zobrazeny 4 figury ve formě barevných čtverců.
 Červený čtverec značí Pana~X a zelené čtverce značí policisty.
 V~levém horním rohu okna je zobrazen aktuální stav hry.
 Pakliže hra stále běží, je zobrazeno číslo aktuálního kola.
 Jakmile hra skončí, je zobrazeno, kdo hru vyhrál.
-Za 
-
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.8\textwidth]{obrazky-figures/game_0}
@@ -902,15 +900,14 @@ Struktura jednotlivých pozorovacích prostorů je následující:
 
 \begin{myitemize}
   \item \textbf{Shodné položky pozorování}
-    \begin{myitemize}
-    \item Vlastní pozice agenta (x,y)
-    \item Pozice (x,y) a vzdálenost od poslední známé pozice pana~X
-    \item Pozice (x,y) policistů
-    \item Vzdálenost od  policistů
+  \begin{myitemize}
     \item Číslo aktuálního kola
     \item Maximální počet kol
     \item Číslo kola, kdy dojde k~dalšímu odhalení pozice Pana~X
     \item Počet kol, kdy agent stál na místě
+    \item Vlastní pozice agenta (x,y)
+    \item Pozice (x,y) a vzdálenost od poslední známé pozice pana~X
+    \item Pozice (x,y) zbylých policistů a vzdálenosti od nich
   \end{myitemize}
   \item \textbf{Pozorování, které mají policisté navíc}
     \begin{myitemize}
@@ -929,6 +926,43 @@ Tato oblast je blíže popsána v podkapitole  \ref{subsubsec:oblast_zajmu}, kde
 Pokud informace obsažená v~těchto pozorovacích prostorech není v~daný moment definována, je nahrazena hodnotou -1.
 Konkrétně se jedná pouze o~hodnoty týkající se poslední veřejně známé pozice Pana~X, jelikož v~prvních několika kolech není známa.
 
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\textwidth]{obrazky-figures/game_inputs}
+      \caption{Stav hry, pro ukázku vstupů do neuronové sítě}
+    \label{fig:game_input}
+\end{figure}
+Na obrázku \ref{fig:game_input} je zobrazen stav hry.
+V tomto stavu byly jednotlivé hodnoty pozorování agentů následující:
+
+\[
+\text{mr\_x} = \begin{bmatrix}
+5, & 24, & 8, & 0, & 8, & 0, & 8, & 2, & 2, & 5 \\
+7, & 7.6, & 9, & 3, & 3.2, & 4, & 4, & 5.7
+\end{bmatrix}
+\]
+
+\[
+\text{cop\_1} = \begin{bmatrix}
+5, & 24, & 8, & 0, & 5, & 7, & 8, & 2, & 5.8, & 9 \\
+3, & 5.7, & 4, & 4, & 3.2, & 6, & 4, & 3.2, & 0
+\end{bmatrix}
+\]
+
+\[
+\text{cop\_2} = \begin{bmatrix}
+5, & 24, & 8, & 0, & 9, & 3, & 8, & 2, & 1.4, & 5 \\
+7, & 5.7, & 4, & 4, & 5.1, & 9, & 3, & 0, & 1
+\end{bmatrix}
+\]
+
+\[
+\text{cop\_3} = \begin{bmatrix}
+5 & 24 & 8 & 0 & 4 & 4 & 8 & 2 & 4.5 & 5 \\
+7 & 3.2 & 9 & 3 & 5.1 & 6 & 4 & 2 & 0
+\end{bmatrix}
+\]
+
 \bigskip
 
 \textbf{Akční prostor} agentů reprezentuje možné akce, které mohou agenti provést.
@@ -945,6 +979,7 @@ Během trénování je naráz modifikován jak model pro policisty, tak model pr
 Jedná se tedy o posilované učení s více agenty \textbf{(Marl)}.
 V tomto podoboru posilovaného učení koexistuje vícero agentů ve stejném prostředí.
 Mohou mít stejné cíle, či rozdílné.
+
 V případě této práce tedy 3 agenti reprezentují policisty se stejným cílem.
 A jeden agent reprezentuje Pana~X který má narozdíl od zbylých agentů opačný cíl.
 I proto jsem zvolil framework Ray, který jako jeden z mála tyto možnosti podporuje.
@@ -954,7 +989,7 @@ I proto jsem zvolil framework Ray, který jako jeden z mála tyto možnosti podp
 V modelech PPO i DQN hraje hlavní roli neuronová síť.
 Vstupem do těchto neuronových sítí je aktuální stav, v případě mé práce jsou to viditelné pozorování agentů v prostředí, popsané v předchozí části.
 Tyto vstupy jsou následně zpracovány skrytými vrstvami v neuronových sítích.
-Struktura vnitřních vrstev a výstup neuronové sítě modelů jsou v rozdílné.
+Struktura vnitřních vrstev a výstup neuronové sítě modelů jsou v rozdílné pro oba algoritmy.
 \bigskip
 
   \textbf{Neuronová síť v modelu trénovaném algoritmem PPO}
@@ -988,6 +1023,7 @@ Struktura vnitřních vrstev a výstup neuronové sítě modelů jsou v rozdíln
           \item dvě skryté vrstvy, kde první má 128 neuronů a druhá 64 [128, 64]
           \item 9 neuronů výstupní vrstvy
         \end{myitemize}
+        \pagebreak
       \item Výstup
         \begin{myitemize}
           \item Výstupem této neuronové sítě je ohodnocení všech akcí v aktuálním stavu (hodnotová funkce Q), viz kapitola o DQN \ref{subsec:deep-q-learning}.
@@ -1001,6 +1037,8 @@ Struktura vnitřních vrstev a výstup neuronové sítě modelů jsou v rozdíln
 
 Využívám tedy implementace algoritmu PPO i DQN, které jsou obsaženy v~knihovně \texttt{Ray.Rlib}.
 PPO využívá základní parametry trénování bez žádné modifikace parametrů, jelikož se ukázalo, že agenti se chovají optimálně a hru pochopili i bez těchto zásahů do výchozích hodnot hyperparametrů.
+To, že nebylo třeba modifikovat parametry, je i to, že PPO těchto hyperparametrů ani moc nemá, jeho konfigurace je tedy velmi jednoduchá oproti jiným algoritmům.
+
 Zato DQN agenti se chovali \emph{neoptimálně} i přes ladění hyperparametrů.
 S~konfiguračními parametry \texttt{Ray.rlib}u a hyperparametry DQN jsem dlouho experimentoval.
 Měnila se velikost vnitřních vrstev, počet neuronů, rychlost učení, velikost paměti, velikost dávky učení a další.
@@ -1024,8 +1062,10 @@ Trénování modelů je obsaženo v~samostatných skriptech, které jsou spustit
     \item -{}-no-verbose: zákaz výpisu průběhu trénování; default: False
   \end{myitemize}
   \item TrainerPPO.py
-  \item - Spuštění: \texttt{python TrainerPPO.py}
-  \item - Parametry jsou stejné jako u TrainerDQN.py
+  \item Spuštění: \texttt{python TrainerPPO.py}
+  \begin{myitemize}
+  \item Argumenty jsou stejné jako u TrainerDQN.py
+  \end{myitemize}
 \end{myitemize}
 
 Tyto spustitelné skripty obsahují třídy a konfigurace pro trénování modelů.
@@ -1039,6 +1079,7 @@ Během běhu skriptu se vypisuje aktuální stav trénování (pokud je nastaven
   \item Číslo aktuální iterace
   \item Celkový čas trénování
   \item Počet epizod v iteraci a průměrná odměna v~aktuální iteraci
+  \item U algoritmu DQN se vypisuje aktuální hodnota epsilon
 \end{myitemize}
 
 \subsubsection*{Řešení zvolení nevalidních akcí}
@@ -1280,7 +1321,6 @@ Samozřejmě se může teoreticky stát, že agenti budou volit nevalidní akci 
 Hlavní metoda step nyní získala akci pro agenty a následně tuto akci provede.
 Na základě provedení akce se upraví stav prostředí a funkce step je volána znovu, dokud nenastane konec hry.
 
-\pagebreak
 
 V průběhu realizace práce jsem experimentoval s různými variantami průběhu kola hry:
 \subsection{Prvotní verze, kde agenti hrají zároveň}
