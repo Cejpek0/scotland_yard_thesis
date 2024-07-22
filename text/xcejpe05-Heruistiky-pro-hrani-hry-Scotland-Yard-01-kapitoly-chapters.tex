@@ -520,11 +520,11 @@ Ten je řešen dvěma mechanismy:
   \item $L(\theta) = \left(y_j - Q(s_j, a_j; \theta)\right)^2$ --- rozdíl mezi cílovou hodnotou $y_j$ a~hodnotou, kterou vypočítala neuronová síť $Q(s_j, a_j; \theta)$
   \item Hodnoty vah neuronové sítě se upraví tak, aby se minimalizovala ztráta $L(\theta)$
 \end{myitemize}
-\section{Metody gradientu politiky}\label{subsec:gradientni_metody}
+\section{Metody gradientu strategie}\label{subsec:gradientni_metody}
 Předchozí metody se snažily naučit či aproximovat hodnotovou funkci akce a~vždy volily tu nejlepší, to ale vede k~deterministické strategii.
 Často je ale optimální stochastická strategie.
 Algoritmy z~této skupiny se snaží naučit strategii přímo, a~to tím způsobem, že upravují parametry strategie, aby maximalizovaly účelovou funkci (objective function).
-Nejčastěji se využívá neuronová síť, která má na vstupu stav prostředí, na výstupu pravděpodobnostní rozdělení nad akcemi a~váhy neuronů jsou právě parametry politiky.
+Nejčastěji se využívá neuronová síť, která má na vstupu stav prostředí, na výstupu pravděpodobnostní rozdělení nad akcemi a~váhy neuronů jsou právě parametry strategie.
 Výsledkem metod této skupiny je tedy pravděpodobnostní rozdělení nad akcemi v~daném stavu, což znamená, že každá akce má šanci na zvolení.
 
 Účelová funkce je tedy očekávaná odměna při následování strategie a~hodnotí strategii.
@@ -556,7 +556,7 @@ Hodnotu stavu $V_{\pi_\theta}(s)$ lze dále rozepsat, vznikne tedy výsledná ro
 \subsection{Věta o~gradientu strategie a~aktualizace parametrů}
 Aby bylo možné zjistit, jakým způsobem upravit parametry strategie k~maximalizaci účelové funkce, je potřeba vypočítat \emph{\textbf{gradient}\footnote[2]{Gradient značí směr funkce, značí se symbolem $\nabla_{\phi}$. Počítá se parciální derivací účelové funkce podle $\phi$.}} -- $\nabla \mathcal{J}(\theta)$.
 
-Základní výpočet tohoto gradientu je závislý jak na pravděpodobnosti výběru akce (která je přímo určena strategií), tak na distribučním rozdělení stavů (která je nepřímo určena politikou).
+Základní výpočet tohoto gradientu je závislý jak na pravděpodobnosti výběru akce (která je přímo určena strategií), tak na distribučním rozdělení stavů (která je nepřímo určena strategií).
 
 Efekt změn parametrů strategie na zvolené akce lze jednoduše spočítat, ale odhadnout jejich vliv na distribuční rozdělení stavů je složité.\\
 \emph{Věta o~gradientu strategie}~\cite{NIPS1999_464d828b} výrazně zjednodušuje výpočet gradientu tím, že odstraňuje derivace distribučního rozdělení stavů v~závislosti na změněných parametrech strategie:
@@ -575,7 +575,7 @@ Efekt změn parametrů strategie na zvolené akce lze jednoduše spočítat, ale
   Lze rozepsat jako: $\frac{\partial \pi_\theta(a \vert s)}{\partial \theta}$.
 \end{myitemize}
 
-Tento teorém je základem pro všechny metody gradientu politiky.
+Tento teorém je základem pro všechny metody gradientu strategie.
 Parametry strategie se mohou upravovat například pomocí metody \textbf{gradientního  vzestupu} (gradient ascend):
 \begin{equation}
   \theta_{k+1} = \theta_k + \alpha \nabla_\theta J(\theta)
@@ -588,7 +588,7 @@ Parametry strategie se mohou upravovat například pomocí metody \textbf{gradie
   \item $\nabla_\theta J(\theta)$ -- gradient účelové funkce, popsaný výše.
 \end{myitemize}
 
-Nejzákladnější metodou gradientu politiky je \textbf{REINFORCE}.
+Nejzákladnější metodou gradientu strategie je \textbf{REINFORCE}.
 Metoda je velmi podobná algoritmu Monte Carlo, ale využívá gradientu strategie k~naivní aktualizaci parametrů.
 Vypočtený gradient se využije k~aktualizaci parametrů strategie, ale změna není nijak omezována.
 Změny tak mohou být velmi velké, učení tak může být nestabilní, to řeší následující algoritmy.
@@ -614,7 +614,7 @@ Strategie se tedy nemůže skokově změnit na lokální maximum, ale pouze nás
 \begin{myitemize}
   \item $\hat{A}_{\theta_{\text{old}}}(s, a)$ -- odhad výhody akce $a$ ve stavu $s$. Měří, jak je daná akce lepší než průměrná akce ve stavu $s$. Lze dále rozepsat jako: $Q_{\pi_{\theta_{\text{old}}}}(s, a) - V_{\pi_{\theta_{\text{old}}}}(s)$,
 \end{myitemize}
-kde rozdíl mezi novou a~starou politikou je omezen K-L divergencí:
+kde rozdíl mezi novou a~starou strategií je omezen K-L divergencí:
 \begin{equation}
   \label{eq:kl_divergence}
     D_{KL}(\pi_{\theta_{\text{old}}} \Vert \pi_{\theta}) \le \delta
@@ -718,15 +718,15 @@ Agenti tak získávají odměny i~za menší kroky, nejen například za vítěz
 \begin{algorithm}
   \caption{Proximal Policy Optimization (PPO)}
   \begin{algorithmic}[1]
-  \State Počáteční parametry politiky $\theta_0$, počáteční parametry hodnotové funkce $\phi_0$
+  \State Počáteční parametry strategie $\theta_0$, počáteční parametry hodnotové funkce $\phi_0$
   \For{iterace $= 0, 1, 2, \dots$}
-      \State Shromáždi sadu trajektorií $\mathcal{D}$ spuštěním politiky $\pi_\theta$ v~prostředí
+      \State Shromáždi sadu trajektorií $\mathcal{D}$ spuštěním agentů řízených strategií $\pi_\theta$ v~prostředí
       \State Vypočítej odměny trajektorií $\hat{R}_t$
       \State Vypočítej odhady výhod $\hat{A}_t$ pomocí aktuální hodnotové funkce $V_{\phi_k}$:
       \[
       \hat{A}_t = \sum_{t'=t}^T \gamma^{t'-t} r_{t'} - V_{\phi_k}(s_t)
       \]
-      \State Aktualizuj parametry politiky $\theta$:
+      \State Aktualizuj parametry strategie $\theta$:
       \[
         \theta_{k+1} = \theta_k + \alpha \nabla_\theta J^{\text{CLIP}}(\theta)
       \]
@@ -737,10 +737,10 @@ Agenti tak získávají odměny i~za menší kroky, nejen například za vítěz
     \item $\sum_{t'=t}^T$ -- sumace přes všechny kroky trajektorií.
     \item $\gamma^{t'-t} r_{t'} - V_{\phi_k}(s_t)$ -- odhad výhody akce $a_t$ ve stavu $s_t$.
     \item $k$ -- číslo iterace
-    \item $r(\theta) = \frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_{\text{old}}}(a_t|s_t)}$\\ -- poměr šance zvolení akce $a_t$ ve stavu $s_t$ \\ mezi novou a~předchozí politikou
-    \item $\epsilon$ -- hyperparametr klipoavací funkce.
-    \item $\text{clip}(r(\theta), 1-\epsilon, 1+\epsilon) \hat{A}_t$ -- klipovaná ztráta politiky
-    \item $r(\theta) \hat{A}_t$ -- ztráta politiky
+    \item $r(\theta) = \frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_{\text{old}}}(a_t|s_t)}$\\ -- poměr šance zvolení akce $a_t$ ve stavu $s_t$ \\ mezi novou a~předchozí strategií
+    \item $\epsilon$ -- hyperparametr oříznuté funkce.
+    \item $\text{clip}(r(\theta), 1-\epsilon, 1+\epsilon) \hat{A}_t$ -- ožíznutá ztráta strategie
+    \item $r(\theta) \hat{A}_t$ -- ztráta strategie
     \item min --  vybere nejmenší změny, aby nedošlo k~nestabilitě učení.
     \item $\hat{A}_t$ -- odhadovaná výhoda akce $a_t$ ve stavu $s_t$
     \item $\frac{1}{\left|\mathcal{D}_k\right|T}$ -- počet trajektorií v~sadě $\mathcal{D}_k$ a~počet kroků $T$ v~trajektorii
