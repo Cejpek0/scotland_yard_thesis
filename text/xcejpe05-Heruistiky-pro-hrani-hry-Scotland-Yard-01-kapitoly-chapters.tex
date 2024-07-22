@@ -921,33 +921,57 @@ Na obrázku \ref{fig:game_input} je zobrazen stav hry.
 V~tomto stavu byly jednotlivé hodnoty pozorování agentů následující:
 
 \[
-\text{mr\_x} = \begin{bmatrix}
-5, & 24, & 8, & 0, & 8, & 0, & 8, & 2, & 2, & 5 \\
+\text{pan\_x} = \begin{bmatrix}
+5, & 24, & 8, & 0, & 8, & 0, & 8, & 2, & 2, & 5, \\
 7, & 7.6, & 9, & 3, & 3.2, & 4, & 4, & 5.7
 \end{bmatrix}
 \]
 
 \[
-\text{cop\_1} = \begin{bmatrix}
-5, & 24, & 8, & 0, & 5, & 7, & 8, & 2, & 5.8, & 9 \\
+\text{policista\_1} = \begin{bmatrix}
+5, & 24, & 8, & 0, & 5, & 7, & 8, & 2, & 5.8, & 9, \\
 3, & 5.7, & 4, & 4, & 3.2, & 6, & 4, & 3.2, & 0
 \end{bmatrix}
 \]
 
 \[
-\text{cop\_2} = \begin{bmatrix}
-5, & 24, & 8, & 0, & 9, & 3, & 8, & 2, & 1.4, & 5 \\
+\text{policista\_2} = \begin{bmatrix}
+5, & 24, & 8, & 0, & 9, & 3, & 8, & 2, & 1.4, & 5, \\
 7, & 5.7, & 4, & 4, & 5.1, & 9, & 3, & 0, & 1
 \end{bmatrix}
 \]
 
 \[
-\text{cop\_3} = \begin{bmatrix}
-5 & 24 & 8 & 0 & 4 & 4 & 8 & 2 & 4.5 & 5 \\
-7 & 3.2 & 9 & 3 & 5.1 & 6 & 4 & 2 & 0
+\text{policista\_3} = \begin{bmatrix}
+5, & 24, & 8, & 0, & 4, & 4, & 8, & 2, & 4.5, & 5, \\
+7, & 3.2, & 9, & 3, & 5.1, & 6, & 4, & 2, & 0
 \end{bmatrix}
 \]
 
+\pagebreak
+
+Například u policisty 1 značí hodnoty následovné informace:
+\begin{myitemize}
+  \item 5 -- aktuální kolo;
+  \item 24 -- maximální počet kol;
+  \item 8 -- kolo, kdy dojde k~dalšímu odhalení pozice Pana~X;
+  \item 0 -- počet kol, kdy policista stál na místě;
+  \item 5 -- x-ová souřadnice pozice policisty 1;
+  \item 7 -- y-ová souřadnice pozice policisty 1;
+  \item 8 -- x-ová souřadnice poslední známé pozice Pana~X;
+  \item 2 -- y-ová souřadnice poslední známé pozice Pana~X;
+  \item 5.8 -- vzdálenost od poslední známé pozice Pana~X;
+  \item 9 -- x-ová souřadnice pozice policisty 2;
+  \item 3 -- y-ová souřadnice pozice policisty 2;
+  \item 5.7 -- vzdálenost od policisty 2;
+  \item 4 -- x-ová souřadnice pozice policisty 3;
+  \item 4 -- y-ová souřadnice pozice policisty 3;
+  \item 3.2 -- vzdálenost od policisty 3;
+  \item 6 -- x-ová souřadnice nejbližšího bodu oblasti zájmu;
+  \item 4 -- y-ová souřadnice nejbližšího bodu oblasti zájmu;
+  \item 3.2 -- vzdálenost od nejbližšího bodu oblasti zájmu;
+  \item 0 -- pravdivostní hodnota, zda je policista v~oblasti zájmu.
+\end{myitemize}
 \bigskip
 
 \textbf{Akční prostor} agentů reprezentuje možné akce, které mohou agenti provést.
@@ -957,7 +981,7 @@ Celkově tedy agent může volit z~9 akcí.
 
 \subsection{Trénování agentů pomocí algoritmu DQN a~PPO}
 Trénování je proces, při kterém agenti zlepšují své schopnosti a~strategie na základě zpětné vazby z~prostředí.
-V~případě této práce agenti během učení modifikují váhy neuronů ve skrytých vrstvách neuronové sítě svého modelu, aby dosáhli požadovaného chování.
+V~případě této práce dochází k modifikaci vah neuronů ve skrytých vrstvách neuronových sítí.
 
 Během trénování je současně modifikován jak model pro policisty, tak model pro Pana~X\@.
 Jedná se tedy o~posilované učení s~více agenty \textbf{(Marl)}.
@@ -984,7 +1008,7 @@ Struktura vnitřních vrstev a~výstup neuronové sítě modelů jsou rozdílné
         \end{myitemize}
       \item Struktura
         \begin{myitemize}
-          \item vstupní vrstva má 17 vstupů pro Pana~X a~18 pro policisty
+          \item vstupní vrstva má 18 vstupů pro Pana~X a~19 pro policisty
           \item dvě skryté vrstvy po 256 neuronech [256, 256]
           \item 9 výstupů (1 pro každou akci)
         \end{myitemize}
@@ -1003,11 +1027,10 @@ Struktura vnitřních vrstev a~výstup neuronové sítě modelů jsou rozdílné
         \end{myitemize}
       \item Struktura
         \begin{myitemize}
-          \item vstupní vrstva má 17 vstupů pro Pana~X a~18 pro policisty
+          \item vstupní vrstva má 18 vstupů pro Pana~X a~19 pro policisty
           \item dvě skryté vrstvy, kde první má 128 neuronů a~druhá 64 [128, 64]
           \item 9 neuronů výstupní vrstvy
         \end{myitemize}
-        \pagebreak
       \item Výstup
         \begin{myitemize}
           \item Výstupem této neuronové sítě je ohodnocení všech akcí v~aktuálním stavu (hodnotová funkce Q), viz kapitola o~DQN \ref{subsec:deep-q-learning}.
@@ -1144,6 +1167,11 @@ Jakmile je policista v~oblasti zájmu, dostává konstantní odměnu za to, že 
       \caption{Zvýrazněná oblast zájmu policistů (růžově zvýrazněné pole).}
     \label{fig:game_11}
 \end{figure}
+
+Oblast zájmu je vypočtena na základě poslední známé pozice Pana~X\@.
+Na této pozici je vytvořen čtverec, jehož velikost je závislá na počtu kol, které uplynuly od posledního odhalení Pana~X\@.
+Pokud byl Pan~X odhalen v~aktuálním kole, je velikost čtverce rovna nule a~oblast zájmu je tedy pouze 1 pole.
+Další kolo se velikost čtverce zvětší o~jedno pole na každou stranu, obsahuje tedy 9 polí.
 
 PPO algoritmus může v~prostředích s~diskrétními akcemi volit velmi neoptimální akce, pokud má příliš málo podstatných odměn\cite{PPO_weakness}.
 Účel této odměny je podpořit učení policistů a~zamezit tomuto problému.
@@ -1306,16 +1334,16 @@ Hlavní metoda step nyní získala akci pro agenty a~následně tuto akci proved
 Na základě jejího provedení se upraví stav prostředí a~funkce step je volána znovu, dokud nenastane konec hry.
 
 
-V~průběhu realizace práce jsem experimentoval s~různými variantami průběhu kola hry:
-\subsection{Prvotní verze, kde agenti hrají zároveň}
-V~této verzi se hra dělila pouze na kola a~funkce step obsluhovala celé toto kolo.
+\subsection{Pořadí tahů v jednom kole}
+V~průběhu realizace práce jsem experimentoval s~různými variantami průběhu kola hry.
+V \textbf{prvotní verzi, kde agenti hrají zároveň} se hra dělila pouze na kola a~funkce step obsluhovala celé toto kolo.
 Ve funkci step tedy byly volány metody pro získání akce pro všechny agenty, které se nakonec vykonaly najednou.
 V~této variantě ještě nebyla přidána možnost akce stání na místě.
 A~tak si Pan~X vybudoval velmi zajímavou strategii, kde místo aby se od policistů držel co nejdále, tak se k~policistům klidně přibližoval a~využíval toho, že hrají současně.
 Toto zneužívání spočívalo v~tom, že vždy šel na pole, na němž již byl policista, jelikož věděl, že na daném místě již další kolo být nemůže.
 
 Tento styl ale neodpovídal tomu jak, se skutečně hra hraje, protože všichni hráči nemohou hrát současně.
-\subsection{Finální verze, kde se agenti střídají}
+Proto jsem navrhl \textbf{finální verzi, kde se agenti střídají}.
 Zde již byla implementována možnost stání na místě a~agenti se střídají v~tahu.
 Hra je tedy členěna na kola a~ta jsou dále členěna na tahy jednotlivých hráčů.
 Tato verze již více odpovídá reálné hře.
