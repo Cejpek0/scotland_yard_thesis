@@ -349,7 +349,8 @@ Patří sem také hra Scotland Yard, kde policisté neznají pozici Pana~X\@.
 \textbf{\emph{Neúplná informace}} znamená, že hráč nezná strukturu odměn, podstatu hry nebo její pravidla.
 Hráč tedy nezná výchozí informace o~hře.
 
-\chapter{Algoritmy vhodné ke hraní her s~nedokonalou informací}\label{sec:vhodne-algoritmy-k-reseni-her-s-nedokonalou-informaci}
+\chapter{Algoritmy vhodné ke hraní her s~nedokonalou informací}
+\label{sec:vhodne-algoritmy-k-reseni-her-s-nedokonalou-informaci}
 
 Tato kapitola se zaměřuje na algoritmy, které jsou vhodné pro řešení her s~nedokonalou informací a s~důrazem na metody posilovaného učení.
 
@@ -890,7 +891,7 @@ Struktura jednotlivých pozorovacích prostorů je následující:
     \item Číslo aktuálního kola;
     \item Maximální počet kol;
     \item Číslo kola, kdy dojde k~dalšímu odhalení pozice Pana~X;
-    \item Počet kol, kdy agent stál na místě;
+    \item Počet kol, kterých agent stál na místě;
     \item Vlastní pozice agenta (x, y);
     \item Pozice (x, y) a~vzdálenost od poslední známé pozice pana~X;
     \item Pozice (x, y) zbylých policistů a~vzdálenosti od nich.
@@ -955,7 +956,7 @@ Například u policisty 1 značí hodnoty následovné informace:
   \item 5 -- aktuální kolo;
   \item 24 -- maximální počet kol;
   \item 8 -- kolo, kdy dojde k~dalšímu odhalení pozice Pana~X;
-  \item 0 -- počet kol, kdy policista stál na místě;
+  \item 0 -- počet kol, kterých policista stál na místě;
   \item 5 -- x-ová souřadnice pozice policisty 1;
   \item 7 -- y-ová souřadnice pozice policisty 1;
   \item 8 -- x-ová souřadnice poslední známé pozice Pana~X;
@@ -972,6 +973,8 @@ Například u policisty 1 značí hodnoty následovné informace:
   \item 3.2 -- vzdálenost od nejbližšího bodu oblasti zájmu;
   \item 0 -- pravdivostní hodnota, zda je policista v~oblasti zájmu.
 \end{myitemize}
+
+\bigskip
 \bigskip
 
 \textbf{Akční prostor} agentů reprezentuje možné akce, které mohou agenti provést.
@@ -1004,13 +1007,14 @@ Struktura vnitřních vrstev a~výstup neuronové sítě modelů jsou rozdílné
     \begin{myitemize}
       \item Vstup
         \begin{myitemize}
-          \item viditelný stav prostředí
+          \item Viditelný stav prostředí.
         \end{myitemize}
       \item Struktura
         \begin{myitemize}
-          \item vstupní vrstva má 18 vstupů pro Pana~X a~19 pro policisty
-          \item dvě skryté vrstvy po 256 neuronech [256, 256]
-          \item 9 výstupů (1 pro každou akci)
+          \item Jedná se o dopředně propojenou neuronovou síť, kde se informace šíří pouze jedním směrem.
+          \item Vstupní vrstva má 18 vstupů pro Pana~X a~19 pro policisty.
+          \item Obsahuje obsahuje dvě skryté vrstvy po 256 neuronech [256, 256]. Aktivační funkce je ReLU, která napomáhá k~učení komplexních závislostí.
+          \item 9 možných výstupů (1 pro každou akci).
         \end{myitemize}
       \item Výstup
         \begin{myitemize}
@@ -1023,13 +1027,14 @@ Struktura vnitřních vrstev a~výstup neuronové sítě modelů jsou rozdílné
     \begin{myitemize}
       \item Vstup
         \begin{myitemize}
-          \item viditelný stav prostředí
+          \item Viditelný stav prostředí
         \end{myitemize}
       \item Struktura
         \begin{myitemize}
-          \item vstupní vrstva má 18 vstupů pro Pana~X a~19 pro policisty
-          \item dvě skryté vrstvy, kde první má 128 neuronů a~druhá 64 [128, 64]
-          \item 9 neuronů výstupní vrstvy
+          \item Jedná se o dopředně propojenou neuronovou síť, kde se informace šíří pouze jedním směrem
+          \item Vstupní vrstva má 18 vstupů pro Pana~X a~19 pro policisty
+          \item Dvě skryté vrstvy, kde první má 128 neuronů a~druhá 64 [128, 64]. Aktivační funkce je ReLU, která napomáhá k~učení komplexních závislostí.
+          \item 9 možných výstupů (1 pro každou akci)
         \end{myitemize}
       \item Výstup
         \begin{myitemize}
@@ -1338,9 +1343,12 @@ Na základě jejího provedení se upraví stav prostředí a~funkce step je vol
 V~průběhu realizace práce jsem experimentoval s~různými variantami průběhu kola hry.
 V \textbf{prvotní verzi, kde agenti hrají zároveň} se hra dělila pouze na kola a~funkce step obsluhovala celé toto kolo.
 Ve funkci step tedy byly volány metody pro získání akce pro všechny agenty, které se nakonec vykonaly najednou.
-V~této variantě ještě nebyla přidána možnost akce stání na místě.
-A~tak si Pan~X vybudoval velmi zajímavou strategii, kde místo aby se od policistů držel co nejdále, tak se k~policistům klidně přibližoval a~využíval toho, že hrají současně.
-Toto zneužívání spočívalo v~tom, že vždy šel na pole, na němž již byl policista, jelikož věděl, že na daném místě již další kolo být nemůže.
+
+V této variantě ještě agenti nemohli zůstat na aktuální pozici.
+Pan X si tak vybudoval zajímavou strategii.
+Místo aby se od policistů držel co nejdále, přibližoval se k nim a využíval toho, že všichni hrají současně.
+Vždy volil akci, která ho posunula na pole, kde byl policista.
+Věděl totiž, že na daném místě již další kolo policista být nemůže, protože nemohl zůstat na stejném poli.
 
 Tento styl ale neodpovídal tomu jak, se skutečně hra hraje, protože všichni hráči nemohou hrát současně.
 Proto jsem navrhl \textbf{finální verzi, kde se agenti střídají}.

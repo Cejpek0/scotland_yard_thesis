@@ -5,8 +5,8 @@ Cejpek Michal, xcejpe05. VUT FIT 2024
 # Požadavky aplikace
 
 Ke spuštění aplikace je potřeba python verze 3.10.
-Doporučuji systém windows.
-Lze avšak použít i linux, kde je prostředí možné aktivovat příkazem:
+Doporučuji systém Windows.
+Lze však použít i linux, kde je prostředí možné aktivovat příkazem:
 
 ```
     source path_to_venv/bin/activate
@@ -26,7 +26,7 @@ Nebo
     python -m venv path/to/venv
 ```
 
-Přepnutí do virtuálního prostředí na systému windows:
+Přepnutí do virtuálního prostředí na systému Windows:
 
 ```
     cd venv/Scripts
@@ -34,13 +34,13 @@ Přepnutí do virtuálního prostředí na systému windows:
     cd ../../
 ```
 
-Po vytvoření lokálního virtuálního prostředí je potřeba stáhnout potřebné balíčky pomocí příkazu:
+Po vytvoření lokálního virtuálního prostředí je třeba stáhnout potřebné balíčky pomocí příkazu:
 
 ```
     pip install -r requirements.txt
 ```
 
-# Spuštění
+# Spuštění hry
 
 Grafické rozhraní je možné spustit pomocí příkazu:
 
@@ -74,10 +74,46 @@ Poté se prostředí resetuje a hra začíná znova.
 
 ## Limitace GPU knihoven
 
-Soubor requirements.txt byl upraven aby neopsahoval knihovny s podporou učení agentů na GPU. Protože pro spuštění je potřeba mít nainstalovaný CUDA toolkit. Nelze tedy využívat GPU pro trénování agentů. A toto chování je v souborech zakomentované.
+Soubor requirements.txt byl upraven aby neobsahoval knihovny s podporou učení agentů na GPU. Protože pro spuštění je potřeba mít nainstalovaný CUDA toolkit. A toto chování je v souborech zakomentované a lze zapnout.
 
 Pro nainstalování gpu balíčků využijte soubor: requirements_gpu.txt.
 Aby mohl pytorch fungovat s GPU je potřeba mít nainstalovaný CUDA toolkit, apod.
+
+# Spuštění trénování
+
+Trénování modelů je obsaženo v~samostatných skriptech, spustitelných z~příkazové řádky:
+
+_TrainerDQN.py_
+Spuštění: python TrainerDQN.py
+Argumenty:
+--backup-folder [string]: složka pro záložní kopie; default: None
+--load-folder [string]: načte model z~dané složky; default: trained*models_dqn
+--save-folder [string]: uloží model do dané složky; default: trained_models_dqn
+--num-iterations [int]: počet iterací trénování; default: 50
+--save-interval [int]: interval ukládání modelu
+--no-verbose: zákaz výpisu průběhu trénování; default: False
+\_TrainerPPO.py*
+Spuštění: python TrainerPPO.py
+--backup-folder [string]: složka pro záložní kopie; default: None
+--load-folder [string]: načte model z~dané složky; default: trained_models_ppo
+--save-folder [string]: uloží model do dané složky; default: trained_models_ppo
+--num-iterations [int]: počet iterací trénování; default: 50
+--save-interval [int]: interval ukládání modelu
+--no-verbose: zákaz výpisu průběhu trénování; default: False
+
+Tyto spustitelné skripty obsahují třídy a~konfigurace pro trénování modelů.
+Při spuštění skriptu se načte aktuální model, pokud existuje, a~pokračuje v~trénování tohoto modelu.
+Pokud model neexistuje, je vytvořen nový model a~začíná se s~trénováním od začátku.
+Model je uložen každých 5 iterací trénování.
+Při dlouhém trénování doporučuji spustit script s~parametrem \texttt{-{}-do-backup}, který zároveň periodicky tvoří záložní kopie modelů.
+Během několikadenního trénování může dojít k~výpadku proudu či jiné chybě a~model může být poškozen.
+Během běhu skriptu se vypisuje aktuální stav trénování (pokud je nastaveno \texttt{--verbose}):
+\begin{myitemize}
+\item Číslo aktuální iterace;
+\item Celkový čas trénování;
+\item Počet epizod v~iteraci a~průměrná odměna v~aktuální iteraci;
+\item U~algoritmu DQN se vypisuje aktuální hodnota epsilon.
+\end{myitemize}
 
 # Struktura adresáře a odevzdaného média
 
@@ -91,12 +127,12 @@ Aby mohl pytorch fungovat s GPU je potřeba mít nainstalovaný CUDA toolkit, ap
 - trained_models_ppo/ -- Složka s natrénovaným modelem PPO
 - thesis.pdf -- Soubor s textem práce.
 - arial.ttf -- Písmo pro grafické rozhraní
-- main.py -- Soubor, jejož spuštěním se spustí grafické rozhraní hry Scotland Yard.
+- main.py -- Soubor, jehož spuštěním se spustí grafické rozhraní hry Scotland Yard.
 - README.md -- README soubor pro tuto práci.
 - requirements.txt -- Soubor s python balíčky potřebnými pro spuštění aplikace bez gpu podpory.
 - requirements_gpu.txt -- Soubor s python balíčky potřebnými pro spuštění aplikace s gpu podporou.
 - simulation.py -- Soubor, který slouží ke spuštění jednotlivých simulačních experimentů.
 - TrainerDQN.py -- Soubor obstarávající trénování modelu DQN.
 - TrainerPPO.py -- Soubor obstarávající trénování modelu PPO.
-- tune_dqn.py -- Tune byl použit pro hledání nejlepších hyperparametrů pro model DQN.
-- tune_ppo.py -- Tune byl použit pro hledání nejlepších hyperparametrů pro model PPO.
+- tune_dqn.py -- Tune byl použit pro hledání nejlepších hyperparametrů pro model DQN. Po provedení testů vypíše nejlepší nalezené hyperparametry. Provádění tohoto skriptu může trvat několik hodin.
+- tune_ppo.py -- Tune byl použit pro hledání nejlepších hyperparametrů pro model PPO. Po provedení testů vypíše nejlepší nalezené hyperparametry. Provádění tohoto skriptu může trvat několik hodin.
