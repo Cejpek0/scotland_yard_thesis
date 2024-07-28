@@ -29,9 +29,9 @@ Nebo
 Přepnutí do virtuálního prostředí na systému Windows:
 
 ```
-    cd venv/Scripts
-    activate
-    cd ../../
+    cd path/to/venv/Scripts
+    .\activate nebo activate
+    cd root - pro návrat do root složky (například: cd ../../)
 ```
 
 Po vytvoření lokálního virtuálního prostředí je třeba stáhnout potřebné balíčky pomocí příkazu:
@@ -40,12 +40,20 @@ Po vytvoření lokálního virtuálního prostředí je třeba stáhnout potřeb
     pip install -r requirements.txt
 ```
 
+Instalace může trvat dlouho.
+
 # Spuštění hry
 
 Grafické rozhraní je možné spustit pomocí příkazu:
 
 ```
     python3 main.py
+```
+
+nebo
+
+```
+    python main.py
 ```
 
 Spouštění může trvat trochu déle, kvůli načítání frameworku Ray a pygame.
@@ -83,37 +91,40 @@ Aby mohl pytorch fungovat s GPU je potřeba mít nainstalovaný CUDA toolkit, ap
 
 Trénování modelů je obsaženo v~samostatných skriptech, spustitelných z~příkazové řádky:
 
-_TrainerDQN.py_
-Spuštění: python TrainerDQN.py
-Argumenty:
---backup-folder [string]: složka pro záložní kopie; default: None
---load-folder [string]: načte model z~dané složky; default: trained*models_dqn
---save-folder [string]: uloží model do dané složky; default: trained_models_dqn
---num-iterations [int]: počet iterací trénování; default: 50
---save-interval [int]: interval ukládání modelu
---no-verbose: zákaz výpisu průběhu trénování; default: False
-\_TrainerPPO.py*
-Spuštění: python TrainerPPO.py
---backup-folder [string]: složka pro záložní kopie; default: None
---load-folder [string]: načte model z~dané složky; default: trained_models_ppo
---save-folder [string]: uloží model do dané složky; default: trained_models_ppo
---num-iterations [int]: počet iterací trénování; default: 50
---save-interval [int]: interval ukládání modelu
---no-verbose: zákaz výpisu průběhu trénování; default: False
+Spuštění trénování modelu PPO:
+
+```
+    python TrainerPPO.py
+```
+
+Spuštění trénování modelu DQN:
+
+```
+    python TrainerDQN.py
+```
+
+Argumenty pro trénovací skripty:
+
+- --backup-folder [string]: složka pro záložní kopie; default: None
+- --load-folder [string]: načte model z~dané složky; default: trained_models_dqn
+- --save-folder [string]: uloží model do dané složky; default: trained_models_dqn
+- --num-iterations [int]: počet iterací trénování; default: 50
+- --save-interval [int]: interval ukládání modelu
+- --no-verbose: zákaz výpisu průběhu trénování; default: False
 
 Tyto spustitelné skripty obsahují třídy a~konfigurace pro trénování modelů.
 Při spuštění skriptu se načte aktuální model, pokud existuje, a~pokračuje v~trénování tohoto modelu.
 Pokud model neexistuje, je vytvořen nový model a~začíná se s~trénováním od začátku.
 Model je uložen každých 5 iterací trénování.
-Při dlouhém trénování doporučuji spustit script s~parametrem \texttt{-{}-do-backup}, který zároveň periodicky tvoří záložní kopie modelů.
+Při dlouhém trénování doporučuji spustit script s~parametrem **--do-backup**, který zároveň periodicky tvoří záložní kopie modelů.
 Během několikadenního trénování může dojít k~výpadku proudu či jiné chybě a~model může být poškozen.
-Během běhu skriptu se vypisuje aktuální stav trénování (pokud je nastaveno \texttt{--verbose}):
-\begin{myitemize}
-\item Číslo aktuální iterace;
-\item Celkový čas trénování;
-\item Počet epizod v~iteraci a~průměrná odměna v~aktuální iteraci;
-\item U~algoritmu DQN se vypisuje aktuální hodnota epsilon.
-\end{myitemize}
+
+Během trénování se vypisuje aktuální stav trénování (pokud je nastaveno **--verbose**):
+
+- Číslo aktuální iterace;
+- Celkový čas trénování;
+- Počet epizod v~iteraci a~průměrná odměna v~aktuální iteraci;
+- U~algoritmu DQN se vypisuje aktuální hodnota epsilon.
 
 # Struktura adresáře a odevzdaného média
 
